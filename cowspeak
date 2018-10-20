@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# Written by Sourav Goswami
+# The GNU General Public License v3.0
 
 help = ->() {
 puts <<EOF
