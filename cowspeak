@@ -2,7 +2,8 @@
 
 help = ->() {
 puts <<EOF
-Hi, my name is cowspeak. I speak a random quote on your terminal.
+Hi, my name is cowspeak-web. I speak a quote on your terminal. I can read quote of the day from brainyquote.com as well.
+In that case, If there is no internet connection, then I tell a fortune quote.
 
 Usage: Run me directly from the command line with ruby interpreter or with your shell, I will show you a fortune with no aruguments:
 		1. ruby #{__FILE__}
@@ -11,29 +12,42 @@ Usage: Run me directly from the command line with ruby interpreter or with your 
 
 	Pass me some arguments:
 		Available arguments are:
-			--help or -h			    Display a help message
+			--web or -w                       Show the quote of the day from brainyquote.com
 			--text= or -t=                    Display a custom text.
-			--file= or -f=                     Display your own ASCII art.
-			--art or -a			     Display a message on creating own design.
+			--file= or -f=                     Specify the ASCII file path to display your own ASCII art.
+			--help or -h                       Display this help.
+			--art or -a                          Display a tutorial on adding your own art.
+			--update or -u                   Update fortune database from Github.
 
 		Examples:
+
+			To get brainyquote.com's quote of the day:
+				#{__FILE__} --web / #{__FILE__} -w
+
 			For custom text:
 				cowspeak --text='text' / #{__FILE__} -t='text'
 
 			To display your own ASCII art:
 				#{__FILE__} --file='path/file.art'
 
+			To get brainyquote.com's quote of the day with custom art:
+				#{__FILE__} --web --file=directory/file.art
+
 			To display your own art with your text:
 				#{__FILE__} --file=directory/file.art --text='your text'
 
-		For help:
-			#{__FILE__} -h or --help for this help message.
+			NOTE: --web with --text or -w with -t will only show quote from brainyquote.com, and not both.
 
-		For help on creating customized art file:
-			You can make your own art. Run #{__FILE__} --art or #{__FILE__} -a for more information.
+	Help:
+		#{__FILE__} -h or --help for this help message.
 
-		Update database (if there's any update):
-			#{__FILE__} --update or #{__FILE__} -u
+	Creating Custom Art:
+		You can make your own art. Run #{__FILE__} --art or #{__FILE__} -a for more information.
+
+	Update Fortune Database:
+		This is just an extra feature. Update synchronizes your fortunes.data with https://raw.githubusercontent.com/bmc/fortunes/master/fortunes.
+		You need not to update the database for months. It's fine if you never update the database. There are many fun inside the provided database.
+		However, if the database gets deleted, run #{__FILE__} --update or #{__FILE__} -u. You can occasionally run an update - won't harm anything.
 EOF
 exit! 0
 }
@@ -68,8 +82,7 @@ EOF
 exit! 0
 end
 
-help.call if ARGV.include?('-h') or ARGV.include?('--help')
-
+help.call if ARGV.include?('--help') or ARGV.include?('-h')
 if ARGV.include?('--update') or ARGV.include?('-u')
 	begin
 		require 'net/http'
@@ -114,7 +127,15 @@ begin
 		exit! 127
 	end
 
-	if %w(--text -t).include? arg1[0] then text = arg1[1]
+	if ARGV.include?('--web') or ARGV.include?('-w')
+		begin
+			require 'net/http'
+			data = Net::HTTP.get(URI('https://www.brainyquote.com/quote_of_the_day')).split("\n").map { |c| c if c.include? 'alt=' }
+			text = data.compact[2].delete('"').gsub('&#39;', "'").scan(/ alt=([^>]*)/).join
+		rescue Exception
+			text = File.read('cowspeak_files/fortunes.data').split('%').sample.delete("\n")
+		end
+	elsif %w(--text -t).include? arg1[0] then text = arg1[1]
 	elsif %w(--text -t).include? arg2[0] then text = arg2[1]
 	else text = File.read('cowspeak_files/fortunes.data').split('%').sample.gsub("\n", ' ')
 	end
@@ -141,7 +162,7 @@ rescue Exception => e
 		1. Exit.
 		2. Show the usage (#{__FILE__} -h)
 		3. Show Error Details.
-		4. Store Error Details to a Log File.
+		4. Save Error Details to a Log File.
 		- Default: 1 (Exit).
 		-> Choose: "
 
