@@ -4,8 +4,7 @@
 
 help = ->() {
 puts <<EOF
-Hi, my name is cowspeak. I speak a quote on your terminal. I can read quote of the day from brainyquote.com as well.
-In that case, If there is no internet connection, then I tell a fortune quote.
+Hi, my name is cowspeak. I speak a quote on your terminal.
 
 Usage: Run me directly from the command line with ruby interpreter or with your shell, I will show you a fortune with no aruguments:
 		1. ruby #{__FILE__}
@@ -15,7 +14,7 @@ Usage: Run me directly from the command line with ruby interpreter or with your 
 Pass me some arguments:
 	Available arguments are:
 		--text= or -t=                   Display a custom text.
-		--read= or -r=                     Read a file.
+		--read= or -r=                   Read a file.
 		--file= or -f=                   Specify the ASCII file path to display your own ASCII art.
 		--help or -h                     Display this help.
 		--documentation or -d            Display the whole documentation including this help.
@@ -30,8 +29,7 @@ exit! 0
 
 if ARGV.include?('--documentation') or ARGV.include?('-d') or ARGV.include?('--manual') or ARGV.include?('-m')
 puts <<EOF
-Hi, my name is cowspeak. I speak a quote on your terminal. I can read quote of the day from brainyquote.com as well.
-In that case, If there is no internet connection, then I tell a fortune quote.
+Hi, my name is cowspeak. I speak a quote on your terminal.
 
 Usage: Run me directly from the command line with ruby interpreter or with your shell, I will show you a fortune with no aruguments:
 		1. ruby #{__FILE__}
