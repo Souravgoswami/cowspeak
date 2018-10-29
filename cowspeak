@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/ruby -W0
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
 
@@ -25,6 +25,30 @@ Pass me some arguments:
 This is the help page, for more help with examples, run #{__FILE__} --documentation or #{__FILE__} -d
 EOF
 exit! 0
+}
+
+exception_handle = proc { |exception|
+	puts "Uh oh! Sorry, #{__FILE__} Crashed."
+	print "Select one of the following:
+		1. Exit.
+		2. Show the usage (#{__FILE__} -h)
+		3. Show Error Details.
+		4. Save Error Details to a Log File.
+		- Default: 1 (Exit).
+		-> Choose: "
+
+	case STDIN.gets.to_i
+		when 1 then exit!
+		when 2 then help.call
+		when 3 then puts exception ; exit! 125
+		when 4 then
+			log_file = File.open('log.txt', 'a+')
+			log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{exception}")
+			puts 'The error has been written to log.txt file.'
+			log_file.close
+			exit! 126
+		else exit!
+	end
 }
 
 if ARGV.include?('--documentation') or ARGV.include?('-d') or ARGV.include?('--manual') or ARGV.include?('-m')
@@ -79,7 +103,6 @@ EOF
 exit! 0
 end
 
-
 if ARGV.include?('--art') or ARGV.include?('-a')
 puts <<EOF
 You can create your own art. Here's a short introduction on how to do that:
@@ -114,27 +137,29 @@ help.call if ARGV.include?('--help') or ARGV.include?('-h')
 if ARGV.include?('--update') or ARGV.include?('-u')
 	begin
 		require 'net/http'
+		file = File.open('cowspeak_files/fortunes.data', 'a+')
 		data = Net::HTTP.get(URI('https://raw.githubusercontent.com/bmc/fortunes/master/fortunes')).chomp
 		unless data.include?('404: Not Found')
-			file = File.open('cowspeak_files/fortunes.data', 'w')
 			file.puts(data)
 			file.close
-			warn "The fortunes have been updated."
+			puts "The fortunes have been updated."
 			exit! 0
 		else
-			warn "Sorry for the inconvenience. The site doesn't seem to be valid anymore."
-			warn "If the problem persists, contact: souravgoswami@protonmail.com."
-			warn "#{__FILE__} can get an update. For the time being, stick with the current database you have, please..."
+			puts "Sorry for the inconvenience. The site doesn't seem to be valid anymore."
+			puts "If the problem persists, contact: souravgoswami@protonmail.com."
+			puts "#{__FILE__} can get an update. For the time being, stick with the current database you have, please..."
 			exit! 100
 		end
 	rescue SocketError
-		warn 'Do you have an internet connection?'
-		warn "1. Exit.\n2. Retry.\nDefault: 1 (Exit)."
+		puts 'Do you have an internet connection?'
+		puts "1. Exit.\n2. Retry.\nDefault: 1 (Exit)."
 		case STDIN.gets.to_i
 			when 2 then retry
 			else exit! 65
 		end
 		exit! 127
+	rescue Exception => e
+		exception_handle.call(e)
 	end
 end
 
@@ -151,9 +176,9 @@ begin
 		else file = "cowspeak_files/arts/#{%w(cow.art squirrels.art killer_squirrels.art).sample}"
 	end
 	unless File.file?(file)
-		warn 'Looks like the art file doesn\'t exist'
-		warn "Type #{__FILE__} --help or #{__FILE__} -h for help"
-		warn "Type #{__FILE__} --art or #{__FILE__} -a for help regarding art"
+		puts 'Looks like the art file doesn\'t exist'
+		puts "Type #{__FILE__} --help or #{__FILE__} -h for help"
+		puts "Type #{__FILE__} --art or #{__FILE__} -a for help regarding art"
 		exit! 127
 	end
 
@@ -162,11 +187,11 @@ begin
 	elsif %w(--text -t).include? arg3[0] then text = arg3[1]
 
 	elsif %w(--read -r).include? arg1[0]
-		if File.exist?(arg1[1]) then text = File.read(arg1[1]).gsub("\n", ' ') else warn "File Doesn't exist. #{__FILE__} -h for more help" ; exit! 127 end
+		if File.exist?(arg1[1]) then text = File.read(arg1[1]).gsub("\n", ' ') else puts "File Doesn't exist. #{__FILE__} -h for more help" ; exit! 127 end
 	elsif %w(--read -r).include? arg2[0]
-		if File.exist?(arg2[1]) then text = File.read(arg2[1]).gsub("\n", ' ') else warn "File Doesn't exist. #{__FILE__} -h for more help" ; exit! 127 end
+		if File.exist?(arg2[1]) then text = File.read(arg2[1]).gsub("\n", ' ') else puts "File Doesn't exist. #{__FILE__} -h for more help" ; exit! 127 end
 	elsif %w(--read -r).include? arg3[0]
-		if File.exist?(arg3[1]) then text = File.read(arg3[1]).gsub("\n", ' ') else warn "File Doesn't exist. #{__FILE__} -h for more help" ; exit! 127 end
+		if File.exist?(arg3[1]) then text = File.read(arg3[1]).gsub("\n", ' ') else puts "File Doesn't exist. #{__FILE__} -h for more help" ; exit! 127 end
 
 	else text = File.read('cowspeak_files/fortunes.data').split('%').sample.gsub("\n", ' ')
 	end
@@ -188,24 +213,5 @@ begin
 	puts "\033[5m", "  " * a.length + think * 3 + "\n" + "  " * a.length + think * 2 + "\n" + "  " * a.length + think + "\n", "\033[0m", a
 
 rescue Exception => e
-	warn "Uh oh! Sorry, #{__FILE__} Crashed."
-	print "Select one of the following:
-		1. Exit.
-		2. Show the usage (#{__FILE__} -h)
-		3. Show Error Details.
-		4. Save Error Details to a Log File.
-		- Default: 1 (Exit).
-		-> Choose: "
-
-	case STDIN.gets.to_i
-		when 1 then exit!
-		when 2 then help.call
-		when 3 then warn e
-		when 4 then
-			log_file = File.open('log.txt', 'a+')
-			log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{e}")
-			warn 'The error has been written to log.txt file.'
-			log_file.close
-		default exit!
-	end
+	exception_handle.call(e)
 end
