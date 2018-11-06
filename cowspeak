@@ -2,7 +2,7 @@
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
 
-help = ->() {
+help = -> {
 puts <<EOF
 Hi, my name is cowspeak. I speak a quote on your terminal.
 
@@ -13,14 +13,16 @@ Usage: Run me directly from the command line with ruby interpreter or with your 
 
 Pass me some arguments:
 	Available arguments are:
-		--text= or -t=                   Display a custom text.
-		--read= or -r=                   Read a file.
-		--file= or -f=                   Specify the ASCII file path to display your own ASCII art.
-		--help or -h                     Display this help.
-		--documentation or -d            Display the whole documentation including this help.
-		--manual or -m                   Display a manual. Same as documentation.
-		--art or -a                      Display a tutorial on adding your own art.
-		--update or -u                   Update fortune database from Github.
+		--art or -a                     Display a tutorial on adding your own art.
+		--blink or -b			Blink the texts (not supported in all terminals yet).
+		--documentation or -d           Display the whole documentation including this help.
+		--file= or -f=			Specify the ASCII file path to display your own ASCII art.
+		--fortune			Show a fortune without any art.
+		--help or -h                    Display this help.
+		--manual or -m                  Display a manual. Same as documentation.
+		--read or -r=                   Read a file.
+		--text= or -t=                  Display a custom text.
+		--update or -u                  Update fortune database from Github.
 
 This is the help page, for more help with examples, run #{__FILE__} --documentation or #{__FILE__} -d
 EOF
@@ -40,16 +42,20 @@ exception_handle = proc { |exception|
 	case STDIN.gets.to_i
 		when 1 then exit!
 		when 2 then help.call
-		when 3 then puts exception ; exit! 125
+		when 3 then puts exception
 		when 4 then
 			log_file = File.open('log.txt', 'a+')
 			log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{exception}")
 			puts 'The error has been written to log.txt file.'
 			log_file.close
-			exit! 126
-		else exit!
 	end
+	exit!
 }
+
+if ARGV.include?('--blink') or ARGV.include?('-b')
+	puts "\033[5m"
+	at_exit do puts "\033[0m" end
+end
 
 if ARGV.include?('--documentation') or ARGV.include?('-d') or ARGV.include?('--manual') or ARGV.include?('-m')
 puts <<EOF
@@ -62,13 +68,16 @@ Usage: Run me directly from the command line with ruby interpreter or with your 
 
 Pass me some arguments:
 	Available arguments are:
-		--text= or -t=                   Display a custom text.
-		--read or -r=                    Read a file.
-		--file= or -f=                   Specify the ASCII file path to display your own ASCII art.
-		--help or -h                     Display this help.
-		--documentation or -d            Display the whole documentation including this help.
-		--art or -a                      Display a tutorial on adding your own art.
-		--update or -u                   Update fortune database from Github.
+		--art or -a                     Display a tutorial on adding your own art.
+		--blink or -b			Blink the texts (not supported in all terminals yet).
+		--documentation or -d           Display the whole documentation including this help.
+		--file= or -f=                  Specify the ASCII file path to display your own ASCII art.
+		--fortune			Show a fortune without any art.
+		--help or -h                    Display this help.
+		--manual or -m                  Display a manual. Same as documentation.
+		--read or -r=                   Read a file.
+		--text= or -t=                  Display a custom text.
+		--update or -u                  Update fortune database from Github.
 
 		Examples:
 			For custom text:
@@ -100,7 +109,7 @@ Pass me some arguments:
 		You need not to update the database for months. It's fine if you never update the database. There are many fun inside the provided database.
 		However, if the database gets deleted, run #{__FILE__} --update or #{__FILE__} -u. You can occasionally run an update - won't harm anything.
 EOF
-exit! 0
+exit 0
 end
 
 if ARGV.include?('--art') or ARGV.include?('-a')
@@ -130,7 +139,7 @@ You can create your own art. Here's a short introduction on how to do that:
 	- To use your custom art, just run #{__FILE__} --file='your_art.art'
 	- If it's located in another directory then #{__FILE__} --file='directory/your_art.art'
 EOF
-exit! 0
+exit 0
 end
 
 help.call if ARGV.include?('--help') or ARGV.include?('-h')
@@ -143,7 +152,7 @@ if ARGV.include?('--update') or ARGV.include?('-u')
 			file.puts(data)
 			file.close
 			puts "The fortunes have been updated."
-			exit! 0
+			exit 0
 		else
 			puts "Sorry for the inconvenience. The site doesn't seem to be valid anymore."
 			puts "If the problem persists, contact: souravgoswami@protonmail.com."
@@ -161,6 +170,15 @@ if ARGV.include?('--update') or ARGV.include?('-u')
 	rescue Exception => e
 		exception_handle.call(e)
 	end
+end
+
+if ARGV.include?('--fortune')
+	begin
+		puts File.read('cowspeak_files/fortunes.data').split("\n%\n").sample
+	rescue Exception => e
+		exception_handle.call(e)
+	end
+	exit
 end
 
 begin
@@ -193,7 +211,7 @@ begin
 	elsif %w(--read -r).include? arg3[0]
 		if File.exist?(arg3[1]) then text = File.read(arg3[1]).gsub("\n", ' ') else puts "File Doesn't exist. #{__FILE__} -h for more help" ; exit! 127 end
 
-	else text = File.read('cowspeak_files/fortunes.data').split('%').sample.gsub("\n", ' ')
+	else text = File.read('cowspeak_files/fortunes.data').split("\n%\n").sample.gsub("\n", ' ')
 	end
 
 	print ' //' + init + "\\\\\n"
@@ -210,7 +228,7 @@ begin
 	print ' \\\\' + init + "//\n"
 	a = File.readlines(file)[2..-1]
 	think = %w[. o O].sample
-	puts "\033[5m", "  " * a.length + think * 3 + "\n" + "  " * a.length + think * 2 + "\n" + "  " * a.length + think + "\n", "\033[0m", a
+	puts "  " * a.length + think * 3 + "\n" + "  " * a.length + think * 2 + "\n" + "  " * a.length + think + "\n", a
 
 rescue Exception => e
 	exception_handle.call(e)
