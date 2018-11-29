@@ -13,7 +13,6 @@ Pass me some arguments:
 	--art or -a                     Display a tutorial on adding your own art.
 	--blink or -b			Blink the texts (not supported in all terminals yet).
 	--documentation or -d           Display the whole documentation including this help.
-	--download or -dl		Download missing files and database from Github.
 	--file= or -f=			Specify the ASCII file path to display your own ASCII art.
 	--fortune			Show a fortune without any art.
 	--help or -h                    Display this help.
@@ -75,7 +74,6 @@ Pass me some arguments:
 	--art or -a                     Display a tutorial on adding your own art.
 	--blink or -b			Blink the texts (not supported in all terminals yet).
 	--documentation or -d           Display the whole documentation including this help.
-	--download or -dl		Download missing files and database from Github.
 	--file= or -f=			Specify the ASCII file path to display your own ASCII art.
 	--fortune			Show a fortune without any art.
 	--help or -h                    Display this help.
@@ -147,80 +145,9 @@ end
 
 help.call if ARGV.include?('--help') or ARGV.include?('-h')
 
-if ARGV.include?('--download') or ARGV.include?('-dl')
-	begin
-		require 'net/http'
-
-		unless File.exists?('/usr/share/cowspeak/')
-			Dir.mkdir('/usr/share/cowspeak/')
-			puts 'Created directory /usr/share/cowspeak/'
-		end
-
-		data = Net::HTTP.get(URI('https://raw.githubusercontent.com/bmc/fortunes/master/fortunes')).chomp
-		unless data.include?('404: Not Found')
-			File.open('/usr/share/cowspeak/fortunes.data', 'w') { |file| file.puts(data) }
-			puts "The fortunes database has been downloaded and installed to /usr/share/cowspeak/fortunes."
-
-			unless File.exists?('/usr/share/cowspeak/arts')
-				Dir.mkdir('/usr/share/cowspeak/arts')
-				puts 'Created directory /usr/share/cowspeak/arts/'
-			end
-
-			data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/cow.art')).chomp
-			File.open('/usr/share/cowspeak/arts/cow.art', 'w') { |file| file.write(data) }
-			puts "Successfully downloaded and installed an art file:\n#{data}"
-
-			data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/dolphin.art')).chomp
-			File.open('/usr/share/cowspeak/arts/dolphin.art', 'w') { |file| file.write(data) }
-			puts "Successfully downloaded and installed an art file:\n#{data}"
-
-			data =Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/killer_squirrels.art')).chomp
-			File.open('/usr/share/cowspeak/arts/killer_squirrels.art', 'w') { |file| file.write(data) }
-			puts "Successfully downloaded and installed an art file:\n#{data}"
-
-			data =Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/penguin.art')).chomp
-			File.open('/usr/share/cowspeak/arts/penguin.art', 'w') { |file| file.write(data) }
-			puts "Successfully downloaded and installed an art file:\n#{data}"
-
-			data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/spider.art')).chomp
-			File.open('/usr/share/cowspeak/arts/spider.art', 'w') { |file| file.write(data) }
-			puts "Successfully downloaded and installed an art file:\n#{data}"
-
-			data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/squirrels.art')).chomp
-			File.open('/usr/share/cowspeak/arts/squirrels.art', 'w') { |file| file.write(data) }
-			puts "Successfully downloaded and installed an art file:\n#{data}"
-
-			puts "All Done, Please Restart the Application"
-
-			exit! 0
-
-		else
-			puts "Sorry for the inconvenience. Something went terribly wrong (can't access one of the file)."
-			puts "If the problem persists, contact: souravgoswami@protonmail.com."
-			exit! 100
-		end
-
-	rescue SocketError
-		puts 'Do you have an internet connection?'
-		puts "1. Exit.\n2. Retry.\nDefault: 1 (Exit)."
-		case STDIN.gets.to_i
-			when 2 then retry
-			else exit! 65
-		end
-		exit! 2
-
-	rescue Errno::EACCES
-		puts 'Requires root privilege to download and access /usr/share/cowspeak/ directory. Please run it with proper permission.'
-		exit!
-
-	rescue Exception => e
-		exception_handle.call(e)
-	end
-end
-
 if ARGV.include?('--fortune')
 	begin
-		puts File.read('/usr/share/cowspeak/fortunes.data').split("\n%\n").sample
+		puts File.read('cowspeak_files/fortunes.data').split("\n%\n").sample
 	rescue Exception => e
 		exception_handle.call(e)
 	end
@@ -262,7 +189,7 @@ begin
 	if %w(--file -f).include? arg1[0] then file = arg1[1]
 		elsif %w(--file -f).include? arg2[0] then file = arg2[1]
 		elsif %w(--file -f).include? arg3[0] then file = arg3[1]
-		else file = "/usr/share/cowspeak/arts/#{%w(cow.art squirrels.art killer_squirrels.art).sample}"
+		else file = "cowspeak_files/arts/#{%w(cow.art squirrels.art killer_squirrels.art).sample}"
 	end
 	unless File.file?(file)
 		puts 'Looks like the art file doesn\'t exist'
@@ -281,7 +208,7 @@ begin
 		if File.exist?(arg2[1]) then text = File.read(arg2[1]).gsub("\n", ' ') else puts "File Doesn't exist. #{__FILE__} -h for more help" ; exit! 127 end
 	elsif %w(--read -r).include? arg3[0]
 		if File.exist?(arg3[1]) then text = File.read(arg3[1]).gsub("\n", ' ') else puts "File Doesn't exist. #{__FILE__} -h for more help" ; exit! 127 end
-	else text = File.read('/usr/share/cowspeak/fortunes.data').split("\n%\n").sample.gsub("\n", ' ')
+	else text = File.read('cowspeak_files/fortunes.data').split("\n%\n").sample.gsub("\n", ' ')
 	end
 
 	all_chars += ' //' + init + "\\\\\n"
