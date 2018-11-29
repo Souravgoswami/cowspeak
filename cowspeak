@@ -150,10 +150,21 @@ help.call if ARGV.include?('--help') or ARGV.include?('-h')
 if ARGV.include?('--download') or ARGV.include?('-dl')
 	begin
 		require 'net/http'
+
+		unless File.exists?('/usr/share/cowspeak/')
+			Dir.mkdir('/usr/share/cowspeak/')
+			puts 'Created directory /usr/share/cowspeak/'
+		end
+
 		data = Net::HTTP.get(URI('https://raw.githubusercontent.com/bmc/fortunes/master/fortunes')).chomp
 		unless data.include?('404: Not Found')
 			File.open('/usr/share/cowspeak/fortunes.data', 'w') { |file| file.puts(data) }
 			puts "The fortunes database has been downloaded and installed to /usr/share/cowspeak/fortunes."
+
+			unless File.exists?('/usr/share/cowspeak/arts')
+				Dir.mkdir('/usr/share/cowspeak/arts')
+				puts 'Created directory /usr/share/cowspeak/arts/'
+			end
 
 			data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/cow.art')).chomp
 			File.open('/usr/share/cowspeak/arts/cow.art', 'w') { |file| file.write(data) }
@@ -178,6 +189,8 @@ if ARGV.include?('--download') or ARGV.include?('-dl')
 			data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/squirrels.art')).chomp
 			File.open('/usr/share/cowspeak/arts/squirrels.art', 'w') { |file| file.write(data) }
 			puts "Successfully downloaded and installed an art file:\n#{data}"
+
+			puts "All Done, Please Restart the Application"
 
 			exit! 0
 
