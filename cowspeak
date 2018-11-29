@@ -2,34 +2,33 @@
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
 
-help = -> {
+help = ->{
 puts <<EOF
 Hi, my name is cowspeak. I speak a quote on your terminal.
 
-Usage: Run me directly from the command line with ruby interpreter or with your shell, I will show you a fortune with no aruguments:
-		1. ruby #{__FILE__}
-		2. chmod 777 #{__FILE__}
-	    	    ./#{__FILE__}
+Usage: Run me from the command line without any arguments, and I will show you a fortune.
 
 Pass me some arguments:
 	Available arguments are:
-		--art or -a                     Display a tutorial on adding your own art.
-		--blink or -b			Blink the texts (not supported in all terminals yet).
-		--documentation or -d           Display the whole documentation including this help.
-		--file= or -f=			Specify the ASCII file path to display your own ASCII art.
-		--fortune			Show a fortune without any art.
-		--help or -h                    Display this help.
-		--manual or -m                  Display a manual. Same as documentation.
-		--read or -r=                   Read a file.
-		--text= or -t=                  Display a custom text.
-		--update or -u                  Update fortune database from Github.
+	--art or -a                     Display a tutorial on adding your own art.
+	--blink or -b			Blink the texts (not supported in all terminals yet).
+	--documentation or -d           Display the whole documentation including this help.
+	--download or -dl		Download missing files and database from Github.
+	--file= or -f=			Specify the ASCII file path to display your own ASCII art.
+	--fortune			Show a fortune without any art.
+	--help or -h                    Display this help.
+	--manual or -m                  Display a manual. Same as documentation.
+	--no-colour or -nc		No RGB colour.
+	--read or -r=                   Read a file.
+	--rotate-colour or -rc		Rotate the RGB colours.
+	--text= or -t=                  Display a custom text.
 
 This is the help page, for more help with examples, run #{__FILE__} --documentation or #{__FILE__} -d
 EOF
 exit! 0
 }
 
-exception_handle = proc { |exception|
+exception_handle = ->(error) {
 	puts "Uh oh! Sorry, #{__FILE__} Crashed."
 	print "Select one of the following:
 		1. Exit.
@@ -42,42 +41,49 @@ exception_handle = proc { |exception|
 	case STDIN.gets.to_i
 		when 1 then exit!
 		when 2 then help.call
-		when 3 then puts exception
+		when 3 then puts error ; exit! 125
 		when 4 then
-			log_file = File.open('log.txt', 'a+')
-			log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{exception}")
-			puts 'The error has been written to log.txt file.'
-			log_file.close
+			File.open('/tmp/cowspeak-log.txt', 'a+') do |log_file|
+				log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{error}")
+				puts 'The error has been written to /tmp/cowspeak-log.txt'
+			end
+			exit! 126
+		else exit!
 	end
-	exit!
 }
 
+blink = false
 if ARGV.include?('--blink') or ARGV.include?('-b')
-	puts "\033[5m"
+	blink = true
 	at_exit do puts "\033[0m" end
 end
+
+coloured = true
+coloured = false if ARGV.include?('--no-colour') or ARGV.include?('-nc')
+
+rotate_colour = false
+rotate_colour = true if ARGV.include?('--rotate-colour')  or ARGV.include?('-rc')
 
 if ARGV.include?('--documentation') or ARGV.include?('-d') or ARGV.include?('--manual') or ARGV.include?('-m')
 puts <<EOF
 Hi, my name is cowspeak. I speak a quote on your terminal.
 
-Usage: Run me directly from the command line with ruby interpreter or with your shell, I will show you a fortune with no aruguments:
-		1. ruby #{__FILE__}
-		2. chmod 777 #{__FILE__}
-	    	    ./#{__FILE__}
+Usage: Run me from the command line without any arguments, and I will show you a fortune.
 
 Pass me some arguments:
 	Available arguments are:
-		--art or -a                     Display a tutorial on adding your own art.
-		--blink or -b			Blink the texts (not supported in all terminals yet).
-		--documentation or -d           Display the whole documentation including this help.
-		--file= or -f=                  Specify the ASCII file path to display your own ASCII art.
-		--fortune			Show a fortune without any art.
-		--help or -h                    Display this help.
-		--manual or -m                  Display a manual. Same as documentation.
-		--read or -r=                   Read a file.
-		--text= or -t=                  Display a custom text.
-		--update or -u                  Update fortune database from Github.
+	--art or -a                     Display a tutorial on adding your own art.
+	--blink or -b			Blink the texts (not supported in all terminals yet).
+	--documentation or -d           Display the whole documentation including this help.
+	--download or -dl		Download missing files and database from Github.
+	--file= or -f=			Specify the ASCII file path to display your own ASCII art.
+	--fortune			Show a fortune without any art.
+	--help or -h                    Display this help.
+	--manual or -m                  Display a manual. Same as documentation.
+	--no-colour or -nc		No RGB colour.
+	--read or -r=                   Read a file.
+	--rotate-colour or -rc		Rotate the RGB colours.
+	--text= or -t=                  Display a custom text.
 
 		Examples:
 			For custom text:
@@ -94,22 +100,19 @@ Pass me some arguments:
 
 			NOTE: --text with --read or -t with -r will not read the file, but show the custom text.
 					Here's the priority of them, the higher the priority, the higher chances they are considered.
-
 						Priority 1: text
 						Priority 2: read
 	Help:
 		#{__FILE__} -h or --help for the help message.
 		#{__FILE__} --documentation or #{__FILE__} -d for this documentation.
-
 	Creating Custom Art:
 		You can make your own art. Run #{__FILE__} --art or #{__FILE__} -a for more information.
-
 	Update Fortune Database:
 		This is just an extra feature. Update synchronizes your fortunes.data with https://raw.githubusercontent.com/bmc/fortunes/master/fortunes.
 		You need not to update the database for months. It's fine if you never update the database. There are many fun inside the provided database.
 		However, if the database gets deleted, run #{__FILE__} --update or #{__FILE__} -u. You can occasionally run an update - won't harm anything.
 EOF
-exit 0
+exit! 0
 end
 
 if ARGV.include?('--art') or ARGV.include?('-a')
@@ -118,7 +121,7 @@ You can create your own art. Here's a short introduction on how to do that:
 	1. Create an empty document in your computer with 'art' extension (myart.art).
 	2. Edit the document and Type your name in the first line. If you copy someone's work, provide the artist's name.
 		For example:
-			\033[05mCreated by #{('aaa'..'zzz').to_a.sample}man.\033[0m
+			\033[5mCreated by #{('aaa'..'zzz').to_a.sample}man.\033[0m
 	3. Leave one more empty line after your name.
 	4. Type your characters and draw your ASCII art.
 		Format: What you've done should looks like this:
@@ -135,30 +138,55 @@ You can create your own art. Here's a short introduction on how to do that:
 
 	- You can copy and paste other's arts, just follow the above rules.
 	- For more examples, look at other files.
-	- You can use other files. By default they are located in cowspeak_files/arts/
+	- You can use other files. By default they are located in /usr/share/cowspeak/arts/
 	- To use your custom art, just run #{__FILE__} --file='your_art.art'
 	- If it's located in another directory then #{__FILE__} --file='directory/your_art.art'
 EOF
-exit 0
+exit! 0
 end
 
 help.call if ARGV.include?('--help') or ARGV.include?('-h')
-if ARGV.include?('--update') or ARGV.include?('-u')
+
+if ARGV.include?('--download') or ARGV.include?('-dl')
 	begin
 		require 'net/http'
-		file = File.open('cowspeak_files/fortunes.data', 'a+')
 		data = Net::HTTP.get(URI('https://raw.githubusercontent.com/bmc/fortunes/master/fortunes')).chomp
 		unless data.include?('404: Not Found')
-			file.puts(data)
-			file.close
-			puts "The fortunes have been updated."
-			exit 0
+			File.open('/usr/share/cowspeak/fortunes.data', 'w') { |file| file.puts(data) }
+			puts "The fortunes database has been downloaded and installed to /usr/share/cowspeak/fortunes."
+
+			data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/cow.art')).chomp
+			File.open('/usr/share/cowspeak/arts/cow.art', 'w') { |file| file.write(data) }
+			puts "Successfully downloaded and installed an art file:\n#{data}"
+
+			data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/dolphin.art')).chomp
+			File.open('/usr/share/cowspeak/arts/dolphin.art', 'w') { |file| file.write(data) }
+			puts "Successfully downloaded and installed an art file:\n#{data}"
+
+			data =Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/killer_squirrels.art')).chomp
+			File.open('/usr/share/cowspeak/arts/killer_squirrels.art', 'w') { |file| file.write(data) }
+			puts "Successfully downloaded and installed an art file:\n#{data}"
+
+			data =Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/penguin.art')).chomp
+			File.open('/usr/share/cowspeak/arts/penguin.art', 'w') { |file| file.write(data) }
+			puts "Successfully downloaded and installed an art file:\n#{data}"
+
+			data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/spider.art')).chomp
+			File.open('/usr/share/cowspeak/arts/spider.art', 'w') { |file| file.write(data) }
+			puts "Successfully downloaded and installed an art file:\n#{data}"
+
+			data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/squirrels.art')).chomp
+			File.open('/usr/share/cowspeak/arts/squirrels.art', 'w') { |file| file.write(data) }
+			puts "Successfully downloaded and installed an art file:\n#{data}"
+
+			exit! 0
+
 		else
-			puts "Sorry for the inconvenience. The site doesn't seem to be valid anymore."
+			puts "Sorry for the inconvenience. Something went terribly wrong (can't access one of the file)."
 			puts "If the problem persists, contact: souravgoswami@protonmail.com."
-			puts "#{__FILE__} can get an update. For the time being, stick with the current database you have, please..."
 			exit! 100
 		end
+
 	rescue SocketError
 		puts 'Do you have an internet connection?'
 		puts "1. Exit.\n2. Retry.\nDefault: 1 (Exit)."
@@ -166,7 +194,12 @@ if ARGV.include?('--update') or ARGV.include?('-u')
 			when 2 then retry
 			else exit! 65
 		end
-		exit! 127
+		exit! 2
+
+	rescue Errno::EACCES
+		puts 'Requires root privilege to download and access /usr/share/cowspeak/ directory. Please run it with proper permission.'
+		exit!
+
 	rescue Exception => e
 		exception_handle.call(e)
 	end
@@ -174,7 +207,7 @@ end
 
 if ARGV.include?('--fortune')
 	begin
-		puts File.read('cowspeak_files/fortunes.data').split("\n%\n").sample
+		puts File.read('/usr/share/cowspeak/fortunes.data').split("\n%\n").sample
 	rescue Exception => e
 		exception_handle.call(e)
 	end
@@ -182,7 +215,32 @@ if ARGV.include?('--fortune')
 end
 
 begin
-	count, i, init, init_length = 0, 0, "≡" * (%x(tput cols).to_i/2), (%x(tput cols ).to_i/2)
+	chars = ->(string) {
+			if coloured
+				chars = string.split("\n")
+				selected_colours = [ (196..200), (202..207), (208..213), (82..87), (40..45), (214..219), (112..117) ].sample.to_a
+				selected_colour_array = [selected_colours, selected_colours.reverse].sample
+
+				for c in chars
+					index = 0
+					for i in (0..c.length - 1) do
+						index += 1 if (i % (c.length/(selected_colour_array.length)) == 0) unless i == 0 || c.length <= selected_colour_array.length
+						index = selected_colour_array.size - 1 if index >= selected_colour_array.size
+
+						print "\033[5m" if blink
+						print("\033[38;5;#{selected_colour_array[index]}m#{c[i]}\033[0m")
+					end
+					puts
+					selected_colour_array.rotate! if rotate_colour
+					selected_colour_array.shift if selected_colour_array.length > 3
+				end
+		else
+			print string, "\n"
+		end
+	}
+
+	all_chars = ''
+	count, i, init, init_length = 0, 0, "=" * (%x(tput cols).to_i/2), (%x(tput cols ).to_i/2)
 	arg1, arg2, arg3 = [], [], []
 	arg1 = ARGV[0].split('=').map(&:chomp) unless ARGV[0].nil?
 	arg2 = ARGV[1].split('=').map(&:chomp) unless ARGV[1].nil?
@@ -191,7 +249,7 @@ begin
 	if %w(--file -f).include? arg1[0] then file = arg1[1]
 		elsif %w(--file -f).include? arg2[0] then file = arg2[1]
 		elsif %w(--file -f).include? arg3[0] then file = arg3[1]
-		else file = "cowspeak_files/arts/#{%w(cow.art squirrels.art killer_squirrels.art).sample}"
+		else file = "/usr/share/cowspeak/arts/#{%w(cow.art squirrels.art killer_squirrels.art).sample}"
 	end
 	unless File.file?(file)
 		puts 'Looks like the art file doesn\'t exist'
@@ -210,25 +268,26 @@ begin
 		if File.exist?(arg2[1]) then text = File.read(arg2[1]).gsub("\n", ' ') else puts "File Doesn't exist. #{__FILE__} -h for more help" ; exit! 127 end
 	elsif %w(--read -r).include? arg3[0]
 		if File.exist?(arg3[1]) then text = File.read(arg3[1]).gsub("\n", ' ') else puts "File Doesn't exist. #{__FILE__} -h for more help" ; exit! 127 end
-
-	else text = File.read('cowspeak_files/fortunes.data').split("\n%\n").sample.gsub("\n", ' ')
+	else text = File.read('/usr/share/cowspeak/fortunes.data').split("\n%\n").sample.gsub("\n", ' ')
 	end
 
-	print ' //' + init + "\\\\\n"
-	text.chars do |c|
-		print count == 0 ? "|| #{c}" : "#{c}"
+	all_chars += ' //' + init + "\\\\\n"
+	text.each_char do |c|
+		all_chars += count == 0 ? "|| #{c}" : "#{c}"
 		count += 1
 		i += 1
 		if (count >= init_length - 10 and c == " ") or i == text.length or count == init_length
-			print " " * (init_length - count + 1) + "||" + "\n"
+			all_chars += " " * (init_length - count + 1) + "||" + "\n"
 			count = 0
 		end
 	end
 
-	print ' \\\\' + init + "//\n"
+	all_chars += ' \\\\' + init + "//\n"
 	a = File.readlines(file)[2..-1]
 	think = %w[. o O].sample
-	puts "  " * a.length + think * 3 + "\n" + "  " * a.length + think * 2 + "\n" + "  " * a.length + think + "\n", a
+	all_chars += "  " * a.length + think * 3 + "\n" + "  " * a.length + think * 2 + "\n" + "  " * a.length + think + "\n" + a.join
+
+	chars.call(all_chars)
 
 rescue Exception => e
 	exception_handle.call(e)
