@@ -269,7 +269,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 
 			write_to = %w(cow dolphin killer_squirrels penguin spider squirrels)
 
-			raise IOError, "Developer, the uris has to match write_to size, line: #{__LINE__}" unless write_to.size == uris
+			raise IOError, "Developer, the uris has to match write_to size, line: #{__LINE__}" unless write_to.size == uris.size
 
 			uris.each_with_index do |uri, index|
 				data = Net::HTTP.get(URI(uri))
@@ -289,10 +289,9 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 	rescue SocketError
 		chars.call 'Do you have an internet connection?'
 		chars.call "1. Exit.\n2. Retry.\nDefault: 1 (Exit)."
-		case STDIN.gets.to_i
-			when 2 then retry
-			else exit! 65
-		end
+
+		retry if STDIN.gets.to_i == 2
+
 		exit! 2
 
 	rescue Errno::EACCES
