@@ -1,6 +1,6 @@
 #!/usr/bin/ruby -w
 # Written by Sourav Goswami
-# Cowspeak version 1.8
+# Cowspeak version 1.85
 # The GNU General Public License v3.0
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
@@ -125,19 +125,19 @@ All the Available arguments:
   --blink or -b			Blink the texts (not supported in all terminals yet).
   --documentation or -d         Display the whole documentation including this help.
   --download or -dl		Download missing files and database from Github.
-  --file= or -f=		Specify the ASCII file path to display your own ASCII art.
+  --file=<path> or -f=<path>	Specify the ASCII file path to display your own ASCII art.
   --help or -h                  Display this help.
   --invert or -inv		Invert everything text! Read from right to left in English!!
   --manual or -m                Display a manual. Same as documentation.
-  --net -r -n			Read data from a website (in curl format).
+  --net=<url> or -n=<url>	Read data from a website (in curl format).
   --no-art or -na		Don't display the animal.
   --no-colour or -nc		Don't colourize the output.
   --no-text or -nt		Don't show any text, and only show the animal.
-  --read or -r=			Read a file.
+  --read=<file> or -r=<file>	Read a file.
   --reverse or -rev		Cowspeak reads upside down!
   --rotate-colour or -rc	Rotate the output colours in each line.
   --show-arts or -sa		Show all available installed arts in the default directory.
-  --text= or -t=          	Display a custom text.
+  --text=<text> or -t=<text>	Display a custom text.
   --version or -v		Display the current #{__FILE__} version.
 
 This is the help page, for more help with examples, run #{__FILE__} --documentation or #{__FILE__} -d")
