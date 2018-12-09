@@ -9,7 +9,7 @@ PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
 # Set the path if root, comment the previous path
 # PATH = "/usr/share/cowspeak/"
 
-VERSION = "Cowspeak version 1.8"
+VERSION = "Cowspeak version 1.85"
 STDIN.sync, STDOUT.sync = true, true
 
 Terminal_Width = %x(tput cols).to_i
