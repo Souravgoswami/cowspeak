@@ -4,7 +4,7 @@
 # The GNU General Public License v3.0
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
-PATH = "#{Dir.pwd}/cowspeak_files/"
+PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
 
 # Set the path if root, comment the previous path
 # PATH = "/usr/share/cowspeak/"
