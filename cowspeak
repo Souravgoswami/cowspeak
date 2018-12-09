@@ -288,7 +288,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		data = Net::HTTP.get(URI('https://raw.githubusercontent.com/bmc/fortunes/master/fortunes'))
 		unless data.include?('404: Not Found')
 			File.open(PATH + "fortunes.data", 'w') { |file| file.puts(data) }
-			chars.call "The fortunes database has been downloaded and installed to #{PATH}/fortunes."
+			chars.call "The fortunes database has been downloaded and installed to #{PATH}fortunes."
 
 			unless File.exist?(PATH + "arts")
 				Dir.mkdir(PATH + "arts")
