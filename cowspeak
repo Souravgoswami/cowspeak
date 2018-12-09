@@ -1,6 +1,6 @@
-#!/usr/bin/ruby -W0
+#!/usr/bin/ruby -w
 # Written by Sourav Goswami
-# Cowspeak version 1.7
+# Cowspeak version 1.8
 # The GNU General Public License v3.0
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
@@ -9,7 +9,11 @@ PATH = "#{Dir.pwd}/cowspeak_files/"
 # Set the path if root, comment the previous path
 # PATH = "/usr/share/cowspeak/"
 
+VERSION = "Cowspeak version 1.8"
 STDIN.sync, STDOUT.sync = true, true
+
+Terminal_Width = %x(tput cols).to_i
+
 coloured, blink = true, false
 
 # Check if the output should colourized
@@ -34,29 +38,54 @@ if ARGV.include?('--rotate-colour')  || ARGV.include?('-rc')
 	rotate_colour = true
 end
 
+invert = false
+if ARGV.include?('--invert') || ARGV.include?('-inv')
+	ARGV.delete('--invert')
+	ARGV.delete('-inv')
+	invert = true
+end
+
+reverse = false
+if ARGV.include?('--reverse') || ARGV.include?('-rev')
+	ARGV.delete('--reverse')
+	ARGV.delete('-rev')
+	reverse = true
+end
+
+display_text = true
+if ARGV.include?('--no-text') || ARGV.include?('-nt')
+	ARGV.delete('--no-text')
+	ARGV.delete('-nt')
+	display_text = false
+end
+
 chars = ->(string) do
+	string.reverse! if invert
+
+	enum = string.split("\n").each unless reverse
+	enum = string.split("\n").reverse_each if reverse
+
 	if coloured
-		characters = string.split("\n")
-		selected_colours = [(196..200), (202..207), (208..213), (82..87), (40..45), (214..219),
-		(112..117), (142..147), (46..51), (208..213)].sample.to_a
+		selected_colour = [(196..201), (202..207), (208..213), (82..87), (40..45), (214..219),(112..117),
+				(142..147), (46..51), (208..213), (28..33), (34..39), [33, 39, 45, 44, 43, 42, 41]].sample
+		selected_colour_array = [selected_colour, selected_colour.reverse_each].sample.to_a
 
-		selected_colour_array = [selected_colours, selected_colours.reverse].sample
-
-		for c in characters
+		enum.each do |c|
 			index = 0
-			clength, arr_len = c.length, selected_colour_array.length
-			clength.times do |i|
-				index += 1 if (i % (clength/arr_len) == 0) unless (i == 0 || i ==  1 || clength <= arr_len || c[i] == " " || index >= arr_len - 1)
+			clength, arr_len = c.length, selected_colour_array.size
+			div = clength/arr_len
 
-				STDOUT.print "\033[5m" if blink
+			STDOUT.print "\033[5m" if blink
+			clength.times do |i|
+				index += 1 if i % div == 0 unless (i == 0 || i ==  1 || clength <= arr_len || index >= arr_len - 1 || c[i] == " ")
 				STDOUT.print("\033[38;5;#{selected_colour_array[index]}m#{c[i]}")
 			end
-			STDOUT.puts
+			STDOUT.puts "\033[0m"
 			selected_colour_array.rotate! if rotate_colour
 		end
 	else
 		STDOUT.print "\033[5m" if blink
-		STDOUT.print string, "\n"
+		enum.each do |c| STDOUT.print c, "\n" end
 	end
 	STDOUT.print("\033[0m")
 end
@@ -72,35 +101,47 @@ end
 
 # Don't run the program if the terminal width is too small (atleast 32 is needed for default arts)
 until %x(tput cols).to_i > 31
-	sleep 0.1
+	sleep 0.5
 	printf "\033[H\033[J"
 	chars.call('The terminal is too narrow. Please make it bigger')
 end
 
-help = ->{
+show_version = false
+if ARGV.include?('--version') || ARGV.include?('-v')
+	ARGV.delete('--version')
+	ARGV.delete('-v')
+	show_version = true
+end
+
+help = ->(documentation=false) {
 chars.call(
 "Hi, my name is cowspeak. I speak a quote on your terminal.
 
 Usage: Run me from the command line without any arguments, and I will show you a fortune.
 
-Pass me some arguments:
-	Available arguments are:
-	--art or -a                     Display a tutorial on adding your own art.
-	--blink or -b			Blink the texts (not supported in all terminals yet).
-	--documentation or -d           Display the whole documentation including this help.
-	--download or -dl		Download missing files and database from Github.
-	--file= or -f=			Specify the ASCII file path to display your own ASCII art.
-	--help or -h                    Display this help.
-	--manual or -m                  Display a manual. Same as documentation.
-	--no-art or -na			Don't display the animal.
-	--net -r -n			Get data from a webisite (in curl format).
-	--no-colour or -nc		Don't colourize the output.
-	--read or -r=                   Read a file.
-	--rotate-colour or -rc		Rotate the output colours in each line.
-	--text= or -t=                  Display a custom text.
+All the Available arguments:
+
+  --art or -a                   Display a tutorial on adding your own art.
+  --blink or -b			Blink the texts (not supported in all terminals yet).
+  --documentation or -d         Display the whole documentation including this help.
+  --download or -dl		Download missing files and database from Github.
+  --file= or -f=		Specify the ASCII file path to display your own ASCII art.
+  --help or -h                  Display this help.
+  --invert or -inv		Invert everything text! Read from right to left in English!!
+  --manual or -m                Display a manual. Same as documentation.
+  --net -r -n			Read data from a website (in curl format).
+  --no-art or -na		Don't display the animal.
+  --no-colour or -nc		Don't colourize the output.
+  --no-text or -nt		Don't show any text, and only show the animal.
+  --read or -r=			Read a file.
+  --reverse or -rev		Cowspeak reads upside down!
+  --rotate-colour or -rc	Rotate the output colours in each line.
+  --show-arts or -sa		Show all available installed arts in the default directory.
+  --text= or -t=          	Display a custom text.
+  --version or -v		Display the current #{__FILE__} version.
 
 This is the help page, for more help with examples, run #{__FILE__} --documentation or #{__FILE__} -d")
-exit! 0
+exit! 0 if !documentation
 }
 
 if ARGV.include?('--documentation') || ARGV.include?('-d') || ARGV.include?('--manual') || ARGV.include?('-m')
@@ -109,92 +150,89 @@ ARGV.delete('-d')
 ARGV.delete('--manual')
 ARGV.delete('-m')
 
+help.call(documentation=true)
 chars.call(
-"Hi, my name is cowspeak. I speak a quote on your terminal.
+"
+Examples:
+	For custom text:
+		cowspeak --text='text' / #{__FILE__} -t='text'
 
-Usage: Run me from the command line without any arguments, and I will show you a fortune.
+	To display your own ASCII art:
+		#{__FILE__} --file='path/file.art'
 
-Pass me some arguments:
-	Available arguments are:
-	--art or -a                     Display a tutorial on adding your own art.
-	--blink or -b			Blink the texts (not supported in all terminals yet).
-	--documentation or -d           Display the whole documentation including this help.
-	--download or -dl		Download missing files and database from Github.
-	--file= or -f=			Specify the ASCII file path to display your own ASCII art.
-	--help or -h                    Display this help.
-	--manual or -m                  Display a manual. Same as documentation.
-	--net -r -n			Get data from a webisite (in curl format).
-	--no-art or -na			Don't display the animal.
-	--no-colour or -nc		Don't colourize the output.
-	--read or -r=                   Read a file.
-	--rotate-colour or -rc		Rotate the output colours in each line.
-	--text= or -t=                  Display a custom text.
+	To display your own art with your text:
+		#{__FILE__} --file=directory/file.art --text='your text'
 
-		Examples:
-			For custom text:
-				cowspeak --text='text' / #{__FILE__} -t='text'
+	To read a file from the storage:
+		#{__FILE__} --read='path/file.extension' or #{__FILE__} -r='path/file.extension'
 
-			To display your own ASCII art:
-				#{__FILE__} --file='path/file.art'
+	Pipe another program's output to cowspeak (also accepts arguments):
+		echo hello | #{__FILE__}
+		echo hello | #{__FILE__} --argument -short_argument
 
-			To display your own art with your text:
-				#{__FILE__} --file=directory/file.art --text='your text'
+	To read from the internet in curl format:
+		#{__FILE__} --net=http://www.example.net
+		#{__FILE__} --net=http://www.example.net --argument -short_argument
 
-			To read a file from the storage:
-				#{__FILE__} --read='path/file.extension' or #{__FILE__} -r='path/file.extension'
-
-			Pipe another program's output to cowspeak (also accepts arguments):
-				echo hello | #{__FILE__}
-				echo hello | #{__FILE__} --argument -short_argument
-
-			To read from the internet in curl format:
-				#{__FILE__} --net=http://www.example.net
-				#{__FILE__} --net=http://www.example.net --argument -short_argument
-
-	Help:
-		#{__FILE__} -h or --help for the help message.
-		#{__FILE__} -d or --documentation or --manual or -m for this documentation.
-	Creating Custom Art:
-		You can make your own art. Run #{__FILE__} --art or #{__FILE__} -a for more information.
-	Update Download all the files:
-		If you are missing some files, then please take a moment to download all the files from Github.
-		To do that, run:
-			cowspeak --download or -d
-			It will download all the necessary files. This will download less than 400 KiB files from the internet.
-			NOTE: This argument will write files to #{PATH} directory.
-				     This may need root privilege to do that.")
+Help:
+#{__FILE__} -h or --help for the help message.
+#{__FILE__} -d or --documentation or --manual or -m for this documentation.
+Creating Custom Art:
+You can make your own art. Run #{__FILE__} --art or #{__FILE__} -a for more information.
+Update Download all the files:
+If you are missing some files, then please take a moment to download all the files from Github.
+To do that, run:
+	cowspeak --download or -d
+	It will download all the necessary files. This will download less than 400 KiB files from the internet.
+	NOTE: This argument will write files to #{PATH} directory.
+		     This may need root privilege to do that.
+")
 exit! 0
+end
+
+if ARGV.include?('--show-arts') || ARGV.include?('-sa')
+	Dir.entries(PATH + 'arts').sort.each do |file|
+		unless file == '.' || file == '..'
+			chars.call(File.read(PATH + 'arts/' + file) + "\nPath: #{PATH + 'arts' + file}")
+			puts
+		end
+	end
+	exit! 0
 end
 
 # Show a user friendly tutorial on how to add arts
 if ARGV.include?('--art') || ARGV.include?('-a')
 ARGV.delete('--art')
 ARGV.delete('-a')
+
 puts "
 You can create your own art. Here's a short introduction on how to do that:
 	1. Create an empty document in your computer with 'art' extension (myart.art).
 	2. Edit the document and Type your name in the first line. If you copy someone's work, provide the artist's name.
 		For example:
-			\033[5mCreated by #{('aaa'..'zzz').to_a.sample}man.\033[0m
-	3. Leave one more empty line after your name.
+			\033[5mCreated by #{('aaaa'..'zzzz').to_a.sample}.\033[0m
+	3. The 2nd line is also for crediting. Leave both 1st and 2nd line empty if crediting is not required.
 	4. Type your characters and draw your ASCII art.
 		Format: What you've done should looks like this:
 
-\033[4mLine Number\033[0m			\033[4mArt\033[0m
+\033[4mLine\033[0m				\033[4mArt\033[0m
 
 \033[7;34m1\033[0m			\033[5mThanks to #{('aaaa'..'zzzz').to_a.sample} for this art\033[0m
-\033[7;34m2\033[0m
+\033[7;34m2\033[0m			\033[5mCollected from example.net\033[0m
 \033[7;34m3\033[0m 			\033[5m-------------------------\033[0m
 \033[7;34m4\033[0m 			\033[5m=			=\033[0m
 \033[7;34m5\033[0m 			\033[5m=    Your ASCII Art	=\033[0m
 \033[7;34m6\033[0m 			\033[5m=			=\033[0m
 \033[7;34m7\033[0m 			\033[5m-------------------------\033[0m
 
-	- You can copy and paste other's arts, just follow the above rules.
-	- For more examples, look at other files.
-	- You can use other files. By default they are located in #{PATH}/arts/
-	- To use your custom art, just run #{__FILE__} --file='your_art.art'
-	- If it is located in another directory then #{__FILE__} --file='directory/your_art.art'
+	-> For more examples, look at the other installed files.
+	-> You can use other files as example. By default they are located in #{PATH}arts/
+	-> Run #{__FILE__} --show-arts or -sa to see all the files
+	-> To use your custom art, just run #{__FILE__} --file='your_art.art'
+	-> If it is located in another directory then #{__FILE__} --file='directory/your_art.art'
+
+	=> NOTE: If you use someone's art, make sure you have proper permission to copy.
+	=> The first 2 lines are for crediting, if you don't have to credit, then leave those lines empty.
 "
 exit! 0
 end
@@ -208,8 +246,7 @@ exception_handle = ->(error) {
 		3. Show Error Details.
 		4. Save Error Details to a Log File.
 		5. Contact Developer.
-		- Default: 1 (Exit).")
-		print("\t\t\033[5m->\033[0m Choose: ")
+		-> Choose (Default 1): ")
 
 	case STDIN.gets.to_i
 		when 2 then help.call
@@ -236,6 +273,9 @@ end
 if ARGV.include?('--download') || ARGV.include?('-dl')
 	ARGV.delete('--download')
 	ARGV.delete('-dl')
+
+	chars.call("Download Data from the internet and save them into #{PATH}?(Y/n)")
+	exit if gets.strip.downcase == 'n'
 
 	begin
 		require 'net/http'
@@ -264,22 +304,31 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/killer_squirrels.art',
 				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/penguin.art',
 				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/spider.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/squirrels.art'
+				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/squirrels.art',
+				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/cat.art',
+				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/deer.art',
+				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/dog.art',
+				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/eagle.art',
+				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/hippo.art',
+				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/scorpion.art',
+				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/camel.art',
+				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/turtle.art',
+				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/mouse.art'
 				]
 
-			write_to = %w(cow dolphin killer_squirrels penguin spider squirrels)
+			write_to = %w(cow dolphin killer_squirrels penguin spider squirrels cat deer dog eagle hippo scorpion camel turtle mouse)
 
-			raise IOError, "Developer, the uris has to match write_to size, line: #{__LINE__}" unless write_to.size == uris.size
+			raise SystemExit, "Dear Developer, the uris has to match write_to size, line: #{__LINE__}" unless write_to.size == uris.size
 
 			uris.each_with_index do |uri, index|
 				data = Net::HTTP.get(URI(uri))
 				File.open("#{PATH + "arts/" + write_to[index]}.art", 'w') { |file| file.write(data) }
-				chars.call "\nSuccessfully installed an art file in #{PATH}cowspeak_files/arts/\n#{data.split("\n")[0]}"
+				chars.call "\nSuccessfully installed an art file at #{PATH}cowspeak_files/arts/\n#{data.split("\n")[0..1].join("\n")}"
 			end
 
-			chars.call "All Done, Please Restart the Application"
-
-			exit! 0
+			chars.call "All Done!"
+			chars.call "To see the available arts, type: #{__FILE__} --show-arts or -sa"
+			chars.call "Here's a sweet quote for you!"
 		else
 			chars.call "Sorry for the inconvenience. Something went terribly wrong (can't access one of the file)."
 			chars.call "If the problem persists, contact: souravgoswami@protonmail.com."
@@ -291,7 +340,6 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		chars.call "1. Exit.\n2. Retry.\nDefault: 1 (Exit)."
 
 		retry if STDIN.gets.to_i == 2
-
 		exit! 2
 
 	rescue Errno::EACCES
@@ -316,21 +364,21 @@ begin
 
 	unless file[-1].nil?
 		if file[-1].split('=')[1]
-			unless file.empty? then file = file[-1].split('=')[1]
-				else file = PATH + "arts/#{%w(cow.art squirrels.art killer_squirrels.art).sample}" end
+			file = file[-1].split('=')[1]
 		else
-				file = PATH + "arts/#{%w(cow.art squirrels.art killer_squirrels.art).sample}"
+			file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat hippo deer dog mouse camel).sample}.art"
 		end
 	else
-			file = PATH + "arts/#{%w(cow.art squirrels.art killer_squirrels.art).sample}"
+			file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat hippo deer dog mouse camel).sample}.art"
 	end
 
 	unless File.file?(file)
 		chars.call 'Looks like the art file doesn\'t exist'
 		chars.call "Type #{__FILE__} --download or #{__FILE__} -d to download all the necessary files."
+		chars.call "Type #{__FILE__} --show-arts or #{__FILE__} -sa to see available arts in the default directory..."
 		chars.call "Type #{__FILE__} --help or #{__FILE__} -h for help."
 		chars.call "Type #{__FILE__} --art or #{__FILE__} -a for help regarding art."
-		exit! 127
+		file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat hippo deer dog).sample}.art"
 	end
 
 	text = ''
@@ -353,7 +401,9 @@ begin
 		end
 	end
 
-	if text.empty?
+	if show_version
+		text = VERSION
+	elsif text.empty?
 		text = ARGV.select { |t| t.start_with?('--text=') || t.start_with?('-t=') }
 		text.each do |arg| ARGV.delete(arg) end
 
@@ -378,11 +428,11 @@ begin
 					require 'net/http'
 					text = Net::HTTP.get(URI(uri))
 				rescue Errno::ECONNREFUSED
-					chars.call "Failed to open the URL. Please Make sure you have mentioned the protocol"
+					chars.call "Failed to open the URL. Have you mentioned the protocol?"
 					chars.call "Example:\n\thttp://www.example.net"
 					exit! 1
 				rescue SocketError
-					chars.call "Failed to read the URL. Please make sure you have an active internet connection."
+					chars.call "Failed to read the URL. Do you have an active internet connection?"
 					exit! 2
 				rescue Exception
 					chars.call "Sorry an error occurred while trying to open #{uri}"
@@ -394,29 +444,35 @@ begin
 
 	all_chars = ''
 
-	if show_art
-		text = text.gsub("\n", ' ')
-		count, i, init, init_length = 0, 0, "=" * (%x(tput cols).to_i/2), (%x(tput cols ).to_i/2)
+	if show_art && display_text
+		text = text.gsub("\n", ' ').gsub("\t", ' ')
+		count, init, init_length, break_at = 0, "=" * (Terminal_Width/2), (Terminal_Width/2), text.length - 1
+
 		all_chars += ' //' + init + "\\\\\n"
-		text.each_char do |c|
-			all_chars += count == 0 ? "|| #{c}" : "#{c}"
+
+		text.each_char.with_index do |c, index|
+
+			all_chars += count == 0 ? " ||#{c}" : "#{c}"
 			count += 1
-			i += 1
-			if (count >= init_length - 10 and c == " ") || i == text.length || count == init_length
+
+			if (count >= init_length - 10 && c == " ") || count == init_length || index == break_at
 				all_chars += " " * (init_length - count + 1) + "||" + "\n"
 				count = 0
 			end
 		end
 
-		all_chars += ' \\\\' + init + "//\n"
 		a = File.readlines(file)[2..-1]
-		think = %w[. o O].sample
-		all_chars += "  " * a.length + think * 3 + "\n" + "  " * a.length + think * 2 + "\n" + "  " * a.length + think + "\n" + a.join
-	else
-		all_chars = text
-	end
 
-	chars.call(all_chars)
+		think = %w[. o *].sample
+		max_length = a.map { |c| c.length }.max/2
+
+		chars.call( all_chars + ' \\\\' + init + "//\n")
+		chars.call(" " * max_length + think * 3 + "\n" +
+				" " * max_length + think * 2 + "\n" + " " * max_length + think + "\n\n" + a.join)
+
+	elsif !display_text && show_art then chars.call(File.readlines(file)[2..-1].join)
+	elsif display_text then chars.call(text)
+	end
 
 rescue Exception => e
 	exception_handle.call(e)
