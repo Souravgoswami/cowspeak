@@ -1,6 +1,14 @@
 # cowspeak
 let animals talk on your terminal (needs ncurses (tput) in Linux) (./cowspeak --help for more info)
 
+Screenshots:
+
+![alt text](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/1.png)
+![alt text](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/2.png)
+![alt text](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/3.png)
+![alt text](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/4.png)
+![alt text](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/5.png)
+
 Documentation:
 Hi, my name is cowspeak. I speak a quote on your terminal. I can read quote of the day from brainyquote.com as well.
 In that case, If there is no internet connection, then I tell a fortune quote.
@@ -10,15 +18,28 @@ Usage: Run me directly from the command line with ruby interpreter or with your 
 		2. chmod 777 ./cowspeak
 	    	    ././cowspeak
 
-Pass me some arguments:
-	Available arguments are:
-		--text= or -t=                   Display a custom text.
-		--read or -r=                    Read a file.
-		--file= or -f=                   Specify the ASCII file path to display your own ASCII art.
-		--help or -h                     Display this help.
-		--documentation or -d            Display the whole documentation including this help.
-		--art or -a                      Display a tutorial on adding your own art.
-		--update or -u                   Update fortune database from Github.
+Available arguments:
+  --art or -a                   Display a tutorial on adding your own art.
+  --blink or -b			Blink the texts (not supported in all terminals yet).
+  --documentation or -d         Display the whole documentation including this help.
+  --download or -dl		Download missing files and database from Github.
+  --file=<path> or -f=<path>	Specify the ASCII file path to display your own ASCII art.
+  --help or -h                  Display this help.
+  --invert or -inv		Invert everything text! Read from right to left in English!!
+  --manual or -m                Display a manual. Same as documentation.
+  --net=<url> or -n=<url>	Read data from a website (in curl format).
+  --no-art or -na		Don't display the animal.
+  --no-colour or -nc		Don't colourize the output.
+  --no-text or -nt		Don't show any text, and only show the animal.
+  --read=<file> or -r=<file>	Read a file.
+  --reverse or -rev		Cowspeak reads upside down!
+  --rotate-colour or -rc	Rotate the output colours in each line.
+  --show-arts or -sa		Show all available installed arts in the default directory.
+  --text=<text> or -t=<text>	Display a custom text.
+  --version or -v		Display the current /usr/bin/cowspeak version.
+
+
+NOTE: Please run cowspeak --help for more details. Here's some examples:
 
 		Examples:
 			For custom text:
@@ -33,11 +54,11 @@ Pass me some arguments:
 			To read a file from the storage:
 				./cowspeak --read='path/file.extension' or ./cowspeak -r='path/file.extension'
 
-			NOTE: --text with --read or -t with -r will not read the file, but show the custom text.
-					Here's the priority of them, the higher the priority, the higher chances they are considered.
+			You can also:
+				cat text_file.txt | ./cowspeak
 
-						Priority 1: text
-						Priority 2: read
+			Also, it can read a website (in curl format):
+				cowspeak --net=http://www.example.net
 	Help:
 		./cowspeak -h or --help for the help message.
 		./cowspeak --documentation or ./cowspeak -d for this documentation.
@@ -48,4 +69,6 @@ Pass me some arguments:
 	Update Fortune Database:
 		This is just an extra feature. Update synchronizes your fortunes.data with https://raw.githubusercontent.com/bmc/fortunes/master/fortunes.
 		You need not to update the database for months. It's fine if you never update the database. There are many fun inside the provided database.
-		However, if the database gets deleted, run ./cowspeak --update or ./cowspeak -u. You can occasionally run an update - won't harm anything.
+		However, if the database gets deleted, run ./cowspeak --download or ./cowspeak -d. You can occasionally run an update - won't harm anything.
+
+
