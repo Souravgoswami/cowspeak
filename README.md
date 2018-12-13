@@ -67,7 +67,6 @@ Update Download all the files:
 If you are missing some files, then please take a moment to download all the files from Github.
 To do that, run:
 	cowspeak --download or -d
-	It will download all the necessary files. This will download less than 400 KiB files from the internet.
+	It will download all the necessary files. This will download less than 1 MiB files from the internet.
 	NOTE: This argument will write files to ./cowspeak_files/ directory.
-		     You may need root privilege to do that.
 ```
