@@ -456,7 +456,8 @@ begin
 					exit! 2
 
 				rescue SystemExit, Interrupt
-					puts
+					show_art = true
+					print "\n\n"
 
 				rescue Exception
 					chars.call "Sorry an error occurred while trying to open #{uri}"
@@ -502,7 +503,7 @@ begin
 
 rescue SystemExit, Interrupt
 	printf "\n\n"
-	chars.call('Exitting...')
+	chars.call('Exiting...')
 	puts
 	exit! 0
 
