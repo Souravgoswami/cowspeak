@@ -1,6 +1,6 @@
 #!/usr/bin/ruby -W0
 # Written by Sourav Goswami
-# Cowspeak version 1.85
+# Cowspeak version 1.90
 # The GNU General Public License v3.0
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
@@ -9,10 +9,10 @@ PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
 # Set the path if root, comment the previous path
 # PATH = "/usr/share/cowspeak/"
 
-VERSION = "Cowspeak version 1.85"
+VERSION = "Cowspeak version 1.90"
 STDIN.sync, STDOUT.sync = true, true
 
-Terminal_Width = %x(tput cols).to_i
+Terminal_Width = %x(tput cols).to_i if STDOUT.tty?
 
 coloured, blink = true, false
 
@@ -59,6 +59,10 @@ if ARGV.include?('--no-text') || ARGV.include?('-nt')
 	display_text = false
 end
 
+# Let's make one colour array here so it won't get created everytime in the 'chars' stabby lambda...
+available_colours = [(196..201), (202..207), (208..213), (82..87), (40..45), (214..219),(112..117),
+		(142..147), (46..51), (208..213), (28..33), (34..39), [33, 39, 45, 44, 43, 42, 41]]
+
 chars = ->(string) do
 	string.reverse! if invert
 
@@ -66,8 +70,7 @@ chars = ->(string) do
 	enum = string.split("\n").reverse_each if reverse
 
 	if coloured
-		selected_colour = [(196..201), (202..207), (208..213), (82..87), (40..45), (214..219),(112..117),
-				(142..147), (46..51), (208..213), (28..33), (34..39), [33, 39, 45, 44, 43, 42, 41]].sample
+		selected_colour = available_colours.sample
 		selected_colour_array = [selected_colour, selected_colour.reverse_each].sample.to_a
 
 		enum.each do |c|
@@ -77,7 +80,7 @@ chars = ->(string) do
 
 			STDOUT.print "\033[5m" if blink
 			clength.times do |i|
-				index += 1 if i % div == 0 unless (i == 0 || i ==  1 || clength <= arr_len || index >= arr_len - 1 || c[i] == " ")
+				index += 1 if i % div == 0 unless (i == 0 || i ==  1 || clength <= arr_len || index >= arr_len - 1)
 				STDOUT.print("\033[38;5;#{selected_colour_array[index]}m#{c[i]}")
 			end
 			STDOUT.puts "\033[0m"
@@ -96,7 +99,7 @@ unless STDOUT.tty?
 	chars.call("Run this is a proper terminal (gnome-terminal, xfce4-terminal, konsole, terminology, terminator, terminix, xterm, and so on...)")
 	chars.call("Also make sure you have ncurses installed (required for calculating number of columns to draw the output)")
 	chars.call("Thank you for downloading #{__FILE__.split('/').last}. Run #{__FILE__.split('/').last} --help or #{__FILE__.split('/').last} -h for more details")
-	exit 156
+	exit! 156
 end
 
 # Don't run the program if the terminal width is too small (atleast 32 is needed for default arts)
@@ -122,12 +125,12 @@ Usage: Run me from the command line without any arguments, and I will show you a
 All the Available arguments:
 
   --art or -a                   Display a tutorial on adding your own art.
-  --blink or -b			Blink the texts (not supported in all terminals yet).
-  --documentation or -d         Display the whole documentation including this help.
-  --download or -dl		Download missing files and database from Github.
-  --file=<path> or -f=<path>	Specify the ASCII file path to display your own ASCII art.
-  --help or -h                  Display this help.
-  --invert or -inv		Invert everything text! Read from right to left in English!!
+  --blink or -b			Blink the texts.
+  --documentation or -d         Display the documentation.
+  --download or -dl		Download missing files from Github.
+  --file=<path> or -f=<path>	Specify the path of your own ASCII art.
+  --help or -h                  Display help.
+  --invert or -inv		Invert the output (right to left in English)!
   --manual or -m                Display a manual. Same as documentation.
   --net=<url> or -n=<url>	Read data from a website (in curl format).
   --no-art or -na		Don't display the animal.
@@ -136,11 +139,9 @@ All the Available arguments:
   --read=<file> or -r=<file>	Read a file.
   --reverse or -rev		Cowspeak reads upside down!
   --rotate-colour or -rc	Rotate the output colours in each line.
-  --show-arts or -sa		Show all available installed arts in the default directory.
+  --show-arts or -sa		Show arts in the default directory.
   --text=<text> or -t=<text>	Display a custom text.
-  --version or -v		Display the current #{__FILE__} version.
-
-This is the help page, for more help with examples, run #{__FILE__} --documentation or #{__FILE__} -d")
+  --version or -v		Display the current #{__FILE__} version.")
 exit! 0 if !documentation
 }
 
@@ -184,9 +185,8 @@ If you are missing some files, then please take a moment to download all the fil
 To do that, run:
 	cowspeak --download or -d
 	It will download all the necessary files. This will download less than 400 KiB files from the internet.
-	NOTE: This argument will write files to #{PATH} directory.
-		     This may need root privilege to do that.
-")
+	NOTE: This argument will write files to #{PATH} directory.")
+
 exit! 0
 end
 
@@ -210,18 +210,18 @@ You can create your own art. Here's a short introduction on how to do that:
 	1. Create an empty document in your computer with 'art' extension (myart.art).
 	2. Edit the document and Type your name in the first line. If you copy someone's work, provide the artist's name.
 		For example:
-			\033[5mCreated by #{('aaaa'..'zzzz').to_a.sample}.\033[0m
+			\033[5mCreated by #{ u = '' ; rand(4..8).times do u += rand(97..122).chr end ; u }.\033[0m
 	3. The 2nd line is also for crediting. Leave both 1st and 2nd line empty if crediting is not required.
 	4. Type your characters and draw your ASCII art.
 		Format: What you've done should looks like this:
 
 \033[4mLine\033[0m				\033[4mArt\033[0m
 
-\033[7;34m1\033[0m			\033[5mThanks to #{('aaaa'..'zzzz').to_a.sample} for this art\033[0m
+\033[7;34m1\033[0m			\033[5mThanks to #{ u = '' ; rand(4..8).times do u += rand(97..122).chr end ; u } for this art\033[0m
 \033[7;34m2\033[0m			\033[5mCollected from example.net\033[0m
 \033[7;34m3\033[0m 			\033[5m-------------------------\033[0m
 \033[7;34m4\033[0m 			\033[5m=			=\033[0m
-\033[7;34m5\033[0m 			\033[5m=    Your ASCII Art	=\033[0m
+\033[7;34m5\033[0m 			\033[5m=    	ASCII Art	=\033[0m
 \033[7;34m6\033[0m 			\033[5m=			=\033[0m
 \033[7;34m7\033[0m 			\033[5m-------------------------\033[0m
 
@@ -285,9 +285,13 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 			chars.call "Created directory #{PATH}"
 		end
 
-		data = Net::HTTP.get(URI('https://raw.githubusercontent.com/bmc/fortunes/master/fortunes'))
+		# The database file originally came from the following source:
+		# https://raw.githubusercontent.com/bmc/fortunes/master/fortunes
+		# But I like to use the whatever link I used, because it's coming from my github account, and I don't worry about deletion.
+
+		data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/fortunes.data'))
 		unless data.include?('404: Not Found')
-			File.open(PATH + "fortunes.data", 'w') { |file| file.puts(data) }
+			File.write(PATH + "fortunes.data", data)
 			chars.call "The fortunes database has been downloaded and installed to #{PATH}fortunes."
 
 			unless File.exist?(PATH + "arts")
@@ -296,6 +300,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 			end
 
 			chars.call "Downloading art files..."
+			puts
 
 			# Install the art files...
 			uris = [
@@ -318,12 +323,14 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 
 			write_to = %w(cow dolphin killer_squirrels penguin spider squirrels cat deer dog eagle hippo scorpion camel turtle mouse)
 
-			raise SystemExit, "Dear Developer, the uris has to match write_to size, line: #{__LINE__}" unless write_to.size == uris.size
+			raise RuntimeError, "Dear Developer, the uris has to match write_to size, line: #{__LINE__}" unless write_to.size == uris.size
 
-			uris.each_with_index do |uri, index|
-				data = Net::HTTP.get(URI(uri))
-				File.open("#{PATH + "arts/" + write_to[index]}.art", 'w') { |file| file.write(data) }
-				chars.call "\nSuccessfully installed an art file at #{PATH}cowspeak_files/arts/\n#{data.split("\n")[0..1].join("\n")}"
+			uris.size.times do |index|
+				File.write("#{PATH + "arts/" + write_to[index]}.art", Net::HTTP.get(URI(uris[index])))
+
+				chars.call "Successfully installed an art file at #{PATH}arts/"
+				chars.call "#{File.read(PATH + 'arts/' + write_to[index] + '.art').split("\n")[0..1].join("\n")}"
+				puts
 			end
 
 			chars.call "All Done!"
@@ -343,7 +350,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		exit! 2
 
 	rescue Errno::EACCES
-		chars.call "Requires root privilege to download and access #{PATH} directory. Please run it with proper permission."
+		chars.call "Requires root privilege to write to #{PATH} directory. Please run it with proper permission."
 		exit!
 
 	rescue Exception => e
@@ -379,6 +386,12 @@ begin
 		chars.call "Type #{__FILE__} --help or #{__FILE__} -h for help."
 		chars.call "Type #{__FILE__} --art or #{__FILE__} -a for help regarding art."
 		file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat hippo deer dog).sample}.art"
+		unless File.readable?(file)
+			puts
+			chars.call("The default files at location #{PATH + 'arts/'} doesn't exist")
+			chars.call("Please run #{__FILE__} -dl to download all the necessary files at #{PATH}")
+			exit! 44
+		end
 	end
 
 	text = ''
@@ -408,14 +421,22 @@ begin
 		text.each do |arg| ARGV.delete(arg) end
 
 		unless text.empty? then text= text[-1].split('=')[1] end
-		text = File.read(PATH + "fortunes.data").split("\n%\n").sample if text.nil? || text.empty?
+
+		if text.nil? || text.empty?
+			if File.readable?(PATH + "fortunes.data")
+				text = File.read(PATH + "fortunes.data").split("\n%\n").sample
+			else
+				text = ("The fortunes database doesn't exist.
+						Please run #{__FILE__} -dl to download the files to #{PATH}")
+			end
+		end
 
 		read = ARGV.select { |r| r.start_with?('--read=') || r.start_with?('-r=') }
 		read.each do |arg| ARGV.delete(arg) end
 
 		unless read.empty?
 			f = read[-1].split('=')[1]
-			text = File.read(f) if File.exist?(f) unless f.nil?
+			text = File.read(f) if File.readable?(f) unless f.nil?
 		end
 
 		net = ARGV.select { |n| n.start_with?('--net=') || n.start_with?('-n=') }
@@ -424,18 +445,23 @@ begin
 		unless net.empty?
 			uri = net[-1].split('=')[1]
 			unless uri.nil?
+				show_art = false
 				begin
 					require 'net/http'
-					text = Net::HTTP.get(URI(uri))
-				rescue Errno::ECONNREFUSED
-					chars.call "Failed to open the URL. Have you mentioned the protocol?"
-					chars.call "Example:\n\thttp://www.example.net"
-					exit! 1
+					require 'open-uri'
+					text = open(uri).read
+
 				rescue SocketError
 					chars.call "Failed to read the URL. Do you have an active internet connection?"
 					exit! 2
+
+				rescue SystemExit, Interrupt
+					puts
+
 				rescue Exception
 					chars.call "Sorry an error occurred while trying to open #{uri}"
+					chars.call "Failed to open the URL. Have you mentioned the protocol?"
+					chars.call "Example:\n\thttp://www.example.net"
 					exit! 126
 				end
 			end
@@ -473,6 +499,12 @@ begin
 	elsif !display_text && show_art then chars.call(File.readlines(file)[2..-1].join)
 	elsif display_text then chars.call(text)
 	end
+
+rescue SystemExit, Interrupt
+	printf "\n\n"
+	chars.call('Exitting...')
+	puts
+	exit! 0
 
 rescue Exception => e
 	exception_handle.call(e)
