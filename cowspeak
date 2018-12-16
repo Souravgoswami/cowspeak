@@ -1,20 +1,24 @@
 #!/usr/bin/ruby -W0
 # Written by Sourav Goswami
-# Cowspeak version 1.90
 # The GNU General Public License v3.0
+VERSION = "Cowspeak version 2.05"
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
+# PATH ||= "/usr/share/cowspeak/"
 
-# Set the path if root, comment the previous path
-# PATH = "/usr/share/cowspeak/"
-
-VERSION = "Cowspeak version 1.90"
 STDIN.sync, STDOUT.sync = true, true
 
-Terminal_Width = %x(tput cols).to_i if STDOUT.tty?
-
 coloured, blink = true, false
+
+# Errors
+ERR_NO_TTY = 128
+ERR_FILE_NOT_FOUND = 127
+ERR_NO_INTERNET = 64
+ERR_SITE_INACCESSIBLE = 63
+ERR_DOWNLOAD_UNAVAILABLE = 62
+ERR_NO_PERMISSION = 61
+ERR_DIAGNOSED = 100
 
 # Check if the output should colourized
 if ARGV.include?('--no-colour') || ARGV.include?('-nc')
@@ -79,10 +83,12 @@ chars = ->(string) do
 			div = clength/arr_len
 
 			STDOUT.print "\033[5m" if blink
+
 			clength.times do |i|
 				index += 1 if i % div == 0 unless (i == 0 || i ==  1 || clength <= arr_len || index >= arr_len - 1)
 				STDOUT.print("\033[38;5;#{selected_colour_array[index]}m#{c[i]}")
 			end
+
 			STDOUT.puts "\033[0m"
 			selected_colour_array.rotate! if rotate_colour
 		end
@@ -93,20 +99,25 @@ chars = ->(string) do
 	STDOUT.print("\033[0m")
 end
 
-# Exit if no tty is detected
-unless STDOUT.tty?
+# Determine the terminal size. NOTE: STDIN.winsize instead of STDOUT.winsize will raise Errno::ENOTTY when reading output for pipe.
+begin
+	require 'io/console'
+	Terminal_Width = STDOUT.winsize[1]/2
+rescue Errno::ENOTTY
 	chars.call("Sorry, No terminal found...")
 	chars.call("Run this is a proper terminal (gnome-terminal, xfce4-terminal, konsole, terminology, terminator, terminix, xterm, and so on...)")
 	chars.call("Also make sure you have ncurses installed (required for calculating number of columns to draw the output)")
 	chars.call("Thank you for downloading #{__FILE__.split('/').last}. Run #{__FILE__.split('/').last} --help or #{__FILE__.split('/').last} -h for more details")
-	exit! 156
+	exit! ERR_NO_TTY
+rescue Exception
+	exit!
 end
 
 # Don't run the program if the terminal width is too small (atleast 32 is needed for default arts)
-until %x(tput cols).to_i > 31
-	sleep 0.5
+until STDOUT.winsize[1] > 31
 	printf "\033[H\033[J"
 	chars.call('The terminal is too narrow. Please make it bigger')
+	sleep 0.1
 end
 
 show_version = false
@@ -126,22 +137,26 @@ All the Available arguments:
 
   --art or -a                   Display a tutorial on adding your own art.
   --blink or -b			Blink the texts.
-  --documentation or -d         Display the documentation.
-  --download or -dl		Download missing files from Github.
-  --file=<path> or -f=<path>	Specify the path of your own ASCII art.
-  --help or -h                  Display help.
-  --invert or -inv		Invert the output (right to left in English)!
-  --manual or -m                Display a manual. Same as documentation.
-  --net=<url> or -n=<url>	Read data from a website (in curl format).
-  --no-art or -na		Don't display the animal.
-  --no-colour or -nc		Don't colourize the output.
-  --no-text or -nt		Don't show any text, and only show the animal.
-  --read=<file> or -r=<file>	Read a file.
-  --reverse or -rev		Cowspeak reads upside down!
-  --rotate-colour or -rc	Rotate the output colours in each line.
-  --show-arts or -sa		Show arts in the default directory.
-  --text=<text> or -t=<text>	Display a custom text.
-  --version or -v		Display the current #{__FILE__} version.")
+  --borderh=<ch>/-brh=<ch> 	Horizontal border character.
+  --borderv=<ch>/-brv=<ch>	Vertical border character.
+  --bubble=<text>/-bbl=<text> 	Specify the character of speech balloons.
+  --documentation/-d        	Display the documentation.
+  --download/-dl		Download missing files from Github.
+  --file=<path>/-f=<path>	Specify the path of your own ASCII art.
+  --help/-h                 	Display help.
+  --invert/-inv			Invert the output (right <- left in English)!
+  --manual/-m                	Display a manual. Same as documentation.
+  --net=<url>/-n=<url>		Read data from a website (in curl format).
+  --no-art/-na			Don't display the animal.
+  --no-colour/-nc		Don't colourize the output.
+  --no-text/-nt			Don't show any text, show the animal.
+  --read=<file>/-r=<file>	Read a file.
+  --reverse/-rev		Cowspeak reads upside down!
+  --rotate-colour/-rc		Rotate the output colours in each line.
+  --show-arts/-sa		Show arts in the default directory.
+  --text=<text>/-t=<text>	Display a custom text.
+  --version/-v			Display the current #{__FILE__} version.")
+
 exit! 0 if !documentation
 }
 
@@ -232,8 +247,7 @@ You can create your own art. Here's a short introduction on how to do that:
 	-> If it is located in another directory then #{__FILE__} --file='directory/your_art.art'
 
 	=> NOTE: If you use someone's art, make sure you have proper permission to copy.
-	=> The first 2 lines are for crediting, if you don't have to credit, then leave those lines empty.
-"
+	=> The first 2 lines are for crediting, if you don't have to credit, then leave those lines empty."
 exit! 0
 end
 
@@ -250,17 +264,17 @@ exception_handle = ->(error) {
 
 	case STDIN.gets.to_i
 		when 2 then help.call
-		when 3 then chars.call(error.to_s) ; exit! 125
+		when 3 then chars.call(error.to_s) ; exit! ERR_DIAGNOSED
 		when 4
 			File.open('/tmp/cowspeak-log.txt', 'a+') do |log_file|
 				log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{error}")
 				chars.call('The error has been written to /tmp/cowspeak-log.txt')
 			end
-			exit! 128
+			exit! ERR_DIAGNOSED
 		when 5
 			chars.call('Please contact <souravgoswami@protonmail.com>')
 			chars.call("Tell him about #{error} in #{__FILE__}")
-		else exit! 127
+		else exit! ERR_DIAGNOSED
 	end
 }
 
@@ -303,23 +317,23 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 			puts
 
 			# Install the art files...
-			uris = [
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/cow.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/dolphin.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/killer_squirrels.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/penguin.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/spider.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/squirrels.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/cat.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/deer.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/dog.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/eagle.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/hippo.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/scorpion.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/camel.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/turtle.art',
-				'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/mouse.art'
-				]
+			uris = %w(
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/cow.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/dolphin.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/killer_squirrels.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/penguin.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/spider.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/squirrels.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/cat.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/deer.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/dog.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/eagle.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/hippo.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/scorpion.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/camel.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/turtle.art
+				https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/mouse.art
+				)
 
 			write_to = %w(cow dolphin killer_squirrels penguin spider squirrels cat deer dog eagle hippo scorpion camel turtle mouse)
 
@@ -339,19 +353,18 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		else
 			chars.call "Sorry for the inconvenience. Something went terribly wrong (can't access one of the file)."
 			chars.call "If the problem persists, contact: souravgoswami@protonmail.com."
-			exit! 100
+			exit! ERR_DOWNLOAD_UNAVAILABLE
 		end
 
 	rescue SocketError
 		chars.call 'Do you have an internet connection?'
 		chars.call "1. Exit.\n2. Retry.\nDefault: 1 (Exit)."
-
 		retry if STDIN.gets.to_i == 2
-		exit! 2
+		exit! ERR_NO_INTERNET
 
 	rescue Errno::EACCES
 		chars.call "Requires root privilege to write to #{PATH} directory. Please run it with proper permission."
-		exit!
+		exit! ERR_NO_PERMISSION
 
 	rescue Exception => e
 		exception_handle.call(e)
@@ -363,6 +376,26 @@ if ARGV.include?('--no-art') || ARGV.include?('-na')
 	ARGV.delete('--no-art')
 	ARGV.delete('-na')
 	show_art = false
+end
+
+borderh = ARGV.select { |a| a.start_with?('--borderh=') || a.start_with?('-brh=') }[-1].to_s
+unless borderh.empty?
+	borderh = borderh.split('=')[1].to_s.split('').sample.to_s
+else
+	borderh = '='
+end
+
+borderv = ARGV.select { |a| a.start_with?('--borderv=') || a.start_with?('-brv=')  }[-1].to_s
+unless borderv.empty?
+	borderv = borderv.split('=')[1].to_s.split('').sample.to_s
+else
+	borderv = '|'
+end
+
+bubble = ARGV.select { |a| a.start_with?('--bubble=') || a.start_with?('-bbl=') }[-1].to_s
+if bubble
+	bubble = bubble.split('=')[1]
+	bubble = 'o' unless bubble
 end
 
 begin
@@ -390,7 +423,7 @@ begin
 			puts
 			chars.call("The default files at location #{PATH + 'arts/'} doesn't exist")
 			chars.call("Please run #{__FILE__} -dl to download all the necessary files at #{PATH}")
-			exit! 44
+			exit! ERR_FILE_NOT_FOUND
 		end
 	end
 
@@ -398,9 +431,11 @@ begin
 	pipe = false
 
 	# Check if pipe and output is redicred from another program, waste no time on gets if not
-	require 'timeout'
 	begin
-		Timeout::timeout 0.0000000000000000000000001 do pipe = STDIN.gets end
+		require 'timeout'
+		Timeout::timeout 0.000_000_000_000_1 do pipe = STDIN.gets end
+	rescue Interrupt
+		exit! 0
 	rescue Timeout::Error
 	end
 
@@ -420,7 +455,7 @@ begin
 		text = ARGV.select { |t| t.start_with?('--text=') || t.start_with?('-t=') }
 		text.each do |arg| ARGV.delete(arg) end
 
-		unless text.empty? then text= text[-1].split('=')[1] end
+		unless text.empty? then text = text[-1].split('=')[1] end
 
 		if text.nil? || text.empty?
 			if File.readable?(PATH + "fortunes.data")
@@ -452,8 +487,8 @@ begin
 					text = open(uri).read
 
 				rescue SocketError
-					chars.call "Failed to read the URL. Do you have an active internet connection?"
-					exit! 2
+					chars.call "Failed  to read the URL. Do you have an active internet connection?"
+					exit! ERR_NO_INTERNET
 
 				rescue SystemExit, Interrupt
 					show_art = true
@@ -463,41 +498,43 @@ begin
 					chars.call "Sorry an error occurred while trying to open #{uri}"
 					chars.call "Failed to open the URL. Have you mentioned the protocol?"
 					chars.call "Example:\n\thttp://www.example.net"
-					exit! 126
+					exit! ERR_SITE_INACCESSIBLE
 				end
 			end
 		end
 	end
 
+	corners = (borderh.empty? || borderv.empty?) ? [' ', ' ', ' ', ' '] : [' //', '\\\\',  ' \\\\',  '//']
 	all_chars = ''
 
 	if show_art && display_text
 		text = text.gsub("\n", ' ').gsub("\t", ' ')
-		count, init, init_length, break_at = 0, "=" * (Terminal_Width/2), (Terminal_Width/2), text.length - 1
 
-		all_chars += ' //' + init + "\\\\\n"
+		count, init, init_length = 0, borderh * Terminal_Width, Terminal_Width
+	 	text_length = text.length - 1
+
+		all_chars += (corners[0] + init + corners[1] + "\n")
 
 		text.each_char.with_index do |c, index|
 
-			all_chars += count == 0 ? " ||#{c}" : "#{c}"
+			all_chars += count == 0 ? " #{borderv} #{c}" : "#{c}"
 			count += 1
 
-			if (count >= init_length - 10 && c == " ") || count == init_length || index == break_at
-				all_chars += " " * (init_length - count + 1) + "||" + "\n"
+			if (count >= init_length - 6 && c == " ") || count >= init_length - 1 || index == text_length
+				all_chars += " " * (init_length - count + 1) + borderv + "\n"
 				count = 0
 			end
 		end
 
 		a = File.readlines(file)[2..-1]
 
-		think = %w[. o *].sample
-		max_length = a.map { |c| c.length }.max/2
+		max_length = a.map(&:length).max/2
 
-		chars.call( all_chars + ' \\\\' + init + "//\n")
-		chars.call(" " * max_length + think * 3 + "\n" +
-				" " * max_length + think * 2 + "\n" + " " * max_length + think + "\n\n" + a.join)
+		chars.call( all_chars + corners[2] + init + corners[3] + "\n")
+		chars.call(" " * max_length + bubble * 3 + "\n " +
+				' ' * max_length + bubble * 2 + "\n" + ' ' * max_length +  bubble + "\n" + a.join)
 
-	elsif !display_text && show_art then chars.call(File.readlines(file)[2..-1].join)
+	elsif show_art then chars.call(File.readlines(file)[2..-1].join)
 	elsif display_text then chars.call(text)
 	end
 
