@@ -106,10 +106,10 @@ begin
 	require 'io/console'
 	Terminal_Width = (STDOUT.winsize[1]/1.4).ceil
 rescue Errno::ENOTTY
-	colourize.call("Sorry, No terminal found...")
-	colourize.call("Run this is a proper terminal (gnome-terminal, xfce4-terminal, konsole, terminology, terminator, terminix, xterm, and so on...)")
-	colourize.call("Also make sure you have ncurses installed (required for calculating number of columns to draw the output)")
-	colourize.call("Thank you for downloading #{__FILE__.split('/').last}. Run #{__FILE__.split('/').last} --help or #{__FILE__.split('/').last} -h for more details")
+	colourize.call("Sorry, No terminal found...\n")
+	colourize.call("Run this is a proper terminal (gnome-terminal, xfce4-terminal, konsole, terminology, terminator, terminix, xterm, and so on...)\n")
+	colourize.call("Also make sure you have ncurses installed (required for calculating number of columns to draw the output)\n")
+	colourize.call("Thank you for downloading #{__FILE__.split('/').last}. Run #{__FILE__.split('/').last} --help or #{__FILE__.split('/').last} -h for more details\n")
 	exit! ERR_NO_TTY
 rescue Exception
 	exit!
@@ -118,7 +118,7 @@ end
 # Don't run the program if the terminal width is too small (atleast 32 is needed for default arts)
 until STDOUT.winsize[1] > 31
 	printf "\e[H\e[J"
-	colourize.call('The terminal is too narrow. Please make it bigger')
+	colourize.call("The terminal is too narrow. Please make it bigger\n")
 	sleep 0.1
 end
 
@@ -255,7 +255,7 @@ end
 
 # Take exceptions very very seriously. Handle them very gently.
 exception_handle = ->(error) {
-	colourize.call "Uh oh! Sorry, #{__FILE__} has Encountered an Error."
+	colourize.call "Uh oh! Sorry, #{__FILE__} has Encountered an Error.\n"
 	colourize.call("Select one of the following:
 		1. Exit.
 		2. Show the usage (#{__FILE__} -h)
@@ -274,7 +274,7 @@ exception_handle = ->(error) {
 			end
 			exit! ERR_DIAGNOSED
 		when 5
-			colourize.call('Please contact <souravgoswami@protonmail.com> ')
+			colourize.call("Please contact <souravgoswami@protonmail.com>\n")
 			colourize.call("Notify us about:\n#{error}\n#{error.backtrace.join("\n")} in #{__FILE__}\n")
 		else exit! ERR_DIAGNOSED
 	end
@@ -290,7 +290,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 	ARGV.delete('--download')
 	ARGV.delete('-dl')
 
-	colourize.call("Download Data from the internet and save them into #{PATH}?(Y/n)")
+	colourize.call("Download Data from the internet and save them into #{PATH}?(Y/n): ")
 	exit if gets.strip.downcase == 'n'
 
 	begin
@@ -298,7 +298,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 
 		unless File.exist?(PATH)
 			Dir.mkdir(PATH)
-			colourize.call "Created directory #{PATH}"
+			colourize.call "Created directory #{PATH}\n"
 		end
 
 		# The database file originally came from the following source:
@@ -308,14 +308,14 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/fortunes.data'))
 		unless data.include?('404: Not Found')
 			File.write(PATH + "fortunes.data", data)
-			colourize.call "The fortunes database has been downloaded and installed to #{PATH}fortunes."
+			colourize.call "The fortunes database has been downloaded and installed to #{PATH}fortunes.\n"
 
 			unless File.exist?(PATH + "arts")
 				Dir.mkdir(PATH + "arts")
-				colourize.call "Created directory #{PATH}arts/"
+				colourize.call "Created directory #{PATH}arts/\n"
 			end
 
-			colourize.call "Downloading art files..."
+			colourize.call "Downloading art files...\n"
 			puts
 
 			# Install the art files...
@@ -344,28 +344,28 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 			uris.size.times do |index|
 				File.write("#{PATH + "arts/" + write_to[index]}.art", Net::HTTP.get(URI(uris[index])))
 
-				colourize.call "Successfully installed an art file at #{PATH}arts/"
-				colourize.call "#{File.read(PATH + 'arts/' + write_to[index] + '.art').split("\n")[0..1].join("\n")}"
+				colourize.call "Successfully installed an art file at #{PATH}arts/\n"
+				colourize.call "#{File.read(PATH + 'arts/' + write_to[index] + '.art').split("\n")[0..1].join("\n")}\n"
 				puts
 			end
 
-			colourize.call "All Done!"
-			colourize.call "To see the available arts, type: #{__FILE__} --show-arts or -sa"
-			colourize.call "Here's a sweet quote for you!"
+			colourize.call "All Done!\n"
+			colourize.call "To see the available arts, type: #{__FILE__} --show-arts or -sa\n"
+			colourize.call "Here's a sweet quote for you!\n"
 		else
-			colourize.call "Sorry for the inconvenience. Something went terribly wrong (can't access one of the file)."
-			colourize.call "If the problem persists, contact: souravgoswami@protonmail.com."
+			colourize.call "Sorry for the inconvenience. Something went terribly wrong (can't access one of the file).\n"
+			colourize.call "If the problem persists, contact: souravgoswami@protonmail.com.\n"
 			exit! ERR_DOWNLOAD_UNAVAILABLE
 		end
 
 	rescue SocketError
-		colourize.call 'Do you have an internet connection?'
-		colourize.call "1. Exit.\n2. Retry.\nDefault: 1 (Exit)."
+		colourize.call "Do you have an internet connection?\n"
+		colourize.call "1. Exit.\n2. Retry.\nDefault: 1 (Exit).\n"
 		retry if STDIN.gets.to_i == 2
 		exit! ERR_NO_INTERNET
 
 	rescue Errno::EACCES
-		colourize.call "Requires root privilege to write to #{PATH} directory. Please run it with proper permission."
+		colourize.call "Requires root privilege to write to #{PATH} directory. Please run it with proper permission.\n"
 		exit! ERR_NO_PERMISSION
 
 	rescue Exception => e
@@ -415,16 +415,16 @@ begin
 	end
 
 	unless File.file?(file)
-		colourize.call 'Looks like the art file doesn\'t exist'
-		colourize.call "Type #{__FILE__} --download or #{__FILE__} -d to download all the necessary files."
-		colourize.call "Type #{__FILE__} --show-arts or #{__FILE__} -sa to see available arts in the default directory..."
-		colourize.call "Type #{__FILE__} --help or #{__FILE__} -h for help."
-		colourize.call "Type #{__FILE__} --art or #{__FILE__} -a for help regarding art."
+		colourize.call "Looks like the art file doesn't exist.\n"
+		colourize.call "Type #{__FILE__} --download or #{__FILE__} -d to download all the necessary files.\n"
+		colourize.call "Type #{__FILE__} --show-arts or #{__FILE__} -sa to see available arts in the default directory...\n"
+		colourize.call "Type #{__FILE__} --help or #{__FILE__} -h for help.\n"
+		colourize.call "Type #{__FILE__} --art or #{__FILE__} -a for help regarding art.\n"
 		file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art"
+
 		unless File.readable?(file)
-			puts
-			colourize.call("The default files at location #{PATH + 'arts/'} doesn't exist")
-			colourize.call("Please run #{__FILE__} -dl to download all the necessary files at #{PATH}")
+			colourize.call("The default files at location #{PATH + 'arts/'} doesn't exist\n")
+			colourize.call("Please run #{__FILE__} -dl to download all the necessary files at #{PATH}\n")
 			exit! ERR_FILE_NOT_FOUND
 		end
 	end
@@ -488,7 +488,7 @@ begin
 					text = open(uri).read
 
 				rescue SocketError
-					colourize.call "Failed  to read the URL. Do you have an active internet connection?"
+					colourize.call "Failed  to read the URL. Do you have an active internet connection?\n"
 					exit! ERR_NO_INTERNET
 
 				rescue SystemExit, Interrupt
@@ -496,9 +496,9 @@ begin
 					print "\n\n"
 
 				rescue Exception
-					colourize.call "Sorry an error occurred while trying to open #{uri}"
-					colourize.call "Failed to open the URL. Have you mentioned the protocol?"
-					colourize.call "Example:\n\thttp://www.example.net"
+					colourize.call "Sorry an error occurred while trying to open #{uri}\n"
+					colourize.call "Failed to open the URL. Have you mentioned the protocol?\n"
+					colourize.call "Example:\n\thttp://www.example.net\n"
 					exit! ERR_SITE_INACCESSIBLE
 				end
 			end
