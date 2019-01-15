@@ -1,7 +1,7 @@
 #!/usr/bin/ruby -W0
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
-VERSION = "Cowspeak version 2.05"
+VERSION = "Cowspeak version 2.15"
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
@@ -67,47 +67,49 @@ end
 available_colours = [(196..201), (202..207), (208..213), (82..87), (40..45), (214..219),(112..117),
 		(142..147), (46..51), (208..213), (28..33), (34..39), [33, 39, 45, 44, 43, 42, 41]]
 
-chars = ->(string) do
+colourize = ->(string) do
 	string.reverse! if invert
 
-	enum = string.split("\n").each unless reverse
-	enum = string.split("\n").reverse_each if reverse
+	enum = string.each_line unless reverse
+	enum = string.each_line.reverse_each if reverse
 
 	if coloured
-		selected_colour = available_colours.sample
-		selected_colour_array = [selected_colour, selected_colour.reverse_each].sample.to_a
+		selected_colour_array = [available_colours.sample, available_colours.sample.reverse_each].sample.to_a
+
+		# We are not STDOUT.print in the loop, otherwise the output takes 3x time... temp is for that. Also don't += rather than concat.
+		temp = ''
+
+		STDOUT.print "\e[5m" if blink
 
 		enum.each do |c|
 			index = 0
 			clength, arr_len = c.length, selected_colour_array.size
 			div = clength/arr_len
 
-			STDOUT.print "\033[5m" if blink
-
 			clength.times do |i|
-				index += 1 if i % div == 0 unless (i == 0 || i ==  1 || clength <= arr_len || index >= arr_len - 1)
-				STDOUT.print("\033[38;5;#{selected_colour_array[index]}m#{c[i]}")
+				index += 1 if (i % div == 0 && index <= arr_len - 2) unless (i == 0 || i ==  1 || clength <= arr_len)
+				temp.concat("\e[38;5;#{selected_colour_array[index]}m#{c[i]}")
+				selected_colour_array = [available_colours.sample, available_colours.sample.reverse_each].sample.to_a if c[i] == "\n" if rotate_colour
 			end
-
-			STDOUT.puts "\033[0m"
-			selected_colour_array.rotate! if rotate_colour
 		end
+			STDOUT.print(temp)
+			STDOUT.print "\e[0m"
 	else
-		STDOUT.print "\033[5m" if blink
-		enum.each do |c| STDOUT.print c, "\n" end
+		STDOUT.print "\e[5m" if blink
+		STDOUT.print enum.map {|ch| ch}.join
 	end
-	STDOUT.print("\033[0m")
+	STDOUT.print("\e[0m")
 end
 
 # Determine the terminal size. NOTE: STDIN.winsize instead of STDOUT.winsize will raise Errno::ENOTTY when reading output for pipe.
 begin
 	require 'io/console'
-	Terminal_Width = STDOUT.winsize[1]/2
+	Terminal_Width = (STDOUT.winsize[1]/1.4).ceil
 rescue Errno::ENOTTY
-	chars.call("Sorry, No terminal found...")
-	chars.call("Run this is a proper terminal (gnome-terminal, xfce4-terminal, konsole, terminology, terminator, terminix, xterm, and so on...)")
-	chars.call("Also make sure you have ncurses installed (required for calculating number of columns to draw the output)")
-	chars.call("Thank you for downloading #{__FILE__.split('/').last}. Run #{__FILE__.split('/').last} --help or #{__FILE__.split('/').last} -h for more details")
+	colourize.call("Sorry, No terminal found...")
+	colourize.call("Run this is a proper terminal (gnome-terminal, xfce4-terminal, konsole, terminology, terminator, terminix, xterm, and so on...)")
+	colourize.call("Also make sure you have ncurses installed (required for calculating number of columns to draw the output)")
+	colourize.call("Thank you for downloading #{__FILE__.split('/').last}. Run #{__FILE__.split('/').last} --help or #{__FILE__.split('/').last} -h for more details")
 	exit! ERR_NO_TTY
 rescue Exception
 	exit!
@@ -115,8 +117,8 @@ end
 
 # Don't run the program if the terminal width is too small (atleast 32 is needed for default arts)
 until STDOUT.winsize[1] > 31
-	printf "\033[H\033[J"
-	chars.call('The terminal is too narrow. Please make it bigger')
+	printf "\e[H\e[J"
+	colourize.call('The terminal is too narrow. Please make it bigger')
 	sleep 0.1
 end
 
@@ -128,7 +130,7 @@ if ARGV.include?('--version') || ARGV.include?('-v')
 end
 
 help = ->(documentation=false) {
-chars.call(
+colourize.call(
 "Hi, my name is cowspeak. I speak a quote on your terminal.
 
 Usage: Run me from the command line without any arguments, and I will show you a fortune.
@@ -155,7 +157,7 @@ All the Available arguments:
   --rotate-colour/-rc		Rotate the output colours in each line.
   --show-arts/-sa		Show arts in the default directory.
   --text=<text>/-t=<text>	Display a custom text.
-  --version/-v			Display the current #{__FILE__} version.")
+  --version/-v			Display the current #{__FILE__} version.\n\n")
 
 exit! 0 if !documentation
 }
@@ -167,7 +169,7 @@ ARGV.delete('--manual')
 ARGV.delete('-m')
 
 help.call(documentation=true)
-chars.call(
+colourize.call(
 "
 Examples:
 	For custom text:
@@ -200,7 +202,7 @@ If you are missing some files, then please take a moment to download all the fil
 To do that, run:
 	cowspeak --download or -d
 	It will download all the necessary files. This will download less than 400 KiB files from the internet.
-	NOTE: This argument will write files to #{PATH} directory.")
+	NOTE: This argument will write files to #{PATH} directory.\n\n")
 
 exit! 0
 end
@@ -208,7 +210,7 @@ end
 if ARGV.include?('--show-arts') || ARGV.include?('-sa')
 	Dir.entries(PATH + 'arts').sort.each do |file|
 		unless file == '.' || file == '..'
-			chars.call(File.read(PATH + 'arts/' + file) + "\nPath: #{PATH + 'arts' + file}")
+			colourize.call(File.read(PATH + 'arts/' + file) + "\nPath: #{PATH + 'arts' + file}")
 			puts
 		end
 	end
@@ -225,20 +227,20 @@ You can create your own art. Here's a short introduction on how to do that:
 	1. Create an empty document in your computer with 'art' extension (myart.art).
 	2. Edit the document and Type your name in the first line. If you copy someone's work, provide the artist's name.
 		For example:
-			\033[5mCreated by #{ u = '' ; rand(4..8).times do u += rand(97..122).chr end ; u }.\033[0m
+			\e[5mCreated by #{ u = '' ; rand(4..8).times do u += rand(97..122).chr end ; u }.\e[0m
 	3. The 2nd line is also for crediting. Leave both 1st and 2nd line empty if crediting is not required.
 	4. Type your characters and draw your ASCII art.
 		Format: What you've done should looks like this:
 
-\033[4mLine\033[0m				\033[4mArt\033[0m
+\e[4mLine\e[0m				\e[4mArt\e[0m
 
-\033[7;34m1\033[0m			\033[5mThanks to #{ u = '' ; rand(4..8).times do u += rand(97..122).chr end ; u } for this art\033[0m
-\033[7;34m2\033[0m			\033[5mCollected from example.net\033[0m
-\033[7;34m3\033[0m 			\033[5m-------------------------\033[0m
-\033[7;34m4\033[0m 			\033[5m=			=\033[0m
-\033[7;34m5\033[0m 			\033[5m=    	ASCII Art	=\033[0m
-\033[7;34m6\033[0m 			\033[5m=			=\033[0m
-\033[7;34m7\033[0m 			\033[5m-------------------------\033[0m
+\e[7;34m1\e[0m			\e[5mThanks to #{ u = '' ; rand(4..8).times do u += rand(97..122).chr end ; u } for this art\e[0m
+\e[7;34m2\e[0m			\e[5mCollected from example.net\e[0m
+\e[7;34m3\e[0m 			\e[5m-------------------------\e[0m
+\e[7;34m4\e[0m 			\e[5m=			=\e[0m
+\e[7;34m5\e[0m 			\e[5m=    	ASCII Art	=\e[0m
+\e[7;34m6\e[0m 			\e[5m=			=\e[0m
+\e[7;34m7\e[0m 			\e[5m-------------------------\e[0m
 
 	-> For more examples, look at the other installed files.
 	-> You can use other files as example. By default they are located in #{PATH}arts/
@@ -247,14 +249,14 @@ You can create your own art. Here's a short introduction on how to do that:
 	-> If it is located in another directory then #{__FILE__} --file='directory/your_art.art'
 
 	=> NOTE: If you use someone's art, make sure you have proper permission to copy.
-	=> The first 2 lines are for crediting, if you don't have to credit, then leave those lines empty."
+	=> The first 2 lines are for crediting, if you don't have to credit, then leave those lines empty.\n\n"
 exit! 0
 end
 
 # Take exceptions very very seriously. Handle them very gently.
 exception_handle = ->(error) {
-	chars.call "Uh oh! Sorry, #{__FILE__} has Encountered an Error."
-	chars.call("Select one of the following:
+	colourize.call "Uh oh! Sorry, #{__FILE__} has Encountered an Error."
+	colourize.call("Select one of the following:
 		1. Exit.
 		2. Show the usage (#{__FILE__} -h)
 		3. Show Error Details.
@@ -264,16 +266,16 @@ exception_handle = ->(error) {
 
 	case STDIN.gets.to_i
 		when 2 then help.call
-		when 3 then chars.call(error.to_s) ; exit! ERR_DIAGNOSED
+		when 3 then colourize.call(error.to_s + "\n") ; exit! ERR_DIAGNOSED
 		when 4
 			File.open('/tmp/cowspeak-log.txt', 'a+') do |log_file|
-				log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{error}")
-				chars.call('The error has been written to /tmp/cowspeak-log.txt')
+				log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{error}\n#{error.backtrace.join("\n")}\n\n")
+				colourize.call('The error has been written to /tmp/cowspeak-log.txt')
 			end
 			exit! ERR_DIAGNOSED
 		when 5
-			chars.call('Please contact <souravgoswami@protonmail.com>')
-			chars.call("Tell him about #{error} in #{__FILE__}")
+			colourize.call('Please contact <souravgoswami@protonmail.com> ')
+			colourize.call("Notify us about:\n#{error}\n#{error.backtrace.join("\n")} in #{__FILE__}\n")
 		else exit! ERR_DIAGNOSED
 	end
 }
@@ -288,7 +290,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 	ARGV.delete('--download')
 	ARGV.delete('-dl')
 
-	chars.call("Download Data from the internet and save them into #{PATH}?(Y/n)")
+	colourize.call("Download Data from the internet and save them into #{PATH}?(Y/n)")
 	exit if gets.strip.downcase == 'n'
 
 	begin
@@ -296,7 +298,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 
 		unless File.exist?(PATH)
 			Dir.mkdir(PATH)
-			chars.call "Created directory #{PATH}"
+			colourize.call "Created directory #{PATH}"
 		end
 
 		# The database file originally came from the following source:
@@ -306,14 +308,14 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/fortunes.data'))
 		unless data.include?('404: Not Found')
 			File.write(PATH + "fortunes.data", data)
-			chars.call "The fortunes database has been downloaded and installed to #{PATH}fortunes."
+			colourize.call "The fortunes database has been downloaded and installed to #{PATH}fortunes."
 
 			unless File.exist?(PATH + "arts")
 				Dir.mkdir(PATH + "arts")
-				chars.call "Created directory #{PATH}arts/"
+				colourize.call "Created directory #{PATH}arts/"
 			end
 
-			chars.call "Downloading art files..."
+			colourize.call "Downloading art files..."
 			puts
 
 			# Install the art files...
@@ -342,28 +344,28 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 			uris.size.times do |index|
 				File.write("#{PATH + "arts/" + write_to[index]}.art", Net::HTTP.get(URI(uris[index])))
 
-				chars.call "Successfully installed an art file at #{PATH}arts/"
-				chars.call "#{File.read(PATH + 'arts/' + write_to[index] + '.art').split("\n")[0..1].join("\n")}"
+				colourize.call "Successfully installed an art file at #{PATH}arts/"
+				colourize.call "#{File.read(PATH + 'arts/' + write_to[index] + '.art').split("\n")[0..1].join("\n")}"
 				puts
 			end
 
-			chars.call "All Done!"
-			chars.call "To see the available arts, type: #{__FILE__} --show-arts or -sa"
-			chars.call "Here's a sweet quote for you!"
+			colourize.call "All Done!"
+			colourize.call "To see the available arts, type: #{__FILE__} --show-arts or -sa"
+			colourize.call "Here's a sweet quote for you!"
 		else
-			chars.call "Sorry for the inconvenience. Something went terribly wrong (can't access one of the file)."
-			chars.call "If the problem persists, contact: souravgoswami@protonmail.com."
+			colourize.call "Sorry for the inconvenience. Something went terribly wrong (can't access one of the file)."
+			colourize.call "If the problem persists, contact: souravgoswami@protonmail.com."
 			exit! ERR_DOWNLOAD_UNAVAILABLE
 		end
 
 	rescue SocketError
-		chars.call 'Do you have an internet connection?'
-		chars.call "1. Exit.\n2. Retry.\nDefault: 1 (Exit)."
+		colourize.call 'Do you have an internet connection?'
+		colourize.call "1. Exit.\n2. Retry.\nDefault: 1 (Exit)."
 		retry if STDIN.gets.to_i == 2
 		exit! ERR_NO_INTERNET
 
 	rescue Errno::EACCES
-		chars.call "Requires root privilege to write to #{PATH} directory. Please run it with proper permission."
+		colourize.call "Requires root privilege to write to #{PATH} directory. Please run it with proper permission."
 		exit! ERR_NO_PERMISSION
 
 	rescue Exception => e
@@ -380,14 +382,14 @@ end
 
 borderh = ARGV.select { |a| a.start_with?('--borderh=') || a.start_with?('-brh=') }[-1].to_s
 unless borderh.empty?
-	borderh = borderh.split('=')[1].to_s.split('').sample.to_s
+	borderh = borderh.split('=')[1].to_s.chars.sample.to_s
 else
 	borderh = '='
 end
 
 borderv = ARGV.select { |a| a.start_with?('--borderv=') || a.start_with?('-brv=')  }[-1].to_s
 unless borderv.empty?
-	borderv = borderv.split('=')[1].to_s.split('').sample.to_s
+	borderv = borderv.split('=')[1].to_s.chars.sample.to_s
 else
 	borderv = '|'
 end
@@ -406,23 +408,23 @@ begin
 		if file[-1].split('=')[1]
 			file = file[-1].split('=')[1]
 		else
-			file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat hippo deer dog mouse camel).sample}.art"
+			file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art"
 		end
 	else
-			file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat hippo deer dog mouse camel).sample}.art"
+			file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art"
 	end
 
 	unless File.file?(file)
-		chars.call 'Looks like the art file doesn\'t exist'
-		chars.call "Type #{__FILE__} --download or #{__FILE__} -d to download all the necessary files."
-		chars.call "Type #{__FILE__} --show-arts or #{__FILE__} -sa to see available arts in the default directory..."
-		chars.call "Type #{__FILE__} --help or #{__FILE__} -h for help."
-		chars.call "Type #{__FILE__} --art or #{__FILE__} -a for help regarding art."
-		file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat hippo deer dog).sample}.art"
+		colourize.call 'Looks like the art file doesn\'t exist'
+		colourize.call "Type #{__FILE__} --download or #{__FILE__} -d to download all the necessary files."
+		colourize.call "Type #{__FILE__} --show-arts or #{__FILE__} -sa to see available arts in the default directory..."
+		colourize.call "Type #{__FILE__} --help or #{__FILE__} -h for help."
+		colourize.call "Type #{__FILE__} --art or #{__FILE__} -a for help regarding art."
+		file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art"
 		unless File.readable?(file)
 			puts
-			chars.call("The default files at location #{PATH + 'arts/'} doesn't exist")
-			chars.call("Please run #{__FILE__} -dl to download all the necessary files at #{PATH}")
+			colourize.call("The default files at location #{PATH + 'arts/'} doesn't exist")
+			colourize.call("Please run #{__FILE__} -dl to download all the necessary files at #{PATH}")
 			exit! ERR_FILE_NOT_FOUND
 		end
 	end
@@ -436,16 +438,15 @@ begin
 		Timeout::timeout 0.000_000_000_000_1 do pipe = STDIN.gets end
 	rescue Interrupt
 		exit! 0
-	rescue Timeout::Error
+	rescue Exception
 	end
 
 	# if pipe is passed, read it until it ends. Else, read fortunes.
 	if pipe
-		text += pipe
+		text.concat(pipe)
 		loop do
-			val = STDIN.gets
-			break if val.nil?
-			text += val
+			break unless val = STDIN.gets
+			text.concat(val)
 		end
 	end
 
@@ -470,8 +471,8 @@ begin
 		read.each do |arg| ARGV.delete(arg) end
 
 		unless read.empty?
-			f = read[-1].split('=')[1]
-			text = File.read(f) if File.readable?(f) unless f.nil?
+			f = read[-1].split('=')[1].to_s
+			text = File.read(f) if File.readable?(f)
 		end
 
 		net = ARGV.select { |n| n.start_with?('--net=') || n.start_with?('-n=') }
@@ -487,7 +488,7 @@ begin
 					text = open(uri).read
 
 				rescue SocketError
-					chars.call "Failed  to read the URL. Do you have an active internet connection?"
+					colourize.call "Failed  to read the URL. Do you have an active internet connection?"
 					exit! ERR_NO_INTERNET
 
 				rescue SystemExit, Interrupt
@@ -495,9 +496,9 @@ begin
 					print "\n\n"
 
 				rescue Exception
-					chars.call "Sorry an error occurred while trying to open #{uri}"
-					chars.call "Failed to open the URL. Have you mentioned the protocol?"
-					chars.call "Example:\n\thttp://www.example.net"
+					colourize.call "Sorry an error occurred while trying to open #{uri}"
+					colourize.call "Failed to open the URL. Have you mentioned the protocol?"
+					colourize.call "Example:\n\thttp://www.example.net"
 					exit! ERR_SITE_INACCESSIBLE
 				end
 			end
@@ -508,39 +509,36 @@ begin
 	all_chars = ''
 
 	if show_art && display_text
-		text = text.gsub("\n", ' ').gsub("\t", ' ')
-
-		count, init, init_length = 0, borderh * Terminal_Width, Terminal_Width
+		text = ' ' + text.gsub("\n", ' ').gsub("\t", ' ')
 	 	text_length = text.length - 1
 
-		all_chars += (corners[0] + init + corners[1] + "\n")
+		count, init, init_length = 0, borderh * Terminal_Width, Terminal_Width - 1
+		all_chars.concat(corners[0] + init + corners[1] + "\n #{borderv}")
 
 		text.each_char.with_index do |c, index|
-
-			all_chars += count == 0 ? " #{borderv} #{c}" : "#{c}"
-			count += 1
-
-			if (count >= init_length - 6 && c == " ") || count >= init_length - 1 || index == text_length
-				all_chars += " " * (init_length - count + 1) + borderv + "\n"
+			all_chars.concat(c)
+			if (count >= init_length - 8 && c == " ") || count >= init_length || index == text_length
+				all_chars.concat(" " * (init_length - count + 2) + borderv)
+				break if  index == text_length
+				all_chars.concat("\n #{borderv} ")
 				count = 0
 			end
+			count += 1
 		end
 
-		a = File.readlines(file)[2..-1]
+		animal = File.readlines(file)[2..-1]
+		max_length = animal.map(&:length).max/2
 
-		max_length = a.map(&:length).max/2
+		colourize.call(all_chars + "\n" + corners[2] + init + corners[3] + "\n")
+		colourize.call(" " * max_length + bubble * 3 + "\n " + ' ' * max_length + bubble * 2 + "\n" + ' ' * max_length +  bubble + "\n" + animal.join)
 
-		chars.call( all_chars + corners[2] + init + corners[3] + "\n")
-		chars.call(" " * max_length + bubble * 3 + "\n " +
-				' ' * max_length + bubble * 2 + "\n" + ' ' * max_length +  bubble + "\n" + a.join)
-
-	elsif show_art then chars.call(File.readlines(file)[2..-1].join)
-	elsif display_text then chars.call(text)
+	elsif show_art then colourize.call(File.readlines(file)[2..-1].join)
+	elsif display_text then colourize.call(text)
 	end
 
 rescue SystemExit, Interrupt
 	printf "\n\n"
-	chars.call('Exiting...')
+	colourize.call('Exiting...')
 	puts
 	exit! 0
 
