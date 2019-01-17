@@ -2,7 +2,7 @@
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior.
-VERSION = "Cowspeak version 2.15"
+VERSION = "Cowspeak version 2.16"
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
