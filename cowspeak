@@ -1,6 +1,7 @@
 #!/usr/bin/ruby -W0
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
+# This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior.
 VERSION = "Cowspeak version 2.15"
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
@@ -8,7 +9,6 @@ PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
 # PATH ||= "/usr/share/cowspeak/"
 
 STDIN.sync, STDOUT.sync = true, true
-
 coloured, blink = true, false
 
 # Errors
@@ -64,8 +64,9 @@ if ARGV.include?('--no-text') || ARGV.include?('-nt')
 end
 
 # Let's make one colour array here so it won't get created everytime in the 'chars' stabby lambda...
-available_colours = [(196..201), (202..207), (208..213), (82..87), (40..45), (214..219),(112..117),
-		(142..147), (46..51), (208..213), (28..33), (34..39), [33, 39, 45, 44, 43, 42, 41]]
+available_colours = [(196..201), (202..207), (208..213), (40..45), (214..219),(112..117),
+		(142..147), (46..51), (208..213), (28..33), (34..39), (70..75), (136..140), (214..219)].map(&:to_a)
+available_colours.concat(available_colours.map(&:reverse))
 
 colourize = ->(string) do
 	string.reverse! if invert
@@ -74,26 +75,23 @@ colourize = ->(string) do
 	enum = string.each_line.reverse_each if reverse
 
 	if coloured
-		selected_colour_array = [available_colours.sample, available_colours.sample.reverse_each].sample.to_a
-
 		# We are not STDOUT.print in the loop, otherwise the output takes 3x time... temp is for that. Also don't += rather than concat.
-		temp = ''
+		temp, selected_colour_array = '', available_colours.sample
 
 		STDOUT.print "\e[5m" if blink
-
 		enum.each do |c|
-			index = 0
 			clength, arr_len = c.length, selected_colour_array.size
-			div = clength/arr_len
+			div, index = clength/arr_len, 0
+			div = 1 if div == 0
+			arr_len -= 1
 
 			clength.times do |i|
-				index += 1 if (i % div == 0 && index <= arr_len - 2) unless (i == 0 || i ==  1 || clength <= arr_len)
+				index += 1 if (i % div == 0 && index < arr_len) unless (i == 0 || i ==  1)
 				temp.concat("\e[38;5;#{selected_colour_array[index]}m#{c[i]}")
-				selected_colour_array = [available_colours.sample, available_colours.sample.reverse_each].sample.to_a if c[i] == "\n" if rotate_colour
 			end
+			selected_colour_array = available_colours.sample if rotate_colour
 		end
-			STDOUT.print(temp)
-			STDOUT.print "\e[0m"
+		STDOUT.print(temp)
 	else
 		STDOUT.print "\e[5m" if blink
 		STDOUT.print enum.map {|ch| ch}.join
@@ -154,7 +152,7 @@ All the Available arguments:
   --no-text/-nt			Don't show any text, show the animal.
   --read=<file>/-r=<file>	Read a file.
   --reverse/-rev		Cowspeak reads upside down!
-  --rotate-colour/-rc		Rotate the output colours in each line.
+  --random-colour/-rc		Randomize the output colours in each line.
   --show-arts/-sa		Show arts in the default directory.
   --text=<text>/-t=<text>	Display a custom text.
   --version/-v			Display the current #{__FILE__} version.\n\n")
@@ -435,7 +433,7 @@ begin
 	# Check if pipe and output is redicred from another program, waste no time on gets if not
 	begin
 		require 'timeout'
-		Timeout::timeout 0.000_000_000_000_1 do pipe = STDIN.gets end
+		Timeout.timeout 0.000_000_000_000_1 do pipe = STDIN.gets end
 	rescue Interrupt
 		exit! 0
 	rescue Exception
