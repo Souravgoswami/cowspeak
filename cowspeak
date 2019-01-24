@@ -1,8 +1,8 @@
 #!/usr/bin/ruby -W0
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
-# This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior.
-VERSION = "Cowspeak version 2.16"
+# This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior. Don't change the VERSION Line No.
+VERSION = "Cowspeak version 2.17"
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
@@ -64,8 +64,7 @@ if ARGV.include?('--no-text') || ARGV.include?('-nt')
 end
 
 # Let's make one colour array here so it won't get created everytime in the 'chars' stabby lambda...
-available_colours = [(196..201), (202..207), (208..213), (40..45), (214..219),(112..117),
-		(142..147), (46..51), (208..213), (28..33), (34..39), (70..75), (136..140), (214..219)].map(&:to_a)
+available_colours = [196..201, 202..207, 208..213, 40..45, 214..219, 112..117, 142..147, 46..51, 28..33, 34..39, 70..75, 136..140].map(&:to_a)
 available_colours.concat(available_colours.map(&:reverse))
 
 colourize = ->(string) do
@@ -128,6 +127,7 @@ if ARGV.include?('--version') || ARGV.include?('-v')
 end
 
 help = ->(documentation=false) {
+rotate_colour = true
 colourize.call(
 "Hi, my name is cowspeak. I speak a quote on your terminal.
 
@@ -155,9 +155,10 @@ All the Available arguments:
   --random-colour/-rc		Randomize the output colours in each line.
   --show-arts/-sa		Show arts in the default directory.
   --text=<text>/-t=<text>	Display a custom text.
-  --version/-v			Display the current #{__FILE__} version.\n\n")
+  --version/-v			Display the current #{__FILE__} version.
+  --update/-u			Update cowspeak if possible.\n\n")
 
-exit! 0 if !documentation
+exit! 0 unless documentation
 }
 
 if ARGV.include?('--documentation') || ARGV.include?('-d') || ARGV.include?('--manual') || ARGV.include?('-m')
@@ -252,7 +253,7 @@ exit! 0
 end
 
 # Take exceptions very very seriously. Handle them very gently.
-exception_handle = ->(error) {
+exception_handle = ->(error='') {
 	colourize.call "Uh oh! Sorry, #{__FILE__} has Encountered an Error.\n"
 	colourize.call("Select one of the following:
 		1. Exit.
@@ -264,24 +265,69 @@ exception_handle = ->(error) {
 
 	case STDIN.gets.to_i
 		when 2 then help.call
-		when 3 then colourize.call(error.to_s + "\n") ; exit! ERR_DIAGNOSED
+		when 3 then colourize.call(error.to_s + "\n")
 		when 4
 			File.open('/tmp/cowspeak-log.txt', 'a+') do |log_file|
 				log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{error}\n#{error.backtrace.join("\n")}\n\n")
 				colourize.call('The error has been written to /tmp/cowspeak-log.txt')
 			end
-			exit! ERR_DIAGNOSED
 		when 5
 			colourize.call("Please contact <souravgoswami@protonmail.com>\n")
 			colourize.call("Notify us about:\n#{error}\n#{error.backtrace.join("\n")} in #{__FILE__}\n")
-		else exit! ERR_DIAGNOSED
 	end
+	exit! ERR_DIAGNOSED
 }
 
 if ARGV.include?('--help') || ARGV.include?('-h')
 	ARGV.delete('--help')
 	ARGV.delete('-h')
 	help.call
+end
+
+if ARGV.include?('--update') || ARGV.include?('-u')
+	require 'net/http'
+
+	ARGV.delete('--update')
+	ARGV.delete('-u')
+
+	puts colourize.call('Looking for updates! Please wait a moment...')
+
+	current_version =  VERSION.scan(/\d+.\d+/).join.to_f
+	puts colourize.[] "Current version: #{current_version}"
+
+	begin
+		downloaded_data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak'))
+	rescue SocketError
+		puts colourize.call "Can't get version info of cowspeak. Do you have an active internet connection?"
+		exit! ERR_NO_INTERNET
+	rescue Exception => e
+		puts colourize.call 'Something weird happened while trying to contact the server.'
+		exception_handle.call(e)
+	end
+
+	download_version = downloaded_data.to_s.split("\n")[4].to_s.scan(/\d+.\d+/).join.to_f
+
+	if current_version >= download_version
+		puts colourize.call "#{__FILE__} is up to date! Nothing to do."
+	else
+		puts colourize.call "A new update is available."
+		puts colourize.call "Update to version #{download_version}? (Y/n)"
+
+		exit 0 if STDIN.gets.strip.downcase == 'n'
+
+		begin
+			puts colourize.call "Trying to update #{File.dirname(__FILE__)}/#{__FILE__}"
+			File.write(__FILE__, downloaded_data)
+			puts colourize.call "Updated #{File.dirname(__FILE__)}/#{__FILE__}"
+			ARGV << '--download'
+		rescue Errno::EACCES
+			puts colourize.call("Permission Denied while trying to overwrite the contents of #{File.dirname(__FILE__)}/#{__FILE__}")
+			exit! ERR_NO_PERMISSION
+		rescue Exception
+			puts colourize.call "Something wrong happened while trying to overwrite #{File.dirname(__FILE__)}/#{__FILE__}"
+			exception_handle.call(e)
+		end
+	end
 end
 
 if ARGV.include?('--download') || ARGV.include?('-dl')
@@ -349,7 +395,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 
 			colourize.call "All Done!\n"
 			colourize.call "To see the available arts, type: #{__FILE__} --show-arts or -sa\n"
-			colourize.call "Here's a sweet quote for you!\n"
+			colourize.call "Here's a fortune for you!\n"
 		else
 			colourize.call "Sorry for the inconvenience. Something went terribly wrong (can't access one of the file).\n"
 			colourize.call "If the problem persists, contact: souravgoswami@protonmail.com.\n"
