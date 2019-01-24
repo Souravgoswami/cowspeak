@@ -2,11 +2,19 @@
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior. Don't change the VERSION Line No.
-VERSION = "Cowspeak version 2.17"
+VERSION = "Cowspeak version 2.18"
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
+SOURCE_CODE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak'
+MAN_PAGE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz'
+MAN_PAGE_DIR = "#{PATH}cowspeak.1.gz"
+
+# Uncomment ONLY if ALL of the ABOVE declarations are COMMENTED (except VERSION)
 # PATH ||= "/usr/share/cowspeak/"
+# SOURCE_CODE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak'
+# MAN_PAGE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/share/man/man1/cowspeak.1.gz'
+# MAN_PAGE_DIR ||= '/usr/share/man/man1/cowspeak.1.gz'
 
 STDIN.sync, STDOUT.sync = true, true
 coloured, blink = true, false
@@ -68,7 +76,7 @@ available_colours = [196..201, 202..207, 208..213, 40..45, 214..219, 112..117, 1
 available_colours.concat(available_colours.map(&:reverse))
 
 colourize = ->(string) do
-	string.reverse! if invert
+	string = string.strip.reverse.concat("\n") if invert
 
 	enum = string.each_line unless reverse
 	enum = string.each_line.reverse_each if reverse
@@ -80,14 +88,16 @@ colourize = ->(string) do
 		STDOUT.print "\e[5m" if blink
 		enum.each do |c|
 			clength, arr_len = c.length, selected_colour_array.size
-			div, index = clength/arr_len, 0
+			div, index, i = clength/arr_len, 0, 0
 			div = 1 if div == 0
 			arr_len -= 1
 
-			clength.times do |i|
+			while i < clength
 				index += 1 if (i % div == 0 && index < arr_len) unless (i == 0 || i ==  1)
 				temp.concat("\e[38;5;#{selected_colour_array[index]}m#{c[i]}")
+				i += 1
 			end
+
 			selected_colour_array = available_colours.sample if rotate_colour
 		end
 		STDOUT.print(temp)
@@ -96,6 +106,7 @@ colourize = ->(string) do
 		STDOUT.print enum.map {|ch| ch}.join
 	end
 	STDOUT.print("\e[0m")
+	nil
 end
 
 # Determine the terminal size. NOTE: STDIN.winsize instead of STDOUT.winsize will raise Errno::ENOTTY when reading output for pipe.
@@ -143,6 +154,7 @@ All the Available arguments:
   --documentation/-d        	Display the documentation.
   --download/-dl		Download missing files from Github.
   --file=<path>/-f=<path>	Specify the path of your own ASCII art.
+  --force-update/-fu		Forcefully update (also see --update)
   --help/-h                 	Display help.
   --invert/-inv			Invert the output (right <- left in English)!
   --manual/-m                	Display a manual. Same as documentation.
@@ -152,7 +164,7 @@ All the Available arguments:
   --no-text/-nt			Don't show any text, show the animal.
   --read=<file>/-r=<file>	Read a file.
   --reverse/-rev		Cowspeak reads upside down!
-  --random-colour/-rc		Randomize the output colours in each line.
+  --rotate-colour/-rc		Rotate the output colours in each line.
   --show-arts/-sa		Show arts in the default directory.
   --text=<text>/-t=<text>	Display a custom text.
   --version/-v			Display the current #{__FILE__} version.
@@ -196,7 +208,7 @@ Help:
 #{__FILE__} -d or --documentation or --manual or -m for this documentation.
 Creating Custom Art:
 You can make your own art. Run #{__FILE__} --art or #{__FILE__} -a for more information.
-Update Download all the files:
+Update/Download all the files:
 If you are missing some files, then please take a moment to download all the files from Github.
 To do that, run:
 	cowspeak --download or -d
@@ -207,12 +219,7 @@ exit! 0
 end
 
 if ARGV.include?('--show-arts') || ARGV.include?('-sa')
-	Dir.entries(PATH + 'arts').sort.each do |file|
-		unless file == '.' || file == '..'
-			colourize.call(File.read(PATH + 'arts/' + file) + "\nPath: #{PATH + 'arts' + file}")
-			puts
-		end
-	end
+	Dir.entries(PATH + 'arts').sort.each { |file| puts colourize.call(File.read(PATH + 'arts/' + file) + "\nPath: #{PATH + 'arts' + file}") unless file == '.' || file == '..' }
 	exit! 0
 end
 
@@ -284,48 +291,77 @@ if ARGV.include?('--help') || ARGV.include?('-h')
 	help.call
 end
 
-if ARGV.include?('--update') || ARGV.include?('-u')
+# Check if force update is enabled
+force_update = (ARGV.include?('--force-update') || ARGV.include?('-fu'))
+ARGV.delete('--force-update')
+ARGV.delete('-fu')
+
+# Check for updates.
+if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 	require 'net/http'
 
 	ARGV.delete('--update')
 	ARGV.delete('-u')
 
 	puts colourize.call('Looking for updates! Please wait a moment...')
-
 	current_version =  VERSION.scan(/\d+.\d+/).join.to_f
-	puts colourize.[] "Current version: #{current_version}"
 
 	begin
-		downloaded_data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak'))
+		downloaded_data, raw_man_page = Net::HTTP.get(URI(SOURCE_CODE)), Net::HTTP.get(URI(MAN_PAGE))
+		puts colourize.call("Current version: #{current_version}")
+
 	rescue SocketError
 		puts colourize.call "Can't get version info of cowspeak. Do you have an active internet connection?"
 		exit! ERR_NO_INTERNET
+
 	rescue Exception => e
 		puts colourize.call 'Something weird happened while trying to contact the server.'
 		exception_handle.call(e)
 	end
 
 	download_version = downloaded_data.to_s.split("\n")[4].to_s.scan(/\d+.\d+/).join.to_f
+	new_version = download_version > current_version
 
-	if current_version >= download_version
+	unless new_version || force_update
 		puts colourize.call "#{__FILE__} is up to date! Nothing to do."
 	else
-		puts colourize.call "A new update is available."
-		puts colourize.call "Update to version #{download_version}? (Y/n)"
+		puts colourize.call "A new update is available." if new_version
+		puts colourize.call "#{new_version ? 'U' : 'Reu'}pdate to version #{download_version}? (Y/n)"
 
 		exit 0 if STDIN.gets.strip.downcase == 'n'
 
 		begin
-			puts colourize.call "Trying to update #{File.dirname(__FILE__)}/#{__FILE__}"
+			puts colourize.call "Trying to update #{__FILE__}"
 			File.write(__FILE__, downloaded_data)
-			puts colourize.call "Updated #{File.dirname(__FILE__)}/#{__FILE__}"
+			puts colourize.call "Updated #{__FILE__}"
+
 			ARGV << '--download'
+
 		rescue Errno::EACCES
-			puts colourize.call("Permission Denied while trying to overwrite the contents of #{File.dirname(__FILE__)}/#{__FILE__}")
+			puts colourize.call("Permission Denied while trying to overwrite the contents of #{__FILE__}")
 			exit! ERR_NO_PERMISSION
-		rescue Exception
-			puts colourize.call "Something wrong happened while trying to overwrite #{File.dirname(__FILE__)}/#{__FILE__}"
+
+		rescue Exception => e
+			puts colourize.call "Something wrong happened while trying to overwrite #{__FILE__}"
 			exception_handle.call(e)
+		end
+
+		puts colourize.call "Update the man page at /usr/share/man/man1/cowspeak.1? (Y/n)"
+
+		unless STDIN.gets.strip.downcase == 'n'
+			begin
+				puts colourize.call "Trying to update #{MAN_PAGE_DIR}"
+				File.write(MAN_PAGE_DIR, raw_man_page)
+				puts colourize.call "Man page updated."
+
+			rescue Errno::EACCES
+				puts colourize.call("Permission Denied while trying to overwrite the contents of #{__FILE__}")
+				exit! ERR_NO_PERMISSION
+
+			rescue Exception => e
+				puts colourize.call "Something wrong happened while trying to overwrite #{__FILE__}"
+				exception_handle.call(e)
+			end
 		end
 	end
 end
@@ -359,8 +395,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 				colourize.call "Created directory #{PATH}arts/\n"
 			end
 
-			colourize.call "Downloading art files...\n"
-			puts
+			puts colourize.call "Downloading art files...\n"
 
 			# Install the art files...
 			uris = %w(
@@ -388,9 +423,8 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 			uris.size.times do |index|
 				File.write("#{PATH + "arts/" + write_to[index]}.art", Net::HTTP.get(URI(uris[index])))
 
-				colourize.call "Successfully installed an art file at #{PATH}arts/\n"
-				colourize.call "#{File.read(PATH + 'arts/' + write_to[index] + '.art').split("\n")[0..1].join("\n")}\n"
-				puts
+				puts colourize.call "Successfully installed an art file at #{PATH}arts/"
+				puts colourize.call "#{File.read(PATH + 'arts/' + write_to[index] + '.art').split("\n")[0..1].join("\n")}"
 			end
 
 			colourize.call "All Done!\n"
@@ -582,8 +616,7 @@ begin
 
 rescue SystemExit, Interrupt
 	printf "\n\n"
-	colourize.call('Exiting...')
-	puts
+	puts colourize.call('Exiting...')
 	exit! 0
 
 rescue Exception => e
