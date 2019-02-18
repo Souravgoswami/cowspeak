@@ -2,7 +2,7 @@
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior. Don't change the VERSION Line No.
-VERSION = "Cowspeak version 2.19"
+VERSION = "Cowspeak version 2.20"
 
 NEW_FEATURES = "1.\tAdded new colours.\n2.\tSpeed improved."
 
