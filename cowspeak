@@ -2,7 +2,11 @@
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior. Don't change the VERSION Line No.
-VERSION = "Cowspeak version 2.18"
+VERSION = "Cowspeak version 2.19"
+
+New_Features = "
+	1.	Added new colours.
+	2. 	Speed improved."
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
@@ -72,7 +76,9 @@ if ARGV.include?('--no-text') || ARGV.include?('-nt')
 end
 
 # Let's make one colour array here so it won't get created everytime in the 'chars' stabby lambda...
-available_colours = [196..201, 202..207, 208..213, 40..45, 214..219, 112..117, 142..147, 46..51, 28..33, 34..39, 70..75, 136..140].map(&:to_a)
+available_colours = [196..201, 208..213, 40..45, 28..33, [154, 184, 208, 203, 198, 164, 129, 92], [63, 33, 39, 44, 49, 83, 118],
+						[40,41,42,43,211, 210, 209, 208]].map(&:to_a)
+
 available_colours.concat(available_colours.map(&:reverse))
 
 colourize = ->(string) do
@@ -82,7 +88,7 @@ colourize = ->(string) do
 	enum = string.each_line.reverse_each if reverse
 
 	if coloured
-		# We are not STDOUT.print in the loop, otherwise the output takes 3x time... temp is for that. Also don't += rather than concat.
+		# We are not STDOUT.print in the loop, otherwise the output takes 3x time... temp is for that. Also, don't += rather than concat.
 		temp, selected_colour_array = '', available_colours.sample
 
 		STDOUT.print "\e[5m" if blink
@@ -93,7 +99,7 @@ colourize = ->(string) do
 			arr_len -= 1
 
 			while i < clength
-				index += 1 if (i % div == 0 && index < arr_len) unless (i == 0 || i ==  1)
+				index += 1 if (i % div == 0 && index < arr_len) && i > 1
 				temp.concat("\e[38;5;#{selected_colour_array[index]}m#{c[i]}")
 				i += 1
 			end
@@ -125,7 +131,7 @@ end
 
 # Don't run the program if the terminal width is too small (atleast 32 is needed for default arts)
 until STDOUT.winsize[1] > 31
-	printf "\e[H\e[J"
+	printf "\e[3J\e[H\e[2J"
 	colourize.call("The terminal is too narrow. Please make it bigger\n")
 	sleep 0.1
 end
@@ -326,6 +332,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		puts colourize.call "#{__FILE__} is up to date! Nothing to do."
 	else
 		puts colourize.call "A new update is available." if new_version
+		puts colourize.call("Version: #{download_version}" + New_Features) if defined?(New_Features)
 		puts colourize.call "#{new_version ? 'U' : 'Reu'}pdate to version #{download_version}? (Y/n)"
 
 		exit 0 if STDIN.gets.strip.downcase == 'n'
@@ -587,28 +594,29 @@ begin
 	all_chars = ''
 
 	if show_art && display_text
-		text = ' ' + text.gsub("\n", ' ').gsub("\t", ' ')
-	 	text_length = text.length - 1
+		text = ' ' + text.gsub("\n", ' ').gsub("\t", ' ')	# gsub is faster than tr, and gsub won't raise 'invalid byte sequence' ArgumentError for weird characters.
 
 		count, init, init_length = 0, borderh * Terminal_Width, Terminal_Width - 1
-		all_chars.concat(corners[0] + init + corners[1] + "\n #{borderv}")
+		all_chars.concat("#{corners[0]}#{init}#{corners[1]}\n #{borderv}")
 
-		text.each_char.with_index do |c, index|
+		text.each_char do |c|
 			all_chars.concat(c)
-			if (count >= init_length - 8 && c == " ") || count >= init_length || index == text_length
+
+			if (count >= init_length - 8 && c == " ") || count >= init_length
 				all_chars.concat(" " * (init_length - count + 2) + borderv)
-				break if  index == text_length
 				all_chars.concat("\n #{borderv} ")
 				count = 0
 			end
+
 			count += 1
 		end
+		all_chars.concat(" " * (init_length - count + 3) + borderv)
 
 		animal = File.readlines(file)[2..-1]
 		max_length = animal.map(&:length).max/2
 
-		colourize.call(all_chars + "\n" + corners[2] + init + corners[3] + "\n")
-		colourize.call(" " * max_length + bubble * 3 + "\n " + ' ' * max_length + bubble * 2 + "\n" + ' ' * max_length +  bubble + "\n" + animal.join)
+		colourize.call(all_chars + "\n" + corners[2] + init + corners[3] + "\n" +
+			" " * max_length + bubble * 3 + "\n " + ' ' * max_length + bubble * 2 + "\n" + ' ' * max_length +  bubble + "\n" + animal.join)
 
 	elsif show_art then colourize.call(File.readlines(file)[2..-1].join)
 	elsif display_text then colourize.call(text)
@@ -619,6 +627,6 @@ rescue SystemExit, Interrupt
 	puts colourize.call('Exiting...')
 	exit! 0
 
-rescue Exception => e
-	exception_handle.call(e)
+# rescue Exception => e
+	# exception_handle.call(e)
 end
