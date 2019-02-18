@@ -2,7 +2,7 @@
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior. Don't change the VERSION Line No.
-VERSION = "Cowspeak version 2.20"
+VERSION = "Cowspeak version 2.21"
 
 NEW_FEATURES = "1.\tAdded new colours.\n2.\tSpeed improved."
 
@@ -308,7 +308,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 	ARGV.delete('-u')
 
 	puts colourize.call('Looking for updates! Please wait a moment...')
-	current_version =  VERSION.scan(/\d+.\d+/).join.to_f
+	current_version =  VERSION.scan(/\d+.\d+/).join
 
 	begin
 		downloaded_data, raw_man_page = Net::HTTP.get(URI(SOURCE_CODE)), Net::HTTP.get(URI(MAN_PAGE))
@@ -324,13 +324,13 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 	end
 
 	download_version = downloaded_data.to_s.split("\n").select { |line| line.start_with?('VERSION') }[0].to_s.scan(/\d+.\d+/).to_a[0]
-	new_version = download_version.to_f > current_version
+	new_version = download_version.to_f > current_version.to_f
 
 	unless new_version || force_update
 		puts colourize.call "#{__FILE__} is up to date! Nothing to do."
 	else
 		puts colourize.call "A new update is available." if new_version
-		puts colourize.call("Version: #{download_version}\n")
+		puts colourize.call("New Version: #{download_version}\n")
 
 		puts(colourize.call(eval(downloaded_data.to_s.split("\n").select { |line| line.start_with?('NEW_FEATURES') }[0].to_s.split('=')[1].to_s)))
 		puts
