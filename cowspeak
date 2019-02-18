@@ -2,7 +2,7 @@
 # Written by Sourav Goswami
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior. Don't change the VERSION Line No.
-VERSION = "Cowspeak version 2.20"
+VERSION = "Cowspeak version 2.19"
 
 NEW_FEATURES = "1.\tAdded new colours.\n2.\tSpeed improved."
 
@@ -323,8 +323,8 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		exception_handle.call(e)
 	end
 
-	download_version = downloaded_data.to_s.split("\n").select { |line| line.start_with?('VERSION') }[0].to_s.scan(/\d+.\d+/).to_a[0].to_f
-	new_version = download_version > current_version
+	download_version = downloaded_data.to_s.split("\n").select { |line| line.start_with?('VERSION') }[0].to_s.scan(/\d+.\d+/).to_a[0]
+	new_version = download_version.to_f > current_version
 
 	unless new_version || force_update
 		puts colourize.call "#{__FILE__} is up to date! Nothing to do."
