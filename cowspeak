@@ -4,9 +4,7 @@
 # This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior. Don't change the VERSION Line No.
 VERSION = "Cowspeak version 2.19"
 
-New_Features = "
-	1.	Added new colours.
-	2. 	Speed improved."
+"1.\tAdded new colours.\n2.\tSpeed improved."
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
