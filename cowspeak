@@ -629,6 +629,6 @@ rescue SystemExit, Interrupt
 	puts colourize.call('Exiting...')
 	exit! 0
 
-# rescue Exception => e
-	# exception_handle.call(e)
+rescue Exception => e
+	exception_handle.call(e)
 end
