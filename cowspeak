@@ -323,7 +323,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		exception_handle.call(e)
 	end
 
-	download_version = downloaded_data.to_s.split("\n")[4].to_s.scan(/\d+.\d+/).join.to_f
+	download_version = downloaded_data.to_s.split("\n").select { |line| line.start_with?('VERSION') }[0].to_s.scan(/\d+.\d+/).to_a[0].to_f
 	new_version = download_version > current_version
 
 	unless new_version || force_update
@@ -332,7 +332,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		puts colourize.call "A new update is available." if new_version
 		puts colourize.call("Version: #{download_version}\n")
 
-		puts(colourize.call(eval(downloaded_data.split("\n").select { |line| line.start_with?('NEW_FEATURES') }[0].split('=')[1])))
+		puts(colourize.call(eval(downloaded_data.to_s.split("\n").select { |line| line.start_with?('NEW_FEATURES') }[0].to_a.split('=')[1].to_s)))
 		puts
 
 		puts colourize.call "#{new_version ? 'U' : 'Reu'}pdate to version #{download_version}? (Y/n)"
