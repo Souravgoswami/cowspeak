@@ -4,7 +4,7 @@
 # This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior. Don't change the VERSION Line No.
 VERSION = "Cowspeak version 2.19"
 
-"1.\tAdded new colours.\n2.\tSpeed improved."
+NEW_FEATURES = "1.\tAdded new colours.\n2.\tSpeed improved."
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
@@ -330,7 +330,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		puts colourize.call "#{__FILE__} is up to date! Nothing to do."
 	else
 		puts colourize.call "A new update is available." if new_version
-		puts colourize.call("Version: #{download_version}" + New_Features) if defined?(New_Features)
+		puts colourize.call("Version: #{download_version}" + NEW_FEATURES) if defined?(NEW_FEATURES)
 		puts colourize.call "#{new_version ? 'U' : 'Reu'}pdate to version #{download_version}? (Y/n)"
 
 		exit 0 if STDIN.gets.strip.downcase == 'n'
