@@ -2,7 +2,7 @@
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout, socket. They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5.
-VERSION = "Cowspeak version 2.22"
+VERSION = "Cowspeak version 2.23"
 
 NEW_FEATURES = "1.\tAdded --welcome option (Run cowspeak --help for more)!\n2.\tCowspeak will now be able to read new line characters (\"\\n\")!\n3.\tBugs Fixed.\n4.\tSpeed Improvement."
 
@@ -19,7 +19,6 @@ MAN_PAGE_DIR = "#{PATH}cowspeak.1.gz"
 # MAN_PAGE_DIR ||= '/usr/share/man/man1/cowspeak.1.gz'
 
 STDIN.sync, STDOUT.sync = true, true
-coloured, blink = true, false
 
 # Errors
 ERR_NO_TTY = 128
@@ -32,46 +31,54 @@ ERR_NO_PERMISSION = 61
 ERR_DIAGNOSED = 100
 
 # Check if the output should colourized
-if ARGV.include?('--no-colour') || ARGV.include?('-nc')
+coloured = if ARGV.include?('--no-colour') || ARGV.include?('-nc')
 	ARGV.delete('--no-colour')
 	ARGV.delete('-nc')
-	coloured = false
+	false
+else
+	true
 end
 
 # Check if the output should be blinked
-if ARGV.include?('--blink') || ARGV.include?('-b')
+blink = if ARGV.include?('--blink') || ARGV.include?('-b')
 	ARGV.delete('--blink')
 	ARGV.delete('-b')
-	blink = true
+	true
+else
+	false
 end
 
 # Check if the colour should be rotated in each line
-rotate_colour = false
-if ARGV.include?('--rotate-colour')  || ARGV.include?('-rc')
+rotate_colour = if ARGV.include?('--rotate-colour')  || ARGV.include?('-rc')
 	ARGV.delete('--rotate_colour')
 	ARGV.delete('-rc')
-	rotate_colour = true
+	true
+else
+	false
 end
 
-invert = false
-if ARGV.include?('--invert') || ARGV.include?('-inv')
+invert = if ARGV.include?('--invert') || ARGV.include?('-inv')
 	ARGV.delete('--invert')
 	ARGV.delete('-inv')
-	invert = true
+	true
+else
+	false
 end
 
-reverse = false
-if ARGV.include?('--reverse') || ARGV.include?('-rev')
+reverse = if ARGV.include?('--reverse') || ARGV.include?('-rev')
 	ARGV.delete('--reverse')
 	ARGV.delete('-rev')
-	reverse = true
+	true
+else
+	false
 end
 
-display_text = true
-if ARGV.include?('--no-text') || ARGV.include?('-nt')
+display_text = if ARGV.include?('--no-text') || ARGV.include?('-nt')
 	ARGV.delete('--no-text')
 	ARGV.delete('-nt')
-	display_text = false
+	false
+else
+	true
 end
 
 # Let's make one colour array here so it won't get created everytime in the 'chars' stabby lambda...
@@ -128,12 +135,8 @@ rescue Exception
 	exit!
 end
 
-# Don't run the program if the terminal width is too small (atleast 32 is needed for default arts)
-until STDOUT.winsize[1] > 31
-	printf "\e[3J\e[H\e[2J"
-	colourize.call("The terminal is too narrow. Please make it bigger\n")
-	sleep 0.1
-end
+# We have removed the terminal size check. That causes issue on small terminals like termux, asking the user to make the texts smaller.
+# In an SSH session that could be catastrophic! Now, you will see broken texts instead of the message in an infinite until loop!!
 
 show_version = false
 if ARGV.include?('--version') || ARGV.include?('-v')
@@ -471,18 +474,10 @@ if ARGV.include?('--no-art') || ARGV.include?('-na')
 end
 
 borderh = ARGV.select { |a| a.start_with?('--borderh=') || a.start_with?('-brh=') }[-1].to_s
-unless borderh.empty?
-	borderh = borderh.split('=')[1].to_s.chars.sample.to_s
-else
-	borderh = '='
-end
+borderh = borderh.empty? ? '=' : borderh.split('=')[1].to_s.chars.sample.to_s
 
 borderv = ARGV.select { |a| a.start_with?('--borderv=') || a.start_with?('-brv=')  }[-1].to_s
-unless borderv.empty?
-	borderv = borderv.split('=')[1].to_s.chars.sample.to_s
-else
-	borderv = '|'
-end
+borderv = borderv.empty? ? '|' : borderv.split('=')[1].to_s.chars.sample.to_s
 
 bubble = ARGV.select { |a| a.start_with?('--bubble=') || a.start_with?('-bbl=') }[-1].to_s
 if bubble
@@ -495,10 +490,8 @@ begin
 	file.each do |arg| ARGV.delete(arg) end
 
 	if file[-1]
-		if file[-1].split('=')[1]
-			file = file[-1].split('=')[1]
-		else
-			file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art"
+		file = if file[-1].split('=')[1] then file[-1].split('=')[1]
+		else PATH + "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art"
 		end
 	else
 			file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel turtle).sample}.art"
@@ -546,22 +539,25 @@ begin
 	elsif ARGV.include?('--welcome') || ARGV.include?('-w')
 		require 'socket'
 		user, logname, hostname, time = ENV['USER'].split.map(&:capitalize).join, ENV['LOGNAME'], Socket.gethostname, Time.new.strftime('%B %d, %A, %H:%M:%S')
-		dir, files, blksize = Dir.pwd, Dir.entries(Dir.pwd)[2..-1].count
+		files = Dir.entries(Dir.pwd)[2..-1].count
 
-		if File.readable?('/etc/os-release')
-			os = IO.readlines('/etc/os-release')[0].split('=')[1].strip.scan(/[a-z0-9A-Z\s]/).join + ' ' + RUBY_PLATFORM.split('-')[0]
+		os = if File.readable?('/etc/os-release')
+			"#{IO.readlines('/etc/os-release')[0].split('=')[1].strip.scan(/[a-z0-9A-Z\s]/).join} (#{RUBY_PLATFORM})"
 		elsif File.readable?('/etc/lsb-release')
-			os = IO.readlines('/etc/lsb-release')[0].split('=')[1].strip.scan(/[a-z0-9A-Z\s]/).join + ' ' + RUBY_PLATFORM.split('-')[0]
+			"#{IO.readlines('/etc/os-release')[0].split('=')[1].strip.scan(/[a-z0-9A-Z\s]/).join} (#{RUBY_PLATFORM})"
 		else
-			os = 'Cannot obtain OS details'
+			'Cannot obtain OS details'
 		end
 
-		uptime = File.readable?('/proc/uptime') ? IO.read('/proc/uptime').split[0].to_i : 0
+		uptime = File.readable?('/proc/uptime') ? IO.read('/proc/uptime').split[0].to_i : '0'
 		up = "#{(uptime/3600)} " + ((uptime/3600) != 1 ? 'hours' : 'hour') + ', '
 		up += "#{(uptime % 3600 / 60)} " + ((uptime % 3600 / 60) != 1 ? 'minutes' : ' minute') + ', '
-		up += "#{(uptime % 3600 % 60)} " + ((uptime % 3600 % 60) != 1 ? 'seconds' : 'second')
+		up += "#{(uptime % 60)} " + ((uptime % 60) != 1 ? 'seconds' : 'second')
 
-		text = "Welcome #{user}!\nLog Name: #{logname} | Host Name: #{hostname}\nOS: #{os}\nUptime: #{up}\nShell: #{ENV['SHELL']}\nPWD: #{Dir.pwd} | #{files} items\nTime: #{time}"
+		session = ENV['DESKTOP_SESSION']
+		session = session ? "Desktop Session: #{session}" : ''
+
+		text = "Welcome #{user}!\nLog Name: #{logname}\nHost Name: #{hostname}\n#{session}\nOS: #{os}\nUptime: #{up}\nShell: #{ENV['SHELL']}\nPWD: #{Dir.pwd} (#{files} items)\nTime: #{time}"
 
 	elsif text.empty?
 		text = ARGV.select { |t| t.start_with?('--text=') || t.start_with?('-t=') }
@@ -624,14 +620,11 @@ begin
 		all_chars.concat("#{corners[0]}#{init}#{corners[1]}\n #{borderv}")
 
 		text.each_char do |c|
-
-			if (count >= init_length - 8 && c == " ") || count >= init_length || c == "\n"
-				all_chars.concat(c == "\n" ? ' ' : c)
-				all_chars.concat(" " * (init_length - count + 2) + borderv)
-				all_chars.concat("\n #{borderv} ")
-				count = 0
-			else
+			unless (count >= init_length - 8 && c == " ") || count >= init_length || c == "\n"
 				all_chars.concat(c)
+			else
+				all_chars.concat((c == "\n" ? ' ' : c) + " " * (init_length - count + 2) + borderv + "\n #{borderv} ")
+				count = 0
 			end
 
 			count += 1
