@@ -549,7 +549,7 @@ begin
 			'Cannot obtain OS details'
 		end
 
-		uptime = File.readable?('/proc/uptime') ? IO.read('/proc/uptime').split[0].to_i : '0'
+		uptime = File.readable?('/proc/uptime') ? IO.read('/proc/uptime').split[0].to_i : 0
 		up = "#{(uptime/3600)} " + ((uptime/3600) != 1 ? 'hours' : 'hour') + ', '
 		up += "#{(uptime % 3600 / 60)} " + ((uptime % 3600 / 60) != 1 ? 'minutes' : ' minute') + ', '
 		up += "#{(uptime % 60)} " + ((uptime % 60) != 1 ? 'seconds' : 'second')
