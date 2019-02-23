@@ -4,7 +4,7 @@
 # This program `require` io/console, open-uri, net/http, timeout, socket. They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5.
 VERSION = "Cowspeak version 2.22"
 
-NEW_FEATURES = "1.\tAdded --welcome option (Run #{__FILE__} --help for more)!\n2. Cowspeak will now be able to read new line characters (\"\\n\")!\n3.\tBugs Fixed.\nSpeed Improvement."
+NEW_FEATURES = "1.\tAdded --welcome option (Run cowspeak --help for more)!\n2.\tCowspeak will now be able to read new line characters (\"\\n\")!\n3.\tBugs Fixed.\n4.\tSpeed Improvement."
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
