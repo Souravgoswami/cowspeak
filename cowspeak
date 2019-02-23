@@ -555,9 +555,9 @@ begin
 		up += "#{(uptime % 60)} " + ((uptime % 60) != 1 ? 'seconds' : 'second')
 
 		session = ENV['DESKTOP_SESSION']
-		session = session ? "Desktop Session: #{session}" : ''
+		session = session ? "Desktop Session: #{session}\n" : ''
 
-		text = "Welcome #{user}!\nLog Name: #{logname}\nHost Name: #{hostname}\n#{session}\nOS: #{os}\nUptime: #{up}\nShell: #{ENV['SHELL']}\nPWD: #{Dir.pwd} (#{files} items)\nTime: #{time}"
+		text = "Welcome #{user}!\nLog Name: #{logname}\nHost Name: #{hostname}\n#{session}OS: #{os}\nUptime: #{up}\nShell: #{ENV['SHELL']}\nPWD: #{Dir.pwd} (#{files} items)\nTime: #{time}"
 
 	elsif text.empty?
 		text = ARGV.select { |t| t.start_with?('--text=') || t.start_with?('-t=') }
