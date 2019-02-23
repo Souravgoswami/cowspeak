@@ -1,10 +1,10 @@
 #!/usr/bin/ruby -W0
-# Written by Sourav Goswami
+# Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
-# This program `require` io/console, open-uri, net/http, timeout. They are loaded as needed Search for 'require' in your editior. Don't change the VERSION Line No.
-VERSION = "Cowspeak version 2.21"
+# This program `require` io/console, open-uri, net/http, timeout, socket. They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5.
+VERSION = "Cowspeak version 2.22"
 
-NEW_FEATURES = "1.\tAdded new colours.\n2.\tSpeed improved."
+NEW_FEATURES = "1.\tAdded --welcome option (Run #{__FILE__} --help for more)!\n2. Cowspeak will now be able to read new line characters (\"\\n\")!\n3.\tBugs Fixed.\nSpeed Improvement."
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files/"
@@ -24,6 +24,7 @@ coloured, blink = true, false
 # Errors
 ERR_NO_TTY = 128
 ERR_FILE_NOT_FOUND = 127
+ERR_BAD_FILE = 126
 ERR_NO_INTERNET = 64
 ERR_SITE_INACCESSIBLE = 63
 ERR_DOWNLOAD_UNAVAILABLE = 62
@@ -107,13 +108,13 @@ colourize = ->(string) do
 		STDOUT.print(temp)
 	else
 		STDOUT.print "\e[5m" if blink
-		STDOUT.print enum.map {|ch| ch}.join
+		STDOUT.print enum.to_a.join
 	end
 	STDOUT.print("\e[0m")
 	nil
 end
 
-# Determine the terminal size. NOTE: STDIN.winsize instead of STDOUT.winsize will raise Errno::ENOTTY when reading output for pipe.
+# Determine the terminal size. NOTE: STDIN.winsize instead of STDOUT.winsize will raise Errno::ENOTTY when reading output from stdin redirection.
 begin
 	require 'io/console'
 	Terminal_Width = (STDOUT.winsize[1]/1.4).ceil
@@ -172,7 +173,9 @@ All the Available arguments:
   --show-arts/-sa		Show arts in the default directory.
   --text=<text>/-t=<text>	Display a custom text.
   --version/-v			Display the current #{__FILE__} version.
-  --update/-u			Update cowspeak if possible.\n\n")
+  --update/-u			Update cowspeak if possible.
+  --welcome/-w			Show some system details to the user.\n\n"
+)
 
 exit! 0 unless documentation
 }
@@ -223,7 +226,7 @@ exit! 0
 end
 
 if ARGV.include?('--show-arts') || ARGV.include?('-sa')
-	Dir.entries(PATH + 'arts').sort.each { |file| puts colourize.call(File.read(PATH + 'arts/' + file) + "\nPath: #{PATH + 'arts' + file}") unless file == '.' || file == '..' }
+	Dir.entries(PATH + 'arts').sort.each { |file| puts colourize.call(IO.read(PATH + 'arts/' + file) + "\nPath: #{PATH + 'arts' + file}") unless file == '.' || file == '..' }
 	exit! 0
 end
 
@@ -380,7 +383,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 	ARGV.delete('-dl')
 
 	colourize.call("Download Data from the internet and save them into #{PATH}?(Y/n): ")
-	exit if gets.strip.downcase == 'n'
+	exit if STDIN.gets.strip.downcase == 'n'
 
 	begin
 		require 'net/http'
@@ -432,8 +435,8 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 			uris.size.times do |index|
 				File.write("#{PATH + "arts/" + write_to[index]}.art", Net::HTTP.get(URI(uris[index])))
 
-				puts colourize.call "Successfully installed an art file at #{PATH}arts/"
-				puts colourize.call "#{File.read(PATH + 'arts/' + write_to[index] + '.art').split("\n")[0..1].join("\n")}"
+				puts colourize.call "Successfully installed an art file in #{PATH}arts/"
+				puts colourize.call "#{IO.read(PATH + 'arts/' + write_to[index] + '.art')}\n"
 			end
 
 			colourize.call "All Done!\n"
@@ -452,7 +455,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		exit! ERR_NO_INTERNET
 
 	rescue Errno::EACCES
-		colourize.call "Requires root privilege to write to #{PATH} directory. Please run it with proper permission.\n"
+		colourize.call "Requires root privilege to write to #{PATH} directory. Please run #{__FILE__} with proper permission.\n"
 		exit! ERR_NO_PERMISSION
 
 	rescue Exception => e
@@ -491,14 +494,14 @@ begin
 	file = ARGV.select { |a| a.start_with?('--file') || a.start_with?('-f') }
 	file.each do |arg| ARGV.delete(arg) end
 
-	unless file[-1].nil?
+	if file[-1]
 		if file[-1].split('=')[1]
 			file = file[-1].split('=')[1]
 		else
 			file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art"
 		end
 	else
-			file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art"
+			file = PATH + "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel turtle).sample}.art"
 	end
 
 	unless File.file?(file)
@@ -535,21 +538,42 @@ begin
 			break unless val = STDIN.gets
 			text.concat(val)
 		end
-	end
+		text.chomp!
 
-	if show_version
+	elsif show_version
 		text = VERSION
+
+	elsif ARGV.include?('--welcome') || ARGV.include?('-w')
+		require 'socket'
+		user, logname, hostname, time = ENV['USER'].split.map(&:capitalize).join, ENV['LOGNAME'], Socket.gethostname, Time.new.strftime('%B %d, %A, %H:%M:%S')
+		dir, files, blksize = Dir.pwd, Dir.entries(Dir.pwd)[2..-1].count
+
+		if File.readable?('/etc/os-release')
+			os = IO.readlines('/etc/os-release')[0].split('=')[1].strip.scan(/[a-z0-9A-Z\s]/).join + ' ' + RUBY_PLATFORM.split('-')[0]
+		elsif File.readable?('/etc/lsb-release')
+			os = IO.readlines('/etc/lsb-release')[0].split('=')[1].strip.scan(/[a-z0-9A-Z\s]/).join + ' ' + RUBY_PLATFORM.split('-')[0]
+		else
+			os = 'Cannot obtain OS details'
+		end
+
+		uptime = File.readable?('/proc/uptime') ? IO.read('/proc/uptime').split[0].to_i : 0
+		up = "#{(uptime/3600)} " + ((uptime/3600) != 1 ? 'hours' : 'hour') + ', '
+		up += "#{(uptime % 3600 / 60)} " + ((uptime % 3600 / 60) != 1 ? 'minutes' : ' minute') + ', '
+		up += "#{(uptime % 3600 % 60)} " + ((uptime % 3600 % 60) != 1 ? 'seconds' : 'second')
+
+		text = "Welcome #{user}!\nLog Name: #{logname} | Host Name: #{hostname}\nOS: #{os}\nUptime: #{up}\nShell: #{ENV['SHELL']}\nPWD: #{Dir.pwd} | #{files} items\nTime: #{time}"
+
 	elsif text.empty?
 		text = ARGV.select { |t| t.start_with?('--text=') || t.start_with?('-t=') }
-		text.each do |arg| ARGV.delete(arg) end
+		text.each { |arg| ARGV.delete(arg) }
 
-		unless text.empty? then text = text[-1].split('=')[1] end
+		text = text[-1].split('=')[1] unless text.empty?
 
 		if text.nil? || text.empty?
 			if File.readable?(PATH + "fortunes.data")
-				text = File.read(PATH + "fortunes.data").split("\n%\n").sample
+				text = IO.read(PATH + "fortunes.data").split("\n%\n").sample.gsub("\n", ' ')
 			else
-				text = ("The fortunes database doesn't exist.
+				text = ("The fortune file doesn't exist.
 						Please run #{__FILE__} -dl to download the files to #{PATH}")
 			end
 		end
@@ -559,35 +583,33 @@ begin
 
 		unless read.empty?
 			f = read[-1].split('=')[1].to_s
-			text = File.read(f) if File.readable?(f)
+			text = IO.read(f).chomp if File.readable?(f)
 		end
 
 		net = ARGV.select { |n| n.start_with?('--net=') || n.start_with?('-n=') }
-		net.each do |arg| ARGV.delete(arg) end
+		net.each { |arg| ARGV.delete(arg) }
 
 		unless net.empty?
-			uri = net[-1].split('=')[1]
-			unless uri.nil?
+			uri = net[-1].split('=')[1].to_s
+			begin
 				show_art = false
-				begin
-					require 'net/http'
-					require 'open-uri'
-					text = open(uri).read
+				require 'net/http'
+				require 'open-uri'
+				text = open(uri).read + "\n"
 
-				rescue SocketError
-					colourize.call "Failed  to read the URL. Do you have an active internet connection?\n"
-					exit! ERR_NO_INTERNET
+			rescue SocketError
+				colourize.call "Failed  to read the URL. Do you have an active internet connection?\n"
+				exit! ERR_NO_INTERNET
 
-				rescue SystemExit, Interrupt
-					show_art = true
-					print "\n\n"
+			rescue SystemExit, Interrupt
+				show_art = true
+				print "\n\n"
 
-				rescue Exception
-					colourize.call "Sorry an error occurred while trying to open #{uri}\n"
-					colourize.call "Failed to open the URL. Have you mentioned the protocol?\n"
-					colourize.call "Example:\n\thttp://www.example.net\n"
-					exit! ERR_SITE_INACCESSIBLE
-				end
+			rescue Exception
+				colourize.call "Sorry an error occurred while trying to open #{uri}\n"
+				colourize.call "Failed to open the URL. Have you mentioned the protocol?\n"
+				colourize.call "Example:\n\thttp://www.example.net\n"
+				exit! ERR_SITE_INACCESSIBLE
 			end
 		end
 	end
@@ -596,31 +618,39 @@ begin
 	all_chars = ''
 
 	if show_art && display_text
-		text = ' ' + text.gsub("\n", ' ').gsub("\t", ' ')	# gsub is faster than tr, and gsub won't raise 'invalid byte sequence' ArgumentError for weird characters.
+		text = ' ' + text.gsub("\t", ' ')	# gsub is faster than tr, and gsub won't raise 'invalid byte sequence' ArgumentError for weird characters.
 
 		count, init, init_length = 0, borderh * Terminal_Width, Terminal_Width - 1
 		all_chars.concat("#{corners[0]}#{init}#{corners[1]}\n #{borderv}")
 
 		text.each_char do |c|
-			all_chars.concat(c)
 
-			if (count >= init_length - 8 && c == " ") || count >= init_length
+			if (count >= init_length - 8 && c == " ") || count >= init_length || c == "\n"
+				all_chars.concat(c == "\n" ? ' ' : c)
 				all_chars.concat(" " * (init_length - count + 2) + borderv)
 				all_chars.concat("\n #{borderv} ")
 				count = 0
+			else
+				all_chars.concat(c)
 			end
 
 			count += 1
 		end
 		all_chars.concat(" " * (init_length - count + 3) + borderv)
 
-		animal = File.readlines(file)[2..-1]
+		animal = IO.readlines(file)[2..-1]
+
+		unless animal
+			puts colourize.call "The file #{File.zero?(file) ? 'looks empty' : 'is not properly formatted' }. Run cowspeak --art to get help regarding art."
+			exit! ERR_BAD_FILE
+		end
+
 		max_length = animal.map(&:length).max/2
 
 		colourize.call(all_chars + "\n" + corners[2] + init + corners[3] + "\n" +
 			" " * max_length + bubble * 3 + "\n " + ' ' * max_length + bubble * 2 + "\n" + ' ' * max_length +  bubble + "\n" + animal.join)
 
-	elsif show_art then colourize.call(File.readlines(file)[2..-1].join)
+	elsif show_art then colourize.call(IO.readlines(file)[2..-1].join)
 	elsif display_text then colourize.call(text)
 	end
 
