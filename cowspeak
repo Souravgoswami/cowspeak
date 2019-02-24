@@ -539,7 +539,12 @@ begin
 	elsif ARGV.include?('--welcome') || ARGV.include?('-w')
 		require 'socket'
 		user, logname, hostname, time = ENV['USER'].split.map(&:capitalize).join, ENV['LOGNAME'], Socket.gethostname, Time.new.strftime('%B %d, %A, %H:%M:%S')
-		files = Dir.entries(Dir.pwd)[2..-1].count
+		
+		files = begin
+			" (#{Dir.entries(Dir.pwd)[2..-1].count} items)"
+		rescue Exception
+			''
+		end
 
 		os = if File.readable?('/etc/os-release')
 			"#{IO.readlines('/etc/os-release')[0].split('=')[1].strip.scan(/[a-z0-9A-Z\s]/).join} (#{RUBY_PLATFORM})"
@@ -557,7 +562,7 @@ begin
 		session = ENV['DESKTOP_SESSION']
 		session = session ? "Desktop Session: #{session}\n" : ''
 
-		text = "Welcome #{user}!\nLog Name: #{logname}\nHost Name: #{hostname}\n#{session}OS: #{os}\nUptime: #{up}\nShell: #{ENV['SHELL']}\nPWD: #{Dir.pwd} (#{files} items)\nTime: #{time}"
+		text = "Welcome #{user}!\nLog Name: #{logname}\nHost Name: #{hostname}\n#{session}OS: #{os}\nUptime: #{up}\nShell: #{ENV['SHELL']}\nPWD: #{Dir.pwd}#{files}\nTime: #{time}"
 
 	elsif text.empty?
 		text = ARGV.select { |t| t.start_with?('--text=') || t.start_with?('-t=') }
@@ -575,7 +580,7 @@ begin
 		end
 
 		read = ARGV.select { |r| r.start_with?('--read=') || r.start_with?('-r=') }
-		read.each do |arg| ARGV.delete(arg) end
+		read.each { |arg| ARGV.delete(arg) }
 
 		unless read.empty?
 			f = read[-1].split('=')[1].to_s
