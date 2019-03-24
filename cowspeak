@@ -4,12 +4,12 @@
 # This program `require` io/console, open-uri, net/http, timeout, socket. They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5.
 VERSION = "Cowspeak version 2.24"
 
-NEW_FEATURES = <<-EOF
+NEW_FEATURES = "
 	1. Fixed encoding issues.
 	2. Enhanced welcome screen (--welcome, -w).
 	3. Added --fill=<char> / -fc=<char> option to add
 		more customization to the output.
-EOF
+"
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 # Uncomment the following to run without root.
