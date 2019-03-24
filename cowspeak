@@ -7,7 +7,7 @@ VERSION = "Cowspeak version 2.24"
 NEW_FEATURES = "\t1. Fixed encoding issues.\n\t2. Enhanced welcome screen (--welcome, -w).\n\t3. Added --fill=<char> / -fc=<char> option to add\n\t\tmore customization to the output."
 
 # Debugging purpose
-# puts eval(IO.readlines(__FILE__).select { |x| x.start_with?('NEW_FEATURES') }[0])
+# puts eval(IO.readlines(__FILE__).select { |x| x.start_with?('NEW_FEATURES') }[0].split('=')[1..-1].join)
 
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 # Uncomment the following to run without root.
@@ -332,7 +332,8 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		puts colourize.call "A new update is available." if new_version
 		puts colourize.call("New Version: #{download_version}\n")
 
-		puts(colourize.call(eval(downloaded_data.to_s.split("\n").select { |line| line.start_with?('NEW_FEATURES') }[0].to_s.split('=')[1].to_s)))
+		puts downloaded_data.to_s.split("\n").select { |line| line.start_with?('NEW_FEATURES') }[0].to_s.split('=')[1].to_s
+		puts(colourize.call(eval(downloaded_data.to_s.split("\n").select { |line| line.start_with?('NEW_FEATURES') }[0].to_s.split('=')[1..-1].join.to_s)))
 		puts
 
 		puts colourize.call "#{new_version ? 'U' : 'Reu'}pdate to version #{download_version}? (Y/n)"
