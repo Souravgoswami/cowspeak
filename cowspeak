@@ -6,6 +6,9 @@ VERSION = "Cowspeak version 2.24"
 
 NEW_FEATURES = "\t1. Fixed encoding issues.\n\t2. Enhanced welcome screen (--welcome, -w).\n\t3. Added --fill=<char> / -fc=<char> option to add\n\t\tmore customization to the output."
 
+# Debugging purpose
+# puts eval(IO.readlines(__FILE__).select { |x| x.start_with?('NEW_FEATURES') }[0])
+
 # Set the path where to look for files and download (--download or -d) the new cowspeak files
 # Uncomment the following to run without root.
 
