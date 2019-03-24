@@ -164,8 +164,8 @@ All the Available arguments:
   --bubble=<text>/-bbl=<text> 	Specify the character of speech balloons.
   --documentation/-d        	Display the documentation.
   --download/-dl		Download missing files from Github.
-  --fill=<char>/-fc=<char>	Fill the quote area with a character.
   --file=<path>/-f=<path>	Specify the path of your own ASCII art.
+  --fill=<char>/-fc=<char>	Fill the quote area with a character.
   --force-update/-fu		Forcefully update (also see --update)
   --help/-h                 	Display help.
   --invert/-inv			Invert the output (right <- left in English)!
