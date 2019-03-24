@@ -4,7 +4,7 @@
 # This program `require` io/console, open-uri, net/http, timeout, socket. They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5 to work with older versions.
 VERSION = "Cowspeak version 2.24"
 
-NEW_FEATURES = "\t1. Fixed encoding issues.\n\t2. Enhanced welcome screen (--welcome, -w).\n\t3. Added --fill=<char> / -fc=<char> option to add\n\t\tmore customization to the output."
+NEW_FEATURES = "\t1. Fixed encoding issues.\n\t2. Enhanced welcome screen (--welcome, -w).\n\t3. Added --fill/-fc option to add\n\t\tmore customization to the output."
 
 # Debugging purposefdsa
 # puts eval(IO.readlines(__FILE__).select { |x| x.start_with?('NEW_FEATURES') }[0].split('=')[1..-1].join)
