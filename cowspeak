@@ -1,15 +1,15 @@
-#!/usr/bin/ruby -W0
+#!/usr/bin/env ruby
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
-# This program `require` io/console, open-uri, net/http, timeout, socket. They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5 to work with older versions.
-VERSION = "Cowspeak version 2.24"
+# This program `require` io/console, open-uri, net/http, timeout, socket, (and yes, no optparse)! They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5 to work with older versions.
+VERSION = "Cowspeak version 2.25"
 
-NEW_FEATURES = "\t1. Fixed encoding issues.\n\t2. Enhanced welcome screen (--welcome, -w).\n\t3. Added --fill/-fc option to add\n\t\tmore customization to the output."
+NEW_FEATURES = "\t1. Fixed Bugs.\n\t2. Enhanced welcome screen (--welcome, -w).\n\t3. --welcome will not show `Unknown' details\n\t"
 
-# Debugging purposefdsa
-# puts eval(IO.readlines(__FILE__).select { |x| x.start_with?('NEW_FEATURES') }[0].split('=')[1..-1].join)
+# Debugging purpose
+# puts eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES') }.split('=')[1..-1].join)
 
-# Set the path where to look for files and download (--download or -d) the new cowspeak files
+# Set the path where to look for files and download (--download or -dl) the new cowspeak files
 # Uncomment the following to run without root.
 
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files"
@@ -93,11 +93,10 @@ available_colours = [196..201, 208..213, 40..45, 28..33, [154, 184, 208, 203, 19
 
 available_colours.concat(available_colours.map(&:reverse))
 
-colourize = ->(string) do
-	string = string.strip.reverse.concat("\n") if invert
-
-	enum = string.each_line unless reverse
-	enum = string.each_line.reverse_each if reverse
+# procs are faster for 100 million loops or so! We will be using proc to even save a picosecond (discarded stabby lambda that used before)! :p
+colourize = proc do |string|
+	string = string.reverse.concat("\n") if invert
+	enum = reverse ? string.each_line.reverse_each : string.each_line
 
 	if coloured
 		# We are not STDOUT.print in the loop, otherwise the output takes 3x time... temp is for that. Also, don't += rather than concat.
@@ -116,7 +115,7 @@ colourize = ->(string) do
 				i += 1
 			end
 
-			selected_colour_array = available_colours.sample if rotate_colour
+			selected_colour_array = available_colours.rotate![0] if rotate_colour
 		end
 		STDOUT.print(temp)
 	else
@@ -151,79 +150,91 @@ if ARGV.include?('--version') || ARGV.include?('-v')
 	show_version = true
 end
 
-help = ->(documentation=false) {
-rotate_colour = true
-colourize.call(
-"Hi, my name is cowspeak. I speak a quote on your terminal.
-Usage: Run me from the command line without any arguments, and I will show you a fortune.
-All the Available arguments:
-  --art or -a                   Display a tutorial on adding your own art.
-  --blink or -b			Blink the texts.
-  --borderh=<ch>/-brh=<ch> 	Horizontal border character.
-  --borderv=<ch>/-brv=<ch>	Vertical border character.
-  --bubble=<text>/-bbl=<text> 	Specify the character of speech balloons.
-  --documentation/-d        	Display the documentation.
-  --download/-dl		Download missing files from Github.
-  --file=<path>/-f=<path>	Specify the path of your own ASCII art.
-  --fill=<char>/-fc=<char>	Fill the quote area with a character.
-  --force-update/-fu		Forcefully update (also see --update)
-  --help/-h                 	Display help.
-  --invert/-inv			Invert the output (right <- left in English)!
-  --manual/-m                	Display a manual. Same as documentation.
-  --net=<url>/-n=<url>		Read data from a website (in curl format).
-  --no-art/-na			Don't display the animal.
-  --no-colour/-nc		Don't colourize the output.
-  --no-text/-nt			Don't show any text, show the animal.
-  --read=<file>/-r=<file>	Read a file.
-  --reverse/-rev		Cowspeak reads upside down!
-  --rotate-colour/-rc		Rotate the output colours in each line.
-  --show-arts/-sa		Show arts in the default directory.
-  --text=<text>/-t=<text>	Display a custom text.
-  --version/-v			Display the current #{__FILE__} version.
-  --update/-u			Update cowspeak if possible.
-  --welcome/-w			Show some system details to the user.\n\n"
-)
+help = ->(documentation=false) do
+	rotate_colour, arg_count = true, 0
+	colourize.call(
+		<<~EOF.each_line.map { |el| (el.lstrip.start_with?('-') || el.lstrip.start_with?('--')) ? "#{arg_count += 1}\t#{el}" : el }.join.rstrip.concat("\n")
+			Hi, my name is cowspeak. I speak a quote on your terminal.
+			Usage: Run me from the command line without any arguments, and I will show you a fortune.
 
-exit! 0 unless documentation
-}
+			All the Available arguments:
+			  --art or -a                   Display a tutorial on adding your own art.
+			  --blink or -b			Blink the texts.
+			  --borderh=<ch>/-brh=<ch> 	Horizontal border character.
+			  --borderv=<ch>/-brv=<ch>	Vertical border character.
+			  --bubble=<text>/-bbl=<text> 	Specify the character of speech balloons.
+			  --documentation/-d        	Display the documentation.
+			  --download/-dl		Download missing files from Github.
+			  --file=<path>/-f=<path>	Specify the path of your own ASCII art.
+			  --fill=<char>/-fc=<char>	Fill the quote area with a character.
+			  --force-update/-fu		Forcefully update (also see --update)
+			  --help/-h                 	Display help.
+			  --invert/-inv			Invert the output (right <- left in English)!
+			  --manual/-m                	Display a manual. Same as documentation.
+			  --net=<url>/-n=<url>		Read data from a website (in curl format).
+			  --no-art/-na			Don't display the animal.
+			  --no-colour/-nc		Don't colourize the output.
+			  --no-text/-nt			Don't show any text, show the animal.
+			  --read=<file>/-r=<file>	Read a file.
+			  --reverse/-rev		Cowspeak reads upside down!
+			  --rotate-colour/-rc		Rotate the output colours in each line.
+			  --show-arts/-sa		Show arts in the default directory.
+			  --text=<text>/-t=<text>	Display a custom text.
+			  --version/-v			Display the current #{__FILE__} version.
+			  --update/-u			Update cowspeak if possible.
+			  --welcome/-w			Show some system details to the user.\n\n
+		EOF
+	)
+	exit! 0 unless documentation
+end
 
 if ARGV.include?('--documentation') || ARGV.include?('-d') || ARGV.include?('--manual') || ARGV.include?('-m')
-ARGV.delete('--documentation')
-ARGV.delete('-d')
-ARGV.delete('--manual')
-ARGV.delete('-m')
+	ARGV.delete('--documentation')
+	ARGV.delete('-d')
+	ARGV.delete('--manual')
+	ARGV.delete('-m')
 
 help.call(documentation=true)
-colourize.call(
-"
-Examples:
-	For custom text:
-		cowspeak --text='text' / #{__FILE__} -t='text'
-	To display your own ASCII art:
-		#{__FILE__} --file='path/file.art'
-	To display your own art with your text:
-		#{__FILE__} --file=directory/file.art --text='your text'
-	To read a file from the storage:
-		#{__FILE__} --read='path/file.extension' or #{__FILE__} -r='path/file.extension'
-	Pipe another program's output to cowspeak (also accepts arguments):
-		echo hello | #{__FILE__}
-		echo hello | #{__FILE__} --argument -short_argument
-	To read from the internet in curl format:
-		#{__FILE__} --net=http://www.example.net
-		#{__FILE__} --net=http://www.example.net --argument -short_argument
-Help:
-#{__FILE__} -h or --help for the help message.
-#{__FILE__} -d or --documentation or --manual or -m for this documentation.
-Creating Custom Art:
-You can make your own art. Run #{__FILE__} --art or #{__FILE__} -a for more information.
-Update/Download all the files:
-If you are missing some files, then please take a moment to download all the files from Github.
-To do that, run:
-	cowspeak --download or -d
-	It will download all the necessary files. This will download less than 400 KiB files from the internet.
-	NOTE: This argument will write files to #{PATH}/ directory.\n\n")
+	colourize.call(<<-EOF.each_line.map { |el| el[0] != "\n" ? el[2..-1] : "\n" }.join
+		Examples:
+			For custom text:
+				cowspeak --text='text' / #{__FILE__} -t='text'
 
-exit! 0
+			To display your own ASCII art:
+				#{__FILE__} --file='path/file.art'
+
+			To display your own art with your text:
+				#{__FILE__} --file=directory/file.art --text='your text'
+
+			To read a file from the storage:
+				#{__FILE__} --read='path/file.extension' or #{__FILE__} -r='path/file.extension'
+
+			Pipe another program's output to cowspeak (also accepts arguments):
+				echo hello | #{__FILE__}
+				echo hello | #{__FILE__} --argument -short_argument
+
+			To read from the internet in curl format:
+				#{__FILE__} --net=http://www.example.net
+				#{__FILE__} --net=http://www.example.net --argument -short_argument
+
+		Help:
+			#{__FILE__} -h or --help for the help message.
+			#{__FILE__} -d or --documentation or --manual or -m for this documentation.
+
+		Creating Custom Art:
+			You can make your own art. Run #{__FILE__} --art or #{__FILE__} -a for more information.
+
+		Update/Download all the files:
+			If you are missing some files, then please take a moment to download all the files from Github.
+			To do that, run:
+				cowspeak --download or -dl
+
+			It will download all the necessary files. This will download less than 400 KiB files from the internet.
+			NOTE: This argument will write files to #{PATH}/ directory.\n\n"
+	EOF
+	)
+
+	exit! 0
 end
 
 if ARGV.include?('--show-arts') || ARGV.include?('-sa')
@@ -241,24 +252,27 @@ You can create your own art. Here's a short introduction on how to do that:
 	1. Create an empty document in your computer with 'art' extension (myart.art).
 	2. Edit the document and Type your name in the first line. If you copy someone's work, provide the artist's name.
 		For example:
-			\e[5mCreated by #{ u = '' ; rand(4..8).times do u += rand(97..122).chr end ; u }.\e[0m
+			\e[5mCreated by #{rand_name = rand(4..10).times.map { rand(97..122).chr }.join }.\e[0m
 	3. The 2nd line is also for crediting. Leave both 1st and 2nd line empty if crediting is not required.
 	4. Type your characters and draw your ASCII art.
+
+	[The art should start from line 3]
 		Format: What you've done should looks like this:
+
 \e[4mLine\e[0m				\e[4mArt\e[0m
-\e[7;34m1\e[0m			\e[5mThanks to #{ u = '' ; rand(4..8).times do u += rand(97..122).chr end ; u } for this art\e[0m
+\e[7;34m1\e[0m			\e[5mThanks to #{rand_name} for this art\e[0m
 \e[7;34m2\e[0m			\e[5mCollected from example.net\e[0m
 \e[7;34m3\e[0m 			\e[5m-------------------------\e[0m
 \e[7;34m4\e[0m 			\e[5m=			=\e[0m
 \e[7;34m5\e[0m 			\e[5m=    	ASCII Art	=\e[0m
 \e[7;34m6\e[0m 			\e[5m=			=\e[0m
 \e[7;34m7\e[0m 			\e[5m-------------------------\e[0m
+
 	-> For more examples, look at the other installed files.
 	-> You can use other files as example. By default they are located in #{File.join(PATH, 'arts')}
 	-> Run #{__FILE__} --show-arts or -sa to see all the files
 	-> To use your custom art, just run #{__FILE__} --file='your_art.art'
 	-> If it is located in another directory then #{__FILE__} --file='directory/your_art.art'
-	=> NOTE: If you use someone's art, make sure you have proper permission to copy.
 	=> The first 2 lines are for crediting, if you don't have to credit, then leave those lines empty.\n\n"
 exit! 0
 end
@@ -292,6 +306,7 @@ end
 if ARGV.include?('--help') || ARGV.include?('-h')
 	ARGV.delete('--help')
 	ARGV.delete('-h')
+	rotate_colour = true
 	help.call
 end
 
@@ -541,7 +556,9 @@ begin
 	elsif ARGV.include?('--welcome') || ARGV.include?('-w')
 		require 'socket'
 
-		user, logname, hostname, time = ENV['USER'].split.map(&:capitalize).join, ENV['LOGNAME'], Socket.gethostname, Time.new.strftime('%B %d, %A, %H:%M:%S %p')
+		user, logname, hostname, time = ENV['USER'].split.map(&:capitalize).join, ENV['LOGNAME'], ":: Hostname: #{Socket.gethostname}", Time.new.strftime('%B %d, %A, %H:%M:%S %p')
+		ssh_connection = ENV['SSH_CONNECTION']
+		ssh_connection = ssh_connection ? "\n:: SSH Connection: #{ssh_connection}" : ''
 
 		files = begin
 			" (#{Dir.entries(Dir.pwd)[2..-1].count} items)"
@@ -550,50 +567,58 @@ begin
 		end
 
 		os = if File.readable?('/etc/os-release')
-			"#{IO.readlines('/etc/os-release')[0].split('=')[1].strip.scan(/[a-z0-9A-Z\s]/).join} (#{RUBY_PLATFORM})"
+			"\n:: OS: #{IO.readlines('/etc/os-release')[0].split('=')[1].strip.scan(/[a-z0-9A-Z\s]/).join} (#{RUBY_PLATFORM})"
 		elsif File.readable?('/etc/lsb-release')
-			"#{IO.readlines('/etc/os-release')[0].split('=')[1].strip.scan(/[a-z0-9A-Z\s]/).join} (#{RUBY_PLATFORM})"
+			"\n:: OS: #{IO.readlines('/etc/os-release')[0].split('=')[1].strip.scan(/[a-z0-9A-Z\s]/).join} (#{RUBY_PLATFORM})"
 		else
-			'Cannot obtain OS details'
+			''
 		end
 
 		memory_stat = if File.readable?('/proc/meminfo')
+			val = "\n"
+			unit = 1000.0
+			suffix = unit == 1000 ? 'MB' : 'MiB'
 			memory = IO.readlines('/proc/meminfo')
-			<<~EOF.chomp
-				:: Memory: #{(((total = memory[0].split[1].to_f) - (available = memory[2].split[1].to_f))/1000).round(3)} MB / #{(total/1000).round(3)} MB
-				:: Memory Available: #{(available / 1000).round(3)} MB
-				:: Swap Total: #{(((total = memory[14].split[1].to_f) - (available = memory[15].split[1].to_f))/1000).round(3)} MB / #{(total / 1000).round(3)} MB
-				:: Swap Available: #{(available/1000).round(3)} MB
-			EOF
+
+			used = (((total = memory[0].split[1].to_f) - (available = memory[2].split[1].to_f))/unit).round(2)
+			val.concat(":: Memory: #{(used).round(2)} #{suffix} / #{(total/unit).round(2)} #{suffix} (av #{(available/unit).round(2)} #{suffix})")
+
+			swap = (((total = memory[14].split[1].to_f) - (available = memory[15].split[1].to_f))/unit).round(2)
+			val.concat("\n:: Swap: #{swap} #{suffix} / #{(total/unit).round(2)} #{suffix} (av: #{(available/unit).round(2)} #{suffix})") if total > 0
+			val
 		else
-			':: Memory: Unknown'
+			''
 		end
 
-		kernel_version =  if File.readable?('/proc/version')
-			IO.read('/proc/version').split[2]
+		cpu_stat = if File.readable?('/proc/meminfo')
+				val = "\n"
+				cpu = IO.readlines('/proc/cpuinfo')
+				count = cpu.count { |x| x.start_with?('processor') }
+				val.concat(":: CPU: #{cpu.find { |x| x.start_with?('model name') }.split(':')[1..-1].join.strip }")
+				val.concat("\n:: CPU Cores: #{cpu.count { |x| x.start_with? ('processor') } }")
 		else
-			'Unknown'
+			''
 		end
+
+		terminal_size = STDOUT.winsize
+		terminal_size = (terminal_size.any? && (terminal_size.reduce(:+) != 0))? "\n:: Terminal Size: #{terminal_size.join(' × ')}" : ''
+		kernel_version = File.readable?('/proc/version') ? "\n:: Kernel: " + IO.read('/proc/version').split[2] : ''
 
 		uptime = File.readable?('/proc/uptime') ? IO.read('/proc/uptime').split[0].to_i : 0
 		up = "#{(uptime/3600)} " + ((uptime/3600) != 1 ? 'hours' : 'hour') + ', '
 		up += "#{(uptime % 3600 / 60)} " + ((uptime % 3600 / 60) != 1 ? 'minutes' : ' minute') + ', '
 		up += "#{(uptime % 60)} " + ((uptime % 60) != 1 ? 'seconds' : 'second')
 
-		session = ENV['DESKTOP_SESSION'] ? "#{ENV['DESKTOP_SESSION']}" : ''
+		session = ENV['DESKTOP_SESSION'] ? "\n:: Desktop Session: #{ENV['DESKTOP_SESSION']}" : ''
 
 		text = <<~EOF.rstrip
 				>> Welcome #{user}!
 				:: Log Name: #{logname}
-				:: Host Name: #{hostname}
-				:: Desktop Session: #{session}
-				:: OS: #{os}
-				:: Kernel: #{kernel_version}
+				#{hostname}#{ssh_connection}#{session}#{os}#{kernel_version}#{cpu_stat}#{memory_stat}
 				:: Uptime: #{up}
-				#{memory_stat}
 				:: Shell: #{ENV['SHELL']}
-				:: PWD: #{Dir.pwd}#{files}
-				:: Current Time: #{time}
+				:: PWD: #{Dir.pwd}#{files}#{terminal_size}
+				:: Date & Time: #{time}
 		EOF
 
 	elsif text.empty?
@@ -604,7 +629,7 @@ begin
 
 		if text.nil? || text.empty?
 			if File.readable?(File.join(PATH, "fortunes.data"))
-				text = IO.read(File.join(PATH, "fortunes.data")).force_encoding('UTF-8').split("\n%\n").sample.gsub("\n", ' ')
+				text = IO.read(File.join(PATH, "fortunes.data")).force_encoding('UTF-8').split("\n%\n").sample.gsub("\n", ' ').strip
 			else
 				text = ("The fortune file doesn't exist.
 						Please run #{__FILE__} -dl to download the files to #{PATH}")
