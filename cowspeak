@@ -2,11 +2,12 @@
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout, socket, (and yes, no optparse)! They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5 to work with older versions.
-VERSION = "Cowspeak version 2.25"
+VERSION = "Cowspeak version 2.26"
 
-NEW_FEATURES = "\t1. Fixed Bugs.\n\t2. Enhanced welcome screen (--welcome, -w).\n\t3. --welcome will not show `Unknown' details\n\t"
+BASENAME = File.basename(__FILE__)
+NEW_FEATURES = "\t1. Welcome screen (--welcome / -w) will show aggregate CPU usage from /proc/stat.\n\t2. --download or -dl will download the manual by default.\n\t3. More bugs fixed!"
 
-# Debugging purpose
+# Debugging purpose:
 # puts eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES') }.split('=')[1..-1].join)
 
 # Set the path where to look for files and download (--download or -dl) the new cowspeak files
@@ -17,12 +18,15 @@ SOURCE_CODE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/c
 MAN_PAGE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz'
 MAN_PAGE_DIR = File.join(PATH, 'cowspeak.1.gz')
 
-# Uncomment ONLY if ALL of the ABOVE declarations are COMMENTED (except VERSION)
+# Uncomment ONLY if ALL of the ABOVE declarations are COMMENTED (except VERSION, BASENAME and NEW_FEATURES)
 
 # PATH ||= "/usr/share/cowspeak"
 # SOURCE_CODE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak'
 # MAN_PAGE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/share/man/man1/cowspeak.1.gz'
 # MAN_PAGE_DIR ||= '/usr/share/man/man1/cowspeak.1.gz'
+
+# 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
+UNIT = 1000.0
 
 STDIN.sync, STDOUT.sync = true, true
 
@@ -132,10 +136,13 @@ begin
 	Terminal_Width = (STDOUT.winsize[1]/1.4).ceil
 rescue Errno::ENOTTY
 	colourize.call("Sorry, No terminal found...\n")
-	colourize.call("Run this is a proper terminal (gnome-terminal, xfce4-terminal, konsole, terminology, terminator, terminix, xterm, and so on...)\n")
-	colourize.call("Also make sure you have ncurses installed (required for calculating number of columns to draw the output)\n")
-	colourize.call("Thank you for downloading #{__FILE__.split('/').last}. Run #{__FILE__.split('/').last} --help or #{__FILE__.split('/').last} -h for more details\n")
+	colourize.call("Run #{BASENAME} terminal (gnome-terminal, xfce4-terminal, konsole, terminology, terminator, terminix, xterm, and so on...)\n")
+	colourize.call("Thank you for downloading #{BASENAME}. Run #{__FILE__.split('/').last} --help or #{BASENAME} -h for more details\n")
 	exit! ERR_NO_TTY
+rescue LoadError => le
+	puts colourize.call('Cannot load a feature. Please make sure you have the proper Ruby installation.')
+	puts colourize.call("Details:\n\t#{le.to_s.capitalize}")
+	exit!
 rescue Exception
 	exit!
 end
@@ -154,7 +161,7 @@ help = ->(documentation=false) do
 	rotate_colour, arg_count = true, 0
 	colourize.call(
 		<<~EOF.each_line.map { |el| (el.lstrip.start_with?('-') || el.lstrip.start_with?('--')) ? "#{arg_count += 1}\t#{el}" : el }.join.rstrip.concat("\n")
-			Hi, my name is cowspeak. I speak a quote on your terminal.
+			Hi, my name is #{BASENAME}. I speak a quote on your terminal.
 			Usage: Run me from the command line without any arguments, and I will show you a fortune.
 
 			All the Available arguments:
@@ -198,31 +205,31 @@ help.call(documentation=true)
 	colourize.call(<<-EOF.each_line.map { |el| el[0] != "\n" ? el[2..-1] : "\n" }.join
 		Examples:
 			For custom text:
-				cowspeak --text='text' / #{__FILE__} -t='text'
+				cowspeak --text='text' / #{BASENAME} -t='text'
 
 			To display your own ASCII art:
-				#{__FILE__} --file='path/file.art'
+				#{BASENAME} --file='path/file.art'
 
 			To display your own art with your text:
-				#{__FILE__} --file=directory/file.art --text='your text'
+				#{BASENAME} --file=directory/file.art --text='your text'
 
 			To read a file from the storage:
-				#{__FILE__} --read='path/file.extension' or #{__FILE__} -r='path/file.extension'
+				#{BASENAME} --read='path/file.extension' or #{BASENAME} -r='path/file.extension'
 
 			Pipe another program's output to cowspeak (also accepts arguments):
-				echo hello | #{__FILE__}
-				echo hello | #{__FILE__} --argument -short_argument
+				echo hello | #{BASENAME}
+				echo hello | #{BASENAME} --argument -short_argument
 
 			To read from the internet in curl format:
-				#{__FILE__} --net=http://www.example.net
-				#{__FILE__} --net=http://www.example.net --argument -short_argument
+				#{BASENAME} --net=http://www.example.net
+				#{BASENAME} --net=http://www.example.net --argument -short_argument
 
 		Help:
-			#{__FILE__} -h or --help for the help message.
-			#{__FILE__} -d or --documentation or --manual or -m for this documentation.
+			#{BASENAME} -h or --help for the help message.
+			#{BASENAME} -d or --documentation or --manual or -m for this documentation.
 
 		Creating Custom Art:
-			You can make your own art. Run #{__FILE__} --art or #{__FILE__} -a for more information.
+			You can make your own art. Run #{BASENAME} --art or #{BASENAME} -a for more information.
 
 		Update/Download all the files:
 			If you are missing some files, then please take a moment to download all the files from Github.
@@ -270,19 +277,19 @@ You can create your own art. Here's a short introduction on how to do that:
 
 	-> For more examples, look at the other installed files.
 	-> You can use other files as example. By default they are located in #{File.join(PATH, 'arts')}
-	-> Run #{__FILE__} --show-arts or -sa to see all the files
-	-> To use your custom art, just run #{__FILE__} --file='your_art.art'
-	-> If it is located in another directory then #{__FILE__} --file='directory/your_art.art'
+	-> Run #{BASENAME} --show-arts or -sa to see all the files
+	-> To use your custom art, just run #{BASENAME} --file='your_art.art'
+	-> If it is located in another directory then #{BASENAME} --file='directory/your_art.art'
 	=> The first 2 lines are for crediting, if you don't have to credit, then leave those lines empty.\n\n"
 exit! 0
 end
 
 # Take exceptions very very seriously. Handle them very gently.
 exception_handle = ->(error= '') do
-	colourize.call "Uh oh! Sorry, #{__FILE__} has Encountered an Error.\n"
+	colourize.call "Uh oh! Sorry, #{BASENAME} has Encountered an Error.\n"
 	colourize.call("Select one of the following:
 		1. Exit.
-		2. Show the usage (#{__FILE__} -h)
+		2. Show the usage (#{BASENAME} -h)
 		3. Show Error Details.
 		4. Save Error Details to a Log File.
 		5. Contact Developer.
@@ -298,7 +305,7 @@ exception_handle = ->(error= '') do
 			end
 		when 5
 			colourize.call("Please contact <souravgoswami@protonmail.com>\n")
-			colourize.call("Notify us about:\n#{error}\n#{error.backtrace.join("\n")} in #{__FILE__}\n")
+			colourize.call("Notify us about:\n#{error}\n#{error.backtrace.join("\n")} in #{BASENAME}\n")
 	end
 	exit! ERR_DIAGNOSED
 end
@@ -317,17 +324,22 @@ ARGV.delete('-fu')
 
 # Check for updates.
 if ARGV.include?('--update') || ARGV.include?('-u') || force_update
-	require 'net/http'
 
 	ARGV.delete('--update')
 	ARGV.delete('-u')
 
-	puts colourize.call('Looking for updates! Please wait a moment...')
-	current_version =  VERSION.scan(/\d+.\d+/).join
 
 	begin
+		require 'net/http'
+		puts colourize.call('Looking for updates! Please wait a moment...')
+		current_version =  VERSION.scan(/\d+.\d+/).join
 		downloaded_data, raw_man_page = Net::HTTP.get(URI(SOURCE_CODE)), Net::HTTP.get(URI(MAN_PAGE))
 		puts colourize.call("Current version: #{current_version}")
+
+	rescue LoadError => le
+		puts colourize.call('Cannot load a feature. Please make sure you have the proper Ruby installation.')
+		puts colourize.call("Details:\n\t#{le.to_s.capitalize}")
+		exit!
 
 	rescue SocketError
 		puts colourize.call "Can't get version info of cowspeak. Do you have an active internet connection?"
@@ -342,7 +354,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 	new_version = download_version.to_f > current_version.to_f
 
 	unless new_version || force_update
-		puts colourize.call "#{__FILE__} is up to date! Nothing to do."
+		puts colourize.call "#{BASENAME} is up to date! Nothing to do."
 	else
 		puts colourize.call "A new update is available." if new_version
 		puts colourize.call("New Version: #{download_version}\n")
@@ -445,15 +457,20 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 			raise RuntimeError, "Dear Developer, the uris has to match write_to size, line: #{__LINE__}" unless write_to.size == uris.size
 
 			uris.size.times do |index|
+				puts colourize.call("Downloading art file from #{uris[index]}")
 				File.write("#{File.join(PATH, 'arts', write_to[index])}.art", Net::HTTP.get(URI(uris[index])))
 
 				puts colourize.call "Successfully installed an art file in #{File.join(PATH, 'arts')}/"
 				puts colourize.call "#{IO.read(File.join(PATH, 'arts', write_to[index]) + '.art')}\n"
 			end
 
-			colourize.call "All Done!\n"
-			colourize.call "To see the available arts, type: #{__FILE__} --show-arts or -sa\n"
-			colourize.call "Here's a fortune for you!\n"
+			puts colourize.call "Downloading the manual from #{MAN_PAGE}"
+			File.write(MAN_PAGE_DIR, Net::HTTP.get(URI(MAN_PAGE)))
+			puts colourize.call "Successfully downloaded the manual at #{MAN_PAGE_DIR}"
+
+			puts colourize.call 'All Done!'
+			puts colourize.call "To see the available arts, type: #{BASENAME} --show-arts or -sa"
+			puts colourize.call "Here's a fortune for you!"
 		else
 			colourize.call "Sorry for the inconvenience. Something went terribly wrong (can't access one of the file).\n"
 			colourize.call "If the problem persists, contact: souravgoswami@protonmail.com.\n"
@@ -467,7 +484,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		exit! ERR_NO_INTERNET
 
 	rescue Errno::EACCES
-		colourize.call "Requires root privilege to write to #{PATH}/ directory. Please run #{__FILE__} with proper permission.\n"
+		colourize.call "Requires root privilege to write to #{PATH}/ directory. Please run #{BASENAME} with proper permission.\n"
 		exit! ERR_NO_PERMISSION
 
 	rescue Exception => e
@@ -516,15 +533,15 @@ begin
 
 	unless File.file?(file)
 		colourize.call "Looks like the art file doesn't exist.\n"
-		colourize.call "Type #{__FILE__} --download or #{__FILE__} -d to download all the necessary files.\n"
-		colourize.call "Type #{__FILE__} --show-arts or #{__FILE__} -sa to see available arts in the default directory...\n"
-		colourize.call "Type #{__FILE__} --help or #{__FILE__} -h for help.\n"
-		colourize.call "Type #{__FILE__} --art or #{__FILE__} -a for help regarding art.\n"
+		colourize.call "Type #{BASENAME} --download or #{BASENAME} -d to download all the necessary files.\n"
+		colourize.call "Type #{BASENAME} --show-arts or #{BASENAME} -sa to see available arts in the default directory...\n"
+		colourize.call "Type #{BASENAME} --help or #{BASENAME} -h for help.\n"
+		colourize.call "Type #{BASENAME} --art or #{BASENAME} -a for help regarding art.\n"
 		file = File.join(PATH, "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art")
 
 		unless File.readable?(file)
 			colourize.call("The default files at location #{PATH + 'arts/'} doesn't exist\n")
-			colourize.call("Please run #{__FILE__} -dl to download all the necessary files at #{PATH}\n")
+			colourize.call("Please run #{BASENAME} -dl to download all the necessary files at #{PATH}\n")
 			exit! ERR_FILE_NOT_FOUND
 		end
 	end
@@ -538,6 +555,10 @@ begin
 		Timeout.timeout 0.000_000_000_000_1 do pipe = STDIN.gets end
 	rescue Interrupt
 		exit! 0
+	rescue LoadError => le
+		puts colourize.call('Cannot load a feature. Please make sure you have the proper Ruby installation.')
+		puts colourize.call("Details:\n\t#{le.to_s.capitalize}")
+		exit!
 	rescue Exception
 	end
 
@@ -548,13 +569,20 @@ begin
 			break unless val = STDIN.gets
 			text.concat(val)
 		end
+
 		text.chomp!
 
 	elsif show_version
 		text = VERSION
 
 	elsif ARGV.include?('--welcome') || ARGV.include?('-w')
-		require 'socket'
+		begin
+			require 'socket'
+		rescue LoadError => le
+			puts colourize.call('Cannot load a feature. Please make sure you have the proper Ruby installation.')
+			puts colourize.call("Details:\n\t#{le.to_s.capitalize}")
+			exit!
+		end
 
 		user, logname, hostname, time = ENV['USER'].split.map(&:capitalize).join, ENV['LOGNAME'], ":: Hostname: #{Socket.gethostname}", Time.new.strftime('%B %d, %A, %H:%M:%S %p')
 		ssh_connection = ENV['SSH_CONNECTION']
@@ -576,15 +604,14 @@ begin
 
 		memory_stat = if File.readable?('/proc/meminfo')
 			val = "\n"
-			unit = 1000.0
-			suffix = unit == 1000 ? 'MB' : 'MiB'
+			suffix = UNIT == 1000 ? 'MB' : 'MiB'
 			memory = IO.readlines('/proc/meminfo')
 
-			used = (((total = memory[0].split[1].to_f) - (available = memory[2].split[1].to_f))/unit).round(2)
-			val.concat(":: Memory: #{(used).round(2)} #{suffix} / #{(total/unit).round(2)} #{suffix} (av #{(available/unit).round(2)} #{suffix})")
+			used = (((total = memory[0].split[1].to_f) - (available = memory[2].split[1].to_f))/UNIT).round(2)
+			val.concat(":: Memory: #{(used).round(2)} #{suffix} / #{(total/UNIT).round(2)} #{suffix} (av #{(available/UNIT).round(2)} #{suffix})")
 
-			swap = (((total = memory[14].split[1].to_f) - (available = memory[15].split[1].to_f))/unit).round(2)
-			val.concat("\n:: Swap: #{swap} #{suffix} / #{(total/unit).round(2)} #{suffix} (av: #{(available/unit).round(2)} #{suffix})") if total > 0
+			swap = (((total = memory[14].split[1].to_f) - (available = memory[15].split[1].to_f))/UNIT).round(2)
+			val.concat("\n:: Swap: #{swap} #{suffix} / #{(total/UNIT).round(2)} #{suffix} (av: #{(available/UNIT).round(2)} #{suffix})") if total > 0
 			val
 		else
 			''
@@ -596,6 +623,28 @@ begin
 				count = cpu.count { |x| x.start_with?('processor') }
 				val.concat(":: CPU: #{cpu.find { |x| x.start_with?('model name') }.split(':')[1..-1].join.strip }")
 				val.concat("\n:: CPU Cores: #{cpu.count { |x| x.start_with? ('processor') } }")
+		else
+			''
+		end
+
+		cpu_proc_file = ::File.join('', 'proc', 'stat')
+		cpu_usage = if File.readable?(cpu_proc_file)
+			data = IO.readlines(cpu_proc_file)[0].split.map(&:to_f)
+			Kernel.sleep(0.03)
+			prev_data = IO.readlines(cpu_proc_file)[0].split.map(&:to_f)
+
+			%w(user nice sys idle iowait irq softirq steal).each_with_index do |el, index|
+				eval("@#{el} = #{data[index + 1]}")
+				eval("@prev_#{el} = #{prev_data[index + 1]}")
+			end
+
+			previdle, idle = @prev_idle + @prev_iowait, @idle + @iowait
+			totald = idle + (@user + @nice + @sys + @irq + @softirq + @steal) -
+				(previdle + (@prev_user + @prev_nice + @prev_sys + @prev_irq + @prev_softirq + @prev_steal))
+			cpu_total_usage = ((totald - (idle - previdle)) / totald * 100).round(2).abs
+
+			cpu_total_usage = 0 if cpu_total_usage.to_s == 'NaN'
+			"\n:: Total CPU Usage: #{cpu_total_usage.abs} %"
 		else
 			''
 		end
@@ -614,7 +663,7 @@ begin
 		text = <<~EOF.rstrip
 				>> Welcome #{user}!
 				:: Log Name: #{logname}
-				#{hostname}#{ssh_connection}#{session}#{os}#{kernel_version}#{cpu_stat}#{memory_stat}
+				#{hostname}#{ssh_connection}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}
 				:: Uptime: #{up}
 				:: Shell: #{ENV['SHELL']}
 				:: PWD: #{Dir.pwd}#{files}#{terminal_size}
@@ -632,7 +681,7 @@ begin
 				text = IO.read(File.join(PATH, "fortunes.data")).force_encoding('UTF-8').split("\n%\n").sample.gsub("\n", ' ').strip
 			else
 				text = ("The fortune file doesn't exist.
-						Please run #{__FILE__} -dl to download the files to #{PATH}")
+						Please run #{BASENAME} -dl to download the files to #{PATH}")
 			end
 		end
 
@@ -650,10 +699,14 @@ begin
 		unless net.empty?
 			uri = net[-1].split('=')[1].to_s.strip
 			begin
-				# show_art = false
 				require 'net/http'
 				require 'open-uri'
 				text = open(uri).read.strip
+
+			rescue LoadError => le
+				puts colourize.call('Cannot load a feature. Please make sure you have the proper Ruby installation.')
+				puts colourize.call("Details:\n\t #{le}")
+				exit!
 
 			rescue SocketError
 				colourize.call "Failed  to read the URL. Do you have an active internet connection?\n"
@@ -672,8 +725,7 @@ begin
 		end
 	end
 
-	corners = (borderh.empty? || borderv.empty?) ? [' ', ' ', ' ', ' '] : [' //', '\\\\',  ' \\\\',  '//']
-	all_chars = ''
+	corners, all_chars = (borderh.empty? || borderv.empty?) ? Array.new(4) { ' ' } : [' //', '\\\\',  ' \\\\',  '//'], ''
 
 	if show_art && display_text
 		text = ' ' + text.force_encoding('UTF-8').gsub("\t", ' ')	# gsub is faster than tr
@@ -704,7 +756,7 @@ begin
 		max_length = animal.map(&:length).max/2
 
 		colourize.call(all_chars + "\n" + corners[2] + init + corners[3] + "\n" +
-			" " * max_length + bubble * 3 + "\n " + ' ' * max_length + bubble * 2 + "\n" + ' ' * max_length +  bubble + "\n" + animal.join)
+			' ' * max_length + bubble * 3 + "\n " + ' ' * max_length + bubble * 2 + "\n" + ' ' * max_length +  bubble + "\n" + animal.join)
 
 	elsif show_art then colourize.call(IO.readlines(file)[2..-1].join)
 	elsif display_text
