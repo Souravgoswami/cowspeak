@@ -1,7 +1,7 @@
 # cowspeak 🐮
 Display a gradient colourful animal with a random quote or your own text in your terminal.
 
-![cowspeak](https://github.com/Souravgoswami/cowspeak-deb/blob/master/Screenshots/Screenshot_2019-01-24_23-10-28.png)
+![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/a.png)
 
 It depends on `ruby`. Cowspeak recommends you to use `Ruby 2.4.0+`.
 
@@ -84,12 +84,11 @@ If you pass an invalid argument, cowspeak will not inform you. It will simply ig
 
 📸 Screenshots:
 
-![alt cowspeak --welcome](https://github.com/Souravgoswami/cowspeak-deb/blob/master/Screenshots/xx.png)
+![alt cowspeak --welcome](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/b.png)
  
-![cowspeak](https://github.com/Souravgoswami/cowspeak-deb/blob/master/Screenshots/sss.png)
+![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/c.png)
  
-![cowspeak](https://github.com/Souravgoswami/cowspeak-deb/blob/master/Screenshots/Screenshot_2019-03-26_04-04-36.png)
+![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/d.png)
  
-![cowspeak](https://github.com/Souravgoswami/cowspeak-deb/blob/master/Screenshots/Screenshot_2019-03-26_04-04-11.png)
 
 **Bug Report: 🐞** Cowspeak considers bugs and security issues very seriously 🐛. If you got any bug in cowspeak, any security issue, or an idea, please let me know!
