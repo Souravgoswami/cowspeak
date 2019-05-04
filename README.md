@@ -78,9 +78,9 @@ If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHa
 25        --welcome/-w                  Show some system details to the user.
 ```
 
-## Note 📝
+## Note on Arguments 📝
 
-You have to pass each argument separately. For example, cowspeak -rc rotates the colour of the output, and -w shows a welcome screen with some system status and information. So if you want to use both, you have to use cowspeak -rc -w (instead of cowspeak -rcw). This makes it cleaner.
+You have to pass each argument separately. For example, cowspeak -rc rotates the colour of the output, and -w shows a welcome screen with some system status and information. So if you want to use both, you have to use cowspeak -rc -w (instead of cowspeak -rcw).
 
 If you pass an invalid argument, cowspeak will not inform you. It will simply ignore the invalid argument so you can cheer!
 
