@@ -9,7 +9,7 @@ Note that this is only for GNU/Linux systems.
 
 💎 This version is intended to run locally, without any root privileges. To run this version, download the repo as zip or clone it, and then run `cowspeak` (the source code) with ruby. If you want to install cowspeak for all users (as root), then follow the below instructions.
 
-👉 For Debian/Linux Mint/Ubuntu/Kali Linux/Raspbian/Other debian based systems:
+## For Debian/Linux Mint/Ubuntu/Kali Linux/Raspbian/Other debian based systems:
 
    1. Download the latest deb file from here:
     
@@ -78,11 +78,13 @@ If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHa
 25        --welcome/-w                  Show some system details to the user.
 ```
 
-## Note 📝: You have to pass each argument separately. For example, cowspeak -rc rotates the colour of the output, and -w shows a welcome screen with some system status and information. So if you want to use both, you have to use cowspeak -rc -w (instead of cowspeak -rcw). This makes it cleaner.
+## Note 📝
+
+You have to pass each argument separately. For example, cowspeak -rc rotates the colour of the output, and -w shows a welcome screen with some system status and information. So if you want to use both, you have to use cowspeak -rc -w (instead of cowspeak -rcw). This makes it cleaner.
 
 If you pass an invalid argument, cowspeak will not inform you. It will simply ignore the invalid argument so you can cheer!
 
-## Screenshots 📸:
+## Screenshots 📸
 
 ![alt cowspeak --welcome](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/b.png)
  
@@ -91,5 +93,5 @@ If you pass an invalid argument, cowspeak will not inform you. It will simply ig
 ![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/d.png)
  
 
-## Bug Report 🐞:
+## Bug Report 🐞
 Cowspeak considers bugs and security issues very seriously 🐛. If you got any bug in cowspeak, any security issue, or an idea, please let me know via GitHub or email me souravgoswami@protonmail.com
