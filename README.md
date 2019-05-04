@@ -26,7 +26,7 @@ Note that this is only for GNU/Linux systems.
              You can use gdebi-gtk.
     
 
-👉 Running cowspeak on other distributions:
+## Running cowspeak on other distributions:
 
 If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHat etc. other GNU/Linux distributions, then please follow the steps:
     
@@ -49,7 +49,7 @@ If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHa
    ♦️ 5. Run `sudo cowspeak -dl`. Press Enter when you are asked to confirm.
    
    
-🐮 Cowspeak can accept arguments. All the available arguments are:
+## 🐮 Cowspeak can accept arguments. All the available arguments are:
 ```
 1         --art or -a                   Display a tutorial on adding your own art.
 2         --blink or -b                 Blink the texts.
@@ -78,11 +78,11 @@ If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHa
 25        --welcome/-w                  Show some system details to the user.
 ```
 
-📝 Note: You have to pass each argument separately. For example, cowspeak -rc rotates the colour of the output, and -w shows a welcome screen with some system status and information. So if you want to use both, you have to use cowspeak -rc -w (instead of cowspeak -rcw). This makes it cleaner.
+## Note 📝: You have to pass each argument separately. For example, cowspeak -rc rotates the colour of the output, and -w shows a welcome screen with some system status and information. So if you want to use both, you have to use cowspeak -rc -w (instead of cowspeak -rcw). This makes it cleaner.
 
 If you pass an invalid argument, cowspeak will not inform you. It will simply ignore the invalid argument so you can cheer!
 
-📸 Screenshots:
+## Screenshots 📸:
 
 ![alt cowspeak --welcome](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/b.png)
  
@@ -91,4 +91,5 @@ If you pass an invalid argument, cowspeak will not inform you. It will simply ig
 ![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/d.png)
  
 
-**Bug Report: 🐞** Cowspeak considers bugs and security issues very seriously 🐛. If you got any bug in cowspeak, any security issue, or an idea, please let me know!
+## Bug Report 🐞:
+Cowspeak considers bugs and security issues very seriously 🐛. If you got any bug in cowspeak, any security issue, or an idea, please let me know via GitHub or email me souravgoswami@protonmail.com
