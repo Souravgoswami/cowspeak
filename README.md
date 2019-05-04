@@ -30,7 +30,7 @@ Note that this is only for GNU/Linux systems.
 
 If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHat etc. other GNU/Linux distributions, then please follow the steps:
     
-   ♦️ 1. Make sure you have Ruby 💎:
+   + 1. Make sure you have **Ruby 💎**:
    
          A. Arch Linux 🏹 : `sudo pacman -S ruby`
          
@@ -38,15 +38,15 @@ If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHa
          
          For any other distribution, install the Ruby package. When done, follow the next step!
            
-   ♦️ 2. Please download/copy-paste the source code 📝 :
+   + 2. Please download/copy-paste the source code 📝 :
            https://github.com/Souravgoswami/cowspeak-deb/tree/master/cowspeak/usr/bin
            [save it as `cowspeak` without any extension. #! will take care of the Ruby environment]
            
-   ♦️ 3. Move the source code to /usr/bin/ directory.
+   + 3. Move the source code to /usr/bin/ directory.
    
-   ♦️ 4. Run `sudo chown root:root /usr/bin/cowspeak && sudo chmod 755 /usr/bin/cowspeak`.
+   + 4. Run `sudo chown root:root /usr/bin/cowspeak && sudo chmod 755 /usr/bin/cowspeak`.
    
-   ♦️ 5. Run `sudo cowspeak -dl`. Press Enter when you are asked to confirm.
+   + 5. Run `sudo cowspeak -dl`. Press Enter when you are asked to confirm.
    
    
 ## 🐮 Cowspeak can accept arguments. All the available arguments are:
