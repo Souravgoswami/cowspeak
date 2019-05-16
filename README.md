@@ -1,4 +1,4 @@
-# cowspeak 🐮
+# Cowspeak 🐮
 Display a gradient colourful animal with a random quote or your own text in your terminal.
 
 ![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/a.png)
@@ -11,45 +11,38 @@ Note that this is only for GNU/Linux systems.
 
 ## For Debian/Linux Mint/Ubuntu/Kali Linux/Raspbian/Other debian based systems:
 
-   1. Download the latest deb file from here:
-    
-             https://github.com/Souravgoswami/cowspeak-deb
-        
+   1. Download the latest ![deb file](https://github.com/Souravgoswami/cowspeak-deb):
 
-		Cowspeak Debian edition releases can also be found here:
-
-			https://www.opendesktop.org/p/1271477/
+      Cowspeak Debian edition releases can also be found ![here](https://www.opendesktop.org/p/1271477/).
 
    2. Install the deb file:
             `dpkg -i cowspeak-v<version>.deb`
                 Or
-             You can use gdebi-gtk.
+             You can use gdebi-gtk / gdebi.
     
 
-## Running cowspeak on other distributions:
+## Running Cowspeak on Other Distributions:
 
 If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHat etc. other GNU/Linux distributions, then please follow the steps:
     
    + 1. Make sure you have **Ruby 💎**:
    
-         A. Arch Linux 🏹 : `sudo pacman -S ruby`
+       + Arch Linux 🏹 : `sudo pacman -S ruby`
          
-         B. Fedora / CentOS: `sudo yum install ruby`
+       + Fedora / CentOS: `sudo yum install ruby`
          
-         For any other distribution, install the Ruby package. When done, follow the next step!
-           
-   + 2. Please download/copy-paste the source code 📝 :
-           https://github.com/Souravgoswami/cowspeak-deb/tree/master/cowspeak/usr/bin
-           [save it as `cowspeak` without any extension. #! will take care of the Ruby environment]
-           
-   + 3. Move the source code to /usr/bin/ directory.
+       For any other distribution, install the Ruby package. When done, follow the next step!
+
+   + 2. If you have Ruby and Wget installed you can install cowpseak with the following commands:
+   ```
+   \wget https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak
+   \sudo mv cowspeak /usr/bin/
+   \sudo chown root:root /usr/bin/cowspeak
+   \sudo chmod 755 /usr/bin/cowspeak && sudo cowspeak -dl
+
+   ```
    
-   + 4. Run `sudo chown root:root /usr/bin/cowspeak && sudo chmod 755 /usr/bin/cowspeak`.
-   
-   + 5. Run `sudo cowspeak -dl`. Press Enter when you are asked to confirm.
-   
-   
-## 🐮 Cowspeak can accept arguments. All the available arguments are:
+## 🐮 Cowspeak Accepts Arguments. All the Available Arguments are:
 ```
 1         --art or -a                   Display a tutorial on adding your own art.
 2         --blink or -b                 Blink the texts.
@@ -94,4 +87,4 @@ If you pass an invalid argument, cowspeak will not inform you. It will simply ig
  
 
 ## Bug Report 🐞
-Cowspeak considers bugs and security issues very seriously 🐛. If you got any bug in cowspeak, any security issue, or an idea, please let me know via GitHub or email me souravgoswami@protonmail.com
+Cowspeak considers bugs and security issues very seriously 🐛. If you got any bug in cowspeak, any security issue, or an idea, please let me know via ![GitHub](https://github.com/Souravgoswami/cowspeak/issues/new) or email me souravgoswami@protonmail.com
