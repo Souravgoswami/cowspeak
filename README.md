@@ -13,7 +13,7 @@ Note that this is only for GNU/Linux systems.
 
    1. Download the latest ![deb file](https://github.com/Souravgoswami/cowspeak-deb):
 
-      Cowspeak Debian edition releases can also be found ![here](https://www.opendesktop.org/p/1271477/).
+      Cowspeak Debian edition releases can also be found [here](https://www.opendesktop.org/p/1271477/).
 
    2. Install the deb file:
             `dpkg -i cowspeak-v<version>.deb`
