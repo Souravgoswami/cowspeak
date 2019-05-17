@@ -23,14 +23,12 @@ class String
 end
 
 define_method(:detect_os) do
-	STDOUT.puts("Detecting the current operating system".colourize)
-	if File.exist?('/etc/os-release')
-		begin
-			STDOUT.puts "Detected #{IO.readlines('/etc/os-release').select { |i| i.start_with?('NAME') }[-1].split('=')[1][1..-3]} #{RUBY_PLATFORM}".colourize
-			true
-		rescue Exception
-			STDOUT.puts "Can't determine the OS".colourize
-		end
+	begin
+		STDOUT.puts("Attempting to detect the current operating system".colourize)
+		STDOUT.puts "Detected #{IO.readlines('/etc/os-release').select { |i| i.start_with?('NAME') }[-1].split('=')[1][1..-3]} #{RUBY_PLATFORM}".colourize
+		true
+	rescue Exception
+		STDOUT.puts "Can't determine the OS".colourize
 	end
 end
 
