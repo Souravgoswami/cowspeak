@@ -25,22 +25,22 @@ Note that this is only for GNU/Linux systems.
 
 If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHat etc. other GNU/Linux distributions, then please follow the steps:
     
-   + 1. Make sure you have **Ruby 💎**:
+   + Make sure you have **Ruby 💎**:
    
        + Arch Linux 🏹 : `sudo pacman -S ruby`
          
        + Fedora / CentOS: `sudo yum install ruby`
          
-       For any other distribution, install the Ruby package. When done, follow the next step!
+       + For any other distribution, install the Ruby package. When done, follow the next step!
 
-   + 2. If you have Ruby and Wget installed you can install cowpseak with the following commands:
-   ```
-   \wget https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak
-   \sudo mv cowspeak /usr/bin/
-   \sudo chown root:root /usr/bin/cowspeak
-   \sudo chmod 755 /usr/bin/cowspeak && sudo cowspeak -dl
+   + Run the ![Root_Installer.rb as root](https://github.com/Souravgoswami/cowspeak-deb/blob/master/Root_Installer.rb).
+         
+        Example: `sudo ruby Root_Installer.rb`
+         
+        Press Enter to Confirm each step.
 
-   ```
+   + When the above step succeeds, run:
+        `sudo cowspeak -dl`
    
 ## 🐮 Cowspeak Accepts Arguments. All the Available Arguments are:
 ```
