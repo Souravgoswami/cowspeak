@@ -3,13 +3,15 @@ Display a gradient colourful animal with a random quote or your own text in your
 
 ![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/a.png)
 
-It depends on `ruby`. Cowspeak recommends you to use `Ruby 2.4.0+`.
+---
 
-Note that this is only for GNU/Linux systems.
+Note that this is only for GNU/Linux systems. It depends on `ruby`. Cowspeak recommends you to have `Ruby 2.4.0+`.
 
 💎 This version is intended to run locally, without any root privileges. To run this version, download the repo as zip or clone it, and then run `cowspeak` (the source code) with ruby. If you want to install cowspeak for all users (as root), then follow the below instructions.
 
-## For Debian/Linux Mint/Ubuntu/Kali Linux/Raspbian/Other debian based systems:
+---
+
+## For Debian/Linux Mint/Ubuntu/Kali Linux/Raspbian/Other debian based systems 🐄
 
    1. Download the latest ![deb file](https://github.com/Souravgoswami/cowspeak-deb):
 
@@ -21,7 +23,7 @@ Note that this is only for GNU/Linux systems.
              You can use gdebi-gtk / gdebi.
     
 
-## Running Cowspeak on Other Distributions:
+## Running Cowspeak on Other Distributions ⚙️
 
 If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHat etc. other GNU/Linux distributions, then please follow the steps:
     
@@ -33,7 +35,7 @@ If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHa
          
        + For any other distribution, install the Ruby package. When done, follow the next step!
 
-   + Run the ![Root_Installer.rb as root](https://github.com/Souravgoswami/cowspeak-deb/blob/master/Root_Installer.rb).
+   + Run the ![Root_Installer.rb](https://github.com/Souravgoswami/cowspeak-deb/blob/master/Root_Installer.rb) as root.
          
         Example: `sudo ruby Root_Installer.rb`
          
@@ -42,7 +44,7 @@ If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHa
    + When the above step succeeds, run:
         `sudo cowspeak -dl`
    
-## 🐮 Cowspeak Accepts Arguments. All the Available Arguments are:
+## 🐮 Cowspeak Accepts Arguments. All the Available Arguments are 👇
 ```
 1         --art or -a                   Display a tutorial on adding your own art.
 2         --blink or -b                 Blink the texts.
