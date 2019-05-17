@@ -13,7 +13,7 @@ Note that this is only for GNU/Linux systems. It depends on `ruby`. Cowspeak rec
 
 ## For Debian/Linux Mint/Ubuntu/Kali Linux/Raspbian/Other debian based systems 🐄
 
-   1. Download the latest ![deb file](https://github.com/Souravgoswami/cowspeak-deb):
+   1. Download the latest ![deb file](https://github.com/Souravgoswami/cowspeak-deb).
 
       Cowspeak Debian edition releases can also be found [here](https://www.opendesktop.org/p/1271477/).
 
@@ -35,7 +35,7 @@ If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHa
          
        + For any other distribution, install the Ruby package. When done, follow the next step!
 
-   + Run the ![Root_Installer.rb](https://github.com/Souravgoswami/cowspeak-deb/blob/master/Root_Installer.rb) as root.
+   + Run the ![Root_Installer.rb](https://github.com/Souravgoswami/cowspeak/blob/master/Root_Installer.rb) as root.
          
         Example: `sudo ruby Root_Installer.rb`
          
