@@ -21,6 +21,8 @@ Note that this is only for GNU/Linux systems. It depends on `ruby`. Cowspeak rec
             `dpkg -i cowspeak-v<version>.deb`
                 Or
              You can use gdebi-gtk / gdebi.
+
+   If you don't want to download and install the deb file for some reason, please follow the next section: *"Running Cowspeak on Other Distributions ⚙️"*
     
 
 ## Running Cowspeak on Other Distributions ⚙️
