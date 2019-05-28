@@ -2,7 +2,7 @@
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout, socket, (and yes, no optparse)! They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5 to work with older versions.
-VERSION = "Cowspeak version 2.26"
+VERSION = "Cowspeak version 2.30"
 
 BASENAME = File.basename(__FILE__)
 NEW_FEATURES = "\t1. Welcome screen (--welcome / -w) will show aggregate CPU usage from /proc/stat.\n\t2. --download or -dl will download the manual by default.\n\t3. More bugs fixed!"
