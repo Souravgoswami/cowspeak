@@ -13,17 +13,17 @@ NEW_FEATURES = "\t1. Welcome screen (--welcome / -w) will show aggregate CPU usa
 # Set the path where to look for files and download (--download or -dl) the new cowspeak files
 # Uncomment the following to run without root.
 
-# PATH = "#{File.dirname(__FILE__)}/cowspeak_files"
-# SOURCE_CODE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak'
-# MAN_PAGE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz'
-# MAN_PAGE_DIR = File.join(PATH, 'cowspeak.1.gz')
+PATH = "#{File.dirname(__FILE__)}/cowspeak_files"
+SOURCE_CODE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak'
+MAN_PAGE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz'
+MAN_PAGE_DIR = File.join(PATH, 'cowspeak.1.gz')
 
 # Uncomment ONLY if ALL of the ABOVE declarations are COMMENTED (except VERSION, BASENAME and NEW_FEATURES)
 
-PATH ||= "/usr/share/cowspeak"
-SOURCE_CODE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak'
-MAN_PAGE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/share/man/man1/cowspeak.1.gz'
-MAN_PAGE_DIR ||= '/usr/share/man/man1/cowspeak.1.gz'
+# PATH ||= "/usr/share/cowspeak"
+# SOURCE_CODE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak'
+# MAN_PAGE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/share/man/man1/cowspeak.1.gz'
+# MAN_PAGE_DIR ||= '/usr/share/man/man1/cowspeak.1.gz'
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
