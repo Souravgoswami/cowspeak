@@ -5,7 +5,7 @@
 VERSION = "Cowspeak version 2.30"
 
 BASENAME = File.basename(__FILE__)
-NEW_FEATURES = "\t1. Welcome screen (--welcome / -w) will show aggregate CPU usage from /proc/stat.\n\t2. --download or -dl will download the manual by default.\n\t3. More bugs fixed!"
+NEW_FEATURES = "\t1. Welcome screen (--welcome / -w) will now show the Local IP address.\n\t2. More bugs fixed!"
 
 # Debugging purpose:
 # puts eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES') }.split('=')[1..-1].join)
