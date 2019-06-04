@@ -5,7 +5,7 @@
 VERSION = "Cowspeak version 2.31"
 
 BASENAME = File.basename(__FILE__)
-NEW_FEATURES = "\t1.New effect for boring colours\n\t2. Bugs fixed for termux!"
+NEW_FEATURES = "\t1.New effect for boring colours\n\t2.Bugs fixed for termux!"
 
 # Debugging purpose:
 # puts Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES') }.split('=')[1..-1].join)
