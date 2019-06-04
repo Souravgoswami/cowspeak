@@ -2,13 +2,13 @@
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout, socket, (and yes, no optparse)! They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5 to work with older versions.
-VERSION = "Cowspeak version 2.30"
+VERSION = "Cowspeak version 2.31"
 
 BASENAME = File.basename(__FILE__)
-NEW_FEATURES = "\t1. Welcome screen (--welcome / -w) will now show the Local IP address.\n\t2. More bugs fixed!"
+NEW_FEATURES = "\t1.New effect for boring colours\n\t2. Bugs fixed for termux!"
 
 # Debugging purpose:
-# puts eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES') }.split('=')[1..-1].join)
+# puts Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES') }.split('=')[1..-1].join)
 
 # Set the path where to look for files and download (--download or -dl) the new cowspeak files
 # Uncomment the following to run without root.
@@ -92,10 +92,11 @@ else
 end
 
 # Let's make one colour array here so it won't get created everytime in the 'chars' stabby lambda...
-available_colours = [196..201, 208..213, 40..45, 28..33, [154, 184, 208, 203, 198, 164, 129, 92], [63, 33, 39, 44, 49, 83, 118],
-						[40,41,42,43,211, 210, 209, 208]].map(&:to_a)
+all_colours = [40..45, 196..201, 208..213, 28..33]
+other_colours = [154, 184, 208, 203, 198, 164, 129, 92],  [63, 33, 39, 44, 49, 83, 118]
 
-available_colours.concat(available_colours.map(&:reverse))
+colour_sets = (all_colours + other_colours).map { |i| i.to_a.tap { |x| x.concat(x.reverse) } }.tap { |cs| cs.concat(all_colours.map { |i| i.to_a.reverse.tap { |x| x.concat(x.reverse) } }) }
+available_colours = [[154, 184, 208, 203, 198, 164, 129, 92], [63, 33, 39, 44, 49, 83, 118]].concat(colour_sets).tap{ |ac| ac.concat(ac.map(&:reverse)) }
 
 # procs are faster for 100 million loops or so! We will be using proc to even save a picosecond (discarded stabby lambda that used before)! :p
 colourize = proc do |string|
@@ -350,7 +351,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		puts colourize.call "A new update is available." if new_version
 		puts colourize.("New Version: #{download_version}\n")
 
-		puts(colourize.(eval(downloaded_data.to_s.split("\n").select { |line| line.start_with?('NEW_FEATURES') }[0].to_s.split('=')[1..-1].join.to_s)))
+		puts(colourize.(Kernel.eval(downloaded_data.to_s.split("\n").select { |line| line.start_with?('NEW_FEATURES') }[0].to_s.split('=')[1..-1].join.to_s)))
 		puts
 
 		puts colourize.call "#{new_version ? 'U' : 'Reu'}pdate to version #{download_version}? (Y/n)"
@@ -556,7 +557,7 @@ begin
 	# if pipe is passed, read it until it ends. Else, read fortunes.
 	if pipe
 		text.concat(pipe)
-		text.concat(pipe) while pipe = STDIN.gets
+		text.concat(STDIN.readpartial(4096)) until STDIN.eof?
 		text.chomp!
 
 	elsif ARGV.include?('--version') || ARGV.include?('-v')
@@ -573,7 +574,9 @@ begin
 			exit!
 		end
 
-		user, logname, hostname, time = ENV['USER'].to_s.split.map(&:capitalize).join, ENV['LOGNAME'], ":: Hostname: #{Socket.gethostname}", Time.new.strftime('%B %d, %A, %H:%M:%S %p')
+		user = ENV['USER'] ? ' ' + ENV['USER'].to_s.split.map(&:capitalize).join : ''
+		logname = ENV['LOGNAME'] ? "\n:: Logname: #{ENV['LOGNAME']}" : ''
+		hostname = Socket.gethostname ? "\n:: Hostname: #{Socket.gethostname}" : ''
 		ssh_connection = ENV['SSH_CONNECTION']
 		ssh_connection = ssh_connection ? "\n:: SSH: #{ssh_connection}" : ''
 
@@ -621,7 +624,7 @@ begin
 			Kernel.sleep(0.03)
 			prev_data = IO.readlines('/proc/stat')[0].split.map(&:to_f)
 
-			%w(user nice sys idle iowait irq softirq steal).each_with_index { |el, ind| eval("@#{el}, @prev_#{el} = #{data[ind + 1]}, #{prev_data[ind + 1]}") }
+			%w(user nice sys idle iowait irq softirq steal).each_with_index { |el, ind| binding.eval("@#{el}, @prev_#{el} = #{data[ind + 1]}, #{prev_data[ind + 1]}") }
 
 			previdle, idle = @prev_idle + @prev_iowait, @idle + @iowait
 			totald = idle + (@user + @nice + @sys + @irq + @softirq + @steal) -
@@ -644,15 +647,12 @@ begin
 		up += "#{(uptime % 60)} " + ((uptime % 60) != 1 ? 'seconds' : 'second')
 
 		session = ENV['DESKTOP_SESSION'] ? "\n:: Desktop Session: #{ENV['DESKTOP_SESSION']}" : ''
-
 		text = <<~EOF.rstrip
-				>> Welcome #{user}!
-				:: Log Name: #{logname}
-				#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}
+				>> Welcome#{user}!#{logname}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}
 				:: Uptime: #{up}
 				:: Shell: #{ENV['SHELL']}
 				:: PWD: #{Dir.pwd}#{files}#{terminal_size}
-				:: Date & Time: #{time}
+				:: Date & Time: #{Time.new.strftime('%B %d, %A, %H:%M:%S %p')}
 		EOF
 
 	elsif text.empty?
