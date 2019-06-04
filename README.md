@@ -21,6 +21,9 @@ Note that this is only for GNU/Linux systems. It depends on `ruby`. Cowspeak rec
             `dpkg -i cowspeak-v<version>.deb`
                 Or
              You can use gdebi-gtk / gdebi.
+   3. Sometimes the latest deb package may be a month or two older than the latest source code. In that case, after the installation, you may want to check for an update, which will not use more than 30 KiB of internet data:
+   
+             `sudo cowspeak -u`
 
    If you don't want to download and install the deb file for some reason, please follow the next section: *"Running Cowspeak on Other Distributions ⚙️"*
     
