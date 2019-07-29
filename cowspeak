@@ -2,10 +2,10 @@
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout, socket, (and yes, no optparse)! They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5 to work with older versions.
-VERSION = "Cowspeak version 2.31"
+VERSION = "Cowspeak version 2.32"
 
 BASENAME = File.basename(__FILE__)
-NEW_FEATURES = "\t1.New effect for boring colours\n\t2.Bugs fixed for termux!"
+NEW_FEATURES = "\t1.Fixed wrong swap stat with --welcome / -w\n"
 
 # Debugging purpose:
 # puts Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES') }.split('=')[1..-1].join)
@@ -604,9 +604,16 @@ begin
 
 			used = (((total = memory[0].split[1].to_f) - (available = memory[2].split[1].to_f))/UNIT).round(2)
 			val = "\n:: Memory: #{(used).round(2)} #{suffix} / #{(total/UNIT).round(2)} #{suffix} (av #{(available/UNIT).round(2)} #{suffix})"
+		else
+			''
+		end
 
-			swap = (((total = memory[14].split[1].to_f) - (available = memory[15].split[1].to_f))/UNIT).round(2)
-			val.concat("\n:: Swap: #{swap} #{suffix} / #{(total/UNIT).round(2)} #{suffix} (av: #{(available/UNIT).round(2)} #{suffix})") if total > 0
+		swap_stat = if File.readable?('/proc/swaps')
+			suffix = UNIT == 1000 ? 'MB' : 'MiB'
+			used, total = IO.readlines('/proc/swaps')[1..-1].map { |x| x.strip.split.values_at(2, 3).map(&:to_f) }
+				.then { |x| [x.map(&:last).sum./(UNIT).round(2), x.map(&:first).sum./(UNIT).round(2)] }
+
+			total == 0 ? '' : "\n:: Swap: #{used} #{suffix} / #{total} #{suffix} (av #{total.-(used).round(2)} #{suffix})"
 		else
 			''
 		end
@@ -648,7 +655,7 @@ begin
 
 		session = ENV['DESKTOP_SESSION'] ? "\n:: Desktop Session: #{ENV['DESKTOP_SESSION']}" : ''
 		text = <<~EOF.rstrip
-				>> Welcome#{user}!#{logname}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}
+				>> Welcome#{user}!#{logname}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
 				:: Uptime: #{up}
 				:: Shell: #{ENV['SHELL']}
 				:: PWD: #{Dir.pwd}#{files}#{terminal_size}
