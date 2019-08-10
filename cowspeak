@@ -3,7 +3,7 @@
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout, socket, (and yes, no optparse)! They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5 to work with older versions.
-VERSION = "Cowspeak version 2.41"
+VERSION = "Cowspeak version 2.42"
 
 BASENAME = File.basename(__FILE__)
 NEW_FEATURES = "\t1.Fixed several bugs.\n"
@@ -336,7 +336,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		puts colourize.("Details:\n\t#{le.to_s.capitalize}")
 		exit!
 
-	rescue SocketError
+	rescue SocketError, OpenSSL::SSL::SSLError
 		puts colourize.call "Can't get version info of cowspeak. Do you have an active internet connection?"
 		exit! ERR_NO_INTERNET
 
@@ -402,8 +402,8 @@ def Animate(&block)
 		anim, str = %W(\xE2\xA0\x82 \xE2\xA0\x92 \xE2\xA0\xB2 \xE2\xA0\xB6), 'Please Wait'
 		t = Thread.new { loop while str.size.times { |i| print(" \e[2K#{anim.rotate![0]} #{str[0...i]}#{str[i].swapcase}#{str[i.next..-1]}#{?..*((i += 1) % 4)}\r") || sleep(0.15) } }
 		block.(self).tap { t.kill }
-	rescue Exception
-		raise SignalException, 2
+	rescue Exception => e
+		raise e
 	ensure
 		t.kill
 	end
@@ -484,7 +484,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 			exit! ERR_DOWNLOAD_UNAVAILABLE
 		end
 
-	rescue SocketError
+	rescue SocketError, OpenSSL::SSL::SSLError
 		colourize.call "Do you have an internet connection?\n"
 		colourize.call "1. Exit.\n2. Retry.\nDefault: 1 (Exit).\n"
 		retry if STDIN.gets.to_i == 2
@@ -719,7 +719,7 @@ begin
 				puts colourize.("Details:\n\t #{le}")
 				exit!
 
-			rescue SocketError
+			rescue SocketError, OpenSSL::SSL::SSLError
 				colourize.call "Failed  to read the URL. Do you have an active internet connection?\n"
 				exit! ERR_NO_INTERNET
 
