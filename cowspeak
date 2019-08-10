@@ -1,11 +1,12 @@
 #!/usr/bin/env ruby
+# Encoding: UTF-8
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
 # This program `require` io/console, open-uri, net/http, timeout, socket, (and yes, no optparse)! They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5 to work with older versions.
-VERSION = "Cowspeak version 2.32"
+VERSION = "Cowspeak version 2.41"
 
 BASENAME = File.basename(__FILE__)
-NEW_FEATURES = "\t1.Fixed wrong swap stat with --welcome / -w\n"
+NEW_FEATURES = "\t1.Fixed several bugs.\n"
 
 # Debugging purpose:
 # puts Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES') }.split('=')[1..-1].join)
@@ -28,7 +29,7 @@ MAN_PAGE_DIR = File.join(PATH, 'cowspeak.1.gz')
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
 
-STDIN.sync, STDOUT.sync = true, true
+STDIN.sync = STDOUT.sync = true
 
 # Errors
 ERR_NO_TTY = 128
@@ -38,6 +39,7 @@ ERR_NO_INTERNET = 64
 ERR_SITE_INACCESSIBLE = 63
 ERR_DOWNLOAD_UNAVAILABLE = 62
 ERR_NO_PERMISSION = 61
+ERR_BAD_EXIT = 99
 ERR_DIAGNOSED = 100
 
 # Check if the output should colourized
@@ -248,34 +250,35 @@ if ARGV.include?('--art') || ARGV.include?('-a')
 ARGV.delete('--art')
 ARGV.delete('-a')
 
-puts "
-You can create your own art. Here's a short introduction on how to do that:
-	1. Create an empty document in your computer with 'art' extension (myart.art).
-	2. Edit the document and Type your name in the first line. If you copy someone's work, provide the artist's name.
-		For example:
-			\e[5mCreated by #{rand_name = rand(4..10).times.map { rand(97..122).chr }.join }.\e[0m
-	3. The 2nd line is also for crediting. Leave both 1st and 2nd line empty if crediting is not required.
-	4. Type your characters and draw your ASCII art.
+puts <<~EOF
+	You can create your own art. Here's a short introduction on how to do that:
+		1. Create an empty document in your computer with 'art' extension (myart.art).
+		2. Edit the document and Type your name in the first line. If you copy someone's work, provide the artist's name.
+			For example:
+				\e[5mCreated by #{rand_name = rand(4..10).times.map { rand(97..122).chr }.join }.\e[0m
+		3. The 2nd line is also for crediting. Leave both 1st and 2nd line empty if crediting is not required.
+		4. Type your characters and draw your ASCII art.
 
-	[The art should start from line 3]
-		Format: What you've done should looks like this:
+		[The art should start from line 3]
+			Format: What you've done should looks like this:
 
-\e[4mLine\e[0m				\e[4mArt\e[0m
-\e[7;34m1\e[0m			\e[5mThanks to #{rand_name} for this art\e[0m
-\e[7;34m2\e[0m			\e[5mCollected from example.net\e[0m
-\e[7;34m3\e[0m 			\e[5m-------------------------\e[0m
-\e[7;34m4\e[0m 			\e[5m=			=\e[0m
-\e[7;34m5\e[0m 			\e[5m=    	ASCII Art	=\e[0m
-\e[7;34m6\e[0m 			\e[5m=			=\e[0m
-\e[7;34m7\e[0m 			\e[5m-------------------------\e[0m
+	\e[4mLine\e[0m				\e[4mArt\e[0m
+	\e[7;34m1\e[0m			\e[5mThanks to #{rand_name} for this art\e[0m
+	\e[7;34m2\e[0m			\e[5mCollected from example.net\e[0m
+	\e[7;34m3\e[0m 			\e[5m-------------------------\e[0m
+	\e[7;34m4\e[0m 			\e[5m=			=\e[0m
+	\e[7;34m5\e[0m 			\e[5m=    	ASCII Art	=\e[0m
+	\e[7;34m6\e[0m 			\e[5m=			=\e[0m
+	\e[7;34m7\e[0m 			\e[5m-------------------------\e[0m
 
-	-> For more examples, look at the other installed files.
-	-> You can use other files as example. By default they are located in #{File.join(PATH, 'arts')}
-	-> Run #{BASENAME} --show-arts or -sa to see all the files
-	-> To use your custom art, just run #{BASENAME} --file='your_art.art'
-	-> If it is located in another directory then #{BASENAME} --file='directory/your_art.art'
-	=> The first 2 lines are for crediting, if you don't have to credit, then leave those lines empty.\n\n"
-exit! 0
+		-> For more examples, look at the other installed files.
+		-> You can use other files as example. By default they are located in #{File.join(PATH, 'arts')}
+		-> Run #{BASENAME} --show-arts or -sa to see all the files
+		-> To use your custom art, just run #{BASENAME} --file='your_art.art'
+		-> If it is located in another directory then #{BASENAME} --file='directory/your_art.art'
+		=> The first 2 lines are for crediting, if you don't have to credit, then leave those lines empty.\n\n
+	EOF
+	exit! 0
 end
 
 # Take exceptions very very seriously. Handle them very gently.
@@ -291,7 +294,7 @@ exception_handle = ->(error) do
 
 	case STDIN.gets.to_i
 		when 2 then help.call
-		when 3 then colourize.(error.to_s + "\n")
+		when 3 then puts(error.full_message + ?\n)
 		when 4
 			open('/tmp/cowspeak-log.txt', 'a+') do |log_file|
 				log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{error}\n#{error.backtrace.join("\n")}\n\n")
@@ -354,9 +357,9 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		puts(colourize.(Kernel.eval(downloaded_data.to_s.split("\n").select { |line| line.start_with?('NEW_FEATURES') }[0].to_s.split('=')[1..-1].join.to_s)))
 		puts
 
-		puts colourize.call "#{new_version ? 'U' : 'Reu'}pdate to version #{download_version}? (Y/n)"
+		puts colourize.call "#{new_version ? ?U : 'Reu'}pdate to version #{download_version}? (Y/n): "
 
-		exit 0 if STDIN.gets.strip.downcase == 'n'
+		exit 0 if STDIN.gets.strip.downcase == ?n
 
 		begin
 			puts colourize.call "Trying to update #{__FILE__}"
@@ -374,9 +377,9 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 			exception_handle.(e)
 		end
 
-		puts colourize.call "Update the man page at /usr/share/man/man1/cowspeak.1? (Y/n)"
+		puts colourize.call "Update the man page at /usr/share/man/man1/cowspeak.1? (Y/n): "
 
-		unless STDIN.gets.strip.downcase == 'n'
+		unless STDIN.gets.strip.downcase == ?n
 			begin
 				puts colourize.call "Trying to update #{MAN_PAGE_DIR}"
 				File.write(MAN_PAGE_DIR, raw_man_page)
@@ -394,15 +397,26 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 	end
 end
 
+def Animate(&block)
+	begin
+		anim, str = %W(\xE2\xA0\x82 \xE2\xA0\x92 \xE2\xA0\xB2 \xE2\xA0\xB6), 'Please Wait'
+		t = Thread.new { loop while str.size.times { |i| print(" \e[2K#{anim.rotate![0]} #{str[0...i]}#{str[i].swapcase}#{str[i.next..-1]}#{?..*((i += 1) % 4)}\r") || sleep(0.15) } }
+		block.(self).tap { t.kill }
+	rescue Exception
+		raise SignalException, 2
+	ensure
+		t.kill
+	end
+end
+
 if ARGV.include?('--download') || ARGV.include?('-dl')
 	ARGV.delete('--download')
 	ARGV.delete('-dl')
 
-	colourize.("Download Data from the internet and save them into #{PATH}/?(Y/n): ")
-	exit if STDIN.gets.strip.downcase == 'n'
-
 	begin
 		require 'net/http'
+		colourize.("Download Data from the internet and save them into #{PATH}/?(Y/n): ")
+		exit if STDIN.gets.strip.downcase == ?n
 
 		unless File.exist?(PATH)
 			Dir.mkdir(PATH)
@@ -413,7 +427,10 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		# https://raw.githubusercontent.com/bmc/fortunes/master/fortunes
 		# But I like to use the whatever link I used, because it's coming from my github account, and I don't worry about deletion.
 
-		data = Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/fortunes.data'))
+		Warning.warn "#{PATH} cannot be accesses. Please be root..." unless File.writable?(File.join(PATH))
+		sleep 1
+		data = Animate { Net::HTTP.get(URI('https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/fortunes.data')) }.to_s
+
 		unless data.include?('404: Not Found')
 			File.write(File.join(PATH, 'fortunes.data'), data)
 			colourize.call "The fortunes database has been downloaded and installed to #{PATH}fortunes.\n"
@@ -422,7 +439,6 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 				Dir.mkdir(File.join(PATH, 'arts'))
 				colourize.call "Created directory #{File.join(PATH, 'arts')}/\n"
 			end
-
 			puts colourize.call "Downloading art files...\n"
 
 			# Install the art files...
@@ -445,12 +461,11 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 				)
 
 			write_to = %w(cow dolphin killer_squirrels penguin spider squirrels cat deer dog eagle hippo scorpion camel turtle mouse)
-
 			raise RuntimeError, "Dear Developer, the uris has to match write_to size, line: #{__LINE__}" unless write_to.size == uris.size
 
 			uris.size.times do |index|
 				puts colourize.("Downloading art file from #{uris[index]}")
-				File.write("#{File.join(PATH, 'arts', write_to[index])}.art", Net::HTTP.get(URI(uris[index])))
+				File.write("#{File.join(PATH, 'arts', write_to[index])}.art", Animate { Net::HTTP.get(URI(uris[index])) })
 
 				puts colourize.call "Successfully installed an art file in #{File.join(PATH, 'arts')}/"
 				puts colourize.call "#{IO.read(File.join(PATH, 'arts', write_to[index]) + '.art')}\n"
@@ -479,36 +494,41 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		colourize.call "Requires root privilege to write to #{PATH}/ directory. Please run #{BASENAME} with proper permission.\n"
 		exit! ERR_NO_PERMISSION
 
+	rescue SignalException, Interrupt, SystemExit
+		colourize.call "\nUh Oh! The download is interrupted!\n\n\n"
+		exit! ERR_BAD_EXIT
+
 	rescue Exception => e
 		exception_handle.(e)
 	end
 end
 
-show_art = true
-if ARGV.include?('--no-art') || ARGV.include?('-na')
+show_art = if ARGV.include?('--no-art') || ARGV.include?('-na')
 	ARGV.delete('--no-art')
 	ARGV.delete('-na')
-	show_art = false
+	false
+else
+	true
 end
 
 borderh = ARGV.select { |a| a.start_with?('--borderh=') || a.start_with?('-brh=') }[-1].to_s
-borderh = borderh.empty? ? '=' : borderh.split('=')[1].to_s.chars.sample.to_s
+borderh = borderh.empty? ? ?= : borderh.split('=')[1].to_s.chars.sample.to_s
 
 borderv = ARGV.select { |a| a.start_with?('--borderv=') || a.start_with?('-brv=')  }[-1].to_s
-borderv = borderv.empty? ? '|' : borderv.split('=')[1].to_s.chars.sample.to_s
+borderv = borderv.empty? ? ?| : borderv.split('=')[1].to_s.chars.sample.to_s
 
 bubble = ARGV.select { |a| a.start_with?('--bubble=') || a.start_with?('-bbl=') }[-1]
 bubble = if bubble
 	bubble.split('=')[1]
 else
-	'o'
+	?o
 end
 
 fill_chars = ARGV.select { |a| a.start_with?('--fill=') || a.start_with?('-fc=') }[-1]
 fill_chars = if fill_chars
 	fill_chars.split('=')[-1].chars.sample
 else
-	' '
+	?\s
 end
 
 begin
@@ -516,7 +536,7 @@ begin
 	file.each do |arg| ARGV.delete(arg) end
 
 	if file[-1]
-		file = if file[-1].split('=')[1] then file[-1].split('=')[1]
+		file = if file[-1].split('=')[1] then file[-1].split(?=)[1]
 		else File.join(PATH, 'arts', "#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art")
 		end
 	else
@@ -525,7 +545,7 @@ begin
 
 	unless File.file?(file)
 		colourize.call "Looks like the art file doesn't exist.\n"
-		colourize.call "Type #{BASENAME} --download or #{BASENAME} -d to download all the necessary files.\n"
+		colourize.call "Type #{BASENAME} --download or #{BASENAME} -dl to download all the necessary files.\n"
 		colourize.call "Type #{BASENAME} --show-arts or #{BASENAME} -sa to see available arts in the default directory...\n"
 		colourize.call "Type #{BASENAME} --help or #{BASENAME} -h for help.\n"
 		colourize.call "Type #{BASENAME} --art or #{BASENAME} -a for help regarding art.\n"
@@ -670,7 +690,7 @@ begin
 
 		if text.nil? || text.empty?
 			if File.readable?(File.join(PATH, "fortunes.data"))
-				text = IO.read(File.join(PATH, "fortunes.data")).force_encoding('UTF-8').split("\n%\n").sample.gsub("\n", ' ').strip
+				text = IO.read(File.join(PATH, "fortunes.data")).force_encoding('UTF-8').split("\n%\n").sample.to_s.gsub(?\n, ?\s).strip
 			else
 				text = ("The fortune file doesn't exist.
 						Please run #{BASENAME} -dl to download the files to #{PATH}")
@@ -689,7 +709,7 @@ begin
 		net.each { |arg| ARGV.delete(arg) }
 
 		unless net.empty?
-			uri = net[-1].split('=')[1].to_s.strip
+			uri = net[-1].split(?=)[1].to_s.strip
 			begin
 				%w(net/http open-uri).each { |g| require(g) }
 				text = open(uri).read.strip
@@ -716,7 +736,7 @@ begin
 		end
 	end
 
-	corners, all_chars = (borderh.empty? || borderv.empty?) ? Array.new(4) { ' ' } : [' //', '\\\\',  ' \\\\',  '//'], ''
+	corners, all_chars = (borderh.empty? || borderv.empty?) ? Array.new(4) { ?\s } : [' //', '\\\\',  ' \\\\',  '//'], ''
 
 	if show_art && display_text
 		text = ' ' + text.force_encoding('UTF-8').gsub("\t", ' ')	# gsub is faster than tr
@@ -725,10 +745,10 @@ begin
 		all_chars.concat("#{corners[0]}#{init}#{corners[1]}\n #{borderv}")
 
 		text.each_char do |c|
-			unless (count >= init_length - 8 && c == " ") || count >= init_length || c == "\n"
+			unless (count >= init_length - 8 && c == ?\s) || count >= init_length || c == ?\n
 				all_chars.concat(c)
 			else
-				all_chars.concat((c == "\n" ? fill_chars : c) + fill_chars * (init_length - count + 2) + borderv + "\n #{borderv} ")
+				all_chars.concat((c == ?\n ? fill_chars : c) + fill_chars * (init_length - count + 2) + borderv + "\n #{borderv} ")
 				count = 0
 			end
 
@@ -740,14 +760,14 @@ begin
 		animal = IO.readlines(file)[2..-1]
 
 		unless animal
-			puts colourize.call "The file #{File.zero?(file) ? 'looks empty' : 'is not properly formatted' }. Run cowspeak --art to get help regarding art."
+			puts colourize.call "The art file #{File.zero?(file) ? 'looks empty' : 'is not properly formatted' }. Run cowspeak --art to get help regarding art."
 			exit! ERR_BAD_FILE
 		end
 
 		max_length = animal.map(&:length).max / 2
 
-		colourize.(all_chars + "\n" + corners[2] + init + corners[3] + "\n" +
-			' ' * max_length + bubble * 3 + "\n " + ' ' * max_length + bubble * 2 + "\n" + ' ' * max_length +  bubble + "\n" + animal.join)
+		colourize.(all_chars + ?\n + corners[2] + init + corners[3] + ?\n +
+			?\s * max_length + bubble * 3 + "\n\s" + ' ' * max_length + bubble * 2 + ?\n + ?\s * max_length +  bubble + ?\n + animal.join)
 
 	elsif show_art
 		colourize.(IO.readlines(file)[2..-1].join)
@@ -756,7 +776,7 @@ begin
 	end
 
 rescue SystemExit, Interrupt
-	printf "\n\n"
+	printf ?\n * 2
 	puts colourize.('Exiting...')
 	exit! 0
 
