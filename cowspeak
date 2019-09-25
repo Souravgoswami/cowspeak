@@ -6,21 +6,20 @@
 VERSION = "Cowspeak version 2.50"
 
 BASENAME = File.basename(__FILE__)
-NEW_FEATURES = "\t1.Fixed several bugs and reduced memory consumption.\n\t2. Cowspeak now works outside TTY with a predefined term size 50x50"
+NEW_FEATURES = "\t1. Fixed several bugs and reduced memory consumption.\n\t2. Cowspeak now works outside TTY with a predefined term size 50x50\n\t3. Support for Ruby 2.3 and Ruby 2.7\n"
 
 # Debugging purpose:
 # abort Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join)
 
 # Set the path where to look for files and download (--download or -dl) the new cowspeak files
-# Uncomment the following to run without root:
 
+# Uncomment the following to run without root:
 PATH = "#{File.dirname(__FILE__)}/cowspeak_files"
 SOURCE_CODE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak'
 MAN_PAGE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz'
 MAN_PAGE_DIR = File.join(PATH, 'cowspeak.1.gz')
 
 # Uncomment the fllowing ONLY if ALL of the ABOVE constants are COMMENTED (except VERSION, BASENAME and NEW_FEATURES):
-
 # PATH ||= "/usr/share/cowspeak"
 # SOURCE_CODE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak'
 # MAN_PAGE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/share/man/man1/cowspeak.1.gz'
