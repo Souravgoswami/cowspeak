@@ -47,11 +47,10 @@ invert, reverse, display_text, show_art = check_args.('--invert', '-inv'), check
 require 'io/console'
 Terminal_Width = begin
 	STDOUT.winsize[1].fdiv(1.5).ceil
-
 rescue Errno::ENOTTY
-	coloured = false
+	coloured, term_size = false, [40, 40].freeze
 	IO.undef_method(:winsize)
-	IO.define_method(:winsize) { [40, 40] }
+	IO.define_method(:winsize) { term_size }
 	STDOUT.winsize[1].fdiv(1.5).ceil
 end
 
@@ -319,7 +318,6 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 			puts colourize.call "Trying to update #{__FILE__}"
 			File.write(__FILE__, downloaded_data)
 			puts colourize.call "Updated #{__FILE__}"
-
 			ARGV << '--download'
 
 		rescue Errno::EACCES
@@ -542,7 +540,7 @@ begin
 			''
 		end
 
-		terminal_size = STDOUT.winsize.then { |x| x.sum != 0 ? "\n:: Terminal Size: #{x.join(" \xC3\x97 ")}" : '' }
+		terminal_size = STDOUT.tty? ? STDOUT.winsize.then { |x| x.sum != 0 ? "\n:: Terminal Size: #{x.join(" \xC3\x97 ")}" : '' } : ''
 		kernel_version = File.readable?('/proc/version') ? "\n:: Kernel: " + IO.read('/proc/version').split[2] : ''
 
 		uptime = File.readable?('/proc/uptime') ? IO.read('/proc/uptime').to_i : 0
@@ -551,18 +549,41 @@ begin
 			"#{uptime.%(60).then { |x| x != 1 ? "#{x} seconds" : "#{x} second" } } "
 
 		procfiles = Dir['/proc/**']
-		running_processes = procfiles.select { |x| File.split(x)[1].then { |y| y.to_i.to_s == y } } #.then { |x| x == 0 ? '' : "\n:: Processes Running: #{x}" }
-		running = running_processes.size.then { |x| x == 0 ? '' : "\n:: Processes Running: #{x}" }
+		running_processes = procfiles.select { |x| File.split(x)[1].then { |y| y.to_i.to_s == y } }
+		total_tasks, tasks_info = running_processes.size, ''
+		sleeping_count = idle_count = running_count = zombies_count = 0
 
-		zombies = running_processes.count do |x|
-				status_file = File.join(x, 'status')
-				IO.readlines(status_file)[1].split[1] == ?Z.freeze if File.readable?(status_file)
-		end.then { |x| x == 0 ? '' : " (#{x} zombies)"}
+		running_processes.each do |x|
+			status_file = File.join(x, 'status'.freeze)
+
+			if File.readable?(status_file)
+				status = IO.readlines(status_file)
+				status1, status2 = status[2].split[1], status[1].split[1]
+
+				running_count += 1 if status1 == ?R.freeze
+				sleeping_count += 1 if status1 == ?S.freeze
+				idle_count += 1 if status1 == ?I.freeze
+				zombies_count += 1 if status2 == ?Z.freeze
+			end
+		end
+
+		if running_processes.size > 0
+			tasks_info << "\n:: Tasks: #{total_tasks}"
+
+			if running_count + sleeping_count + idle_count + zombies_count > 0
+				tasks_info.concat("\n   [")
+				tasks_info.concat("Running #{running_count},\s") if running_count > 0
+				tasks_info.concat("Sleeping #{sleeping_count},\s") if sleeping_count > 0
+				tasks_info.concat("Idle #{idle_count},\s") if idle_count > 0
+				tasks_info.concat("Zombies #{zombies_count},\s") if zombies_count > 0
+				tasks_info.delete_suffix!(",\s").concat(?])
+			end
+		end
 
 		session = ENV['DESKTOP_SESSION'] ? "\n:: Desktop Session: #{ENV['DESKTOP_SESSION']}" : ''
 		text = <<~EOF.rstrip
 				>> Welcome#{user}!#{logname}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
-				:: Uptime: #{up}#{running}#{zombies}
+				:: Uptime: #{up}#{tasks_info}
 				:: Shell: #{ENV['SHELL']}
 				:: PWD: #{Dir.pwd}#{files}#{terminal_size}
 				:: Date & Time: #{Time.new.strftime('%B %d, %A, %H:%M:%S %p')}
