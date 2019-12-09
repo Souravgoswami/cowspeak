@@ -1,29 +1,29 @@
-#!/usr/bin/env ruby
+#!/usr/bin/ruby -w
 # Encoding: UTF-8
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
-# This program `require` io/console, open-uri, net/https, timeout, socket, (and yes, no optparse)! They are loaded as needed Search for 'require' in your editior. VERSION Line has to be 5 to work with older versions.
-VERSION = "Cowspeak version 2.50"
+# This program requires io/console, open-uri, net/https, timeout, socket, etc. (and yes, no optparse)! They are loaded as needed.
+VERSION = "Cowspeak version 2.60"
 
 BASENAME = File.basename(__FILE__)
-NEW_FEATURES = "\t1. Fixed several bugs and reduced memory consumption.\n\t2. Cowspeak now works outside TTY with a predefined term size 50x50\n\t3. Support for Ruby 2.3 and Ruby 2.7\n"
+NEW_FEATURES = "\t1. Fixed several bugs!\n\t2. Cowspeak now works outside TTY with a predefined term size 40x40 and disabled colour.\n\t3. Shows Running and Zombie processes in welcome screen.\n\t4. Shows % in the welcome screen.\n\t5. Other minor performance improvements."
 
 # Debugging purpose:
-# abort Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join)
+# puts(Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join)) || exit!(0)
 
 # Set the path where to look for files and download (--download or -dl) the new cowspeak files
 
 # Uncomment the following to run without root:
-PATH = "#{File.dirname(__FILE__)}/cowspeak_files"
-SOURCE_CODE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak'
-MAN_PAGE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz'
-MAN_PAGE_DIR = File.join(PATH, 'cowspeak.1.gz')
+# PATH = "#{File.dirname(__FILE__)}/cowspeak_files"
+# SOURCE_CODE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak'
+# MAN_PAGE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz'
+# MAN_PAGE_DIR = File.join(PATH, 'cowspeak.1.gz')
 
 # Uncomment the fllowing ONLY if ALL of the ABOVE constants are COMMENTED (except VERSION, BASENAME and NEW_FEATURES):
-# PATH ||= "/usr/share/cowspeak"
-# SOURCE_CODE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak'
-# MAN_PAGE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/share/man/man1/cowspeak.1.gz'
-# MAN_PAGE_DIR ||= '/usr/share/man/man1/cowspeak.1.gz'
+PATH ||= "/usr/share/cowspeak"
+SOURCE_CODE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak'
+MAN_PAGE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/share/man/man1/cowspeak.1.gz'
+MAN_PAGE_DIR ||= '/usr/share/man/man1/cowspeak.1.gz'
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
@@ -43,17 +43,12 @@ Kernel.class_exec { define_method(:then) { |&block| block === self } } unless de
 Array.class_exec { define_method(:sum) { reduce(:+) } } unless [].respond_to?(:sum)
 
 # $-s, $-n is used in order to not create new string when?\n, ?\s is needed. Changing them would be disastrous
-$-s, $-n = ?\s.freeze, ?\n.freeze
+$-s, $-n, $-v = ?\s.freeze, ?\n.freeze, true
 
 # Check if the output should be colourized, blinked, rotated each line, inverted, reversed, whether to display text and the art
 check_args = proc { |*opts| opts.any?(&ARGV.method(:include?)).tap { opts.each { |x| ARGV.delete(x) } } }
-coloured = !check_args.('--no-colour', '-nc')
-blink = check_args.('--blink', '-b')
-rotate_colour = check_args.('--rotate-colour', '-rc')
-invert = check_args.('--invert', '-inv')
-reverse = check_args.('--reverse', '-rev')
-display_text = !check_args.('--no-text', '-nt')
-show_art = !check_args.('--no-args', '-na')
+coloured, blink, rotate_colour = !check_args.('--no-colour', '-nc'), check_args.('--blink', '-b'), check_args.('--rotate-colour', '-rc')
+invert, reverse, display_text, show_art = check_args.('--invert', '-inv'), check_args.('--reverse', '-rev'), !check_args.('--no-text', '-nt'), !check_args.('--no-art', '-na')
 
 require 'io/console'
 
@@ -61,8 +56,9 @@ Terminal_Width = begin
 	STDOUT.winsize[1].fdiv(1.5).ceil
 
 rescue Errno::ENOTTY
+	coloured = false
 	IO.undef_method(:winsize)
-	IO.define_method(:winsize) { [50, 50] }
+	IO.define_method(:winsize) { [40, 40] }
 	STDOUT.winsize[1].fdiv(1.5).ceil
 end
 
@@ -70,7 +66,7 @@ end
 all_colours = [40..45, 196..201, 208..213, 28..33].freeze
 other_colours = [[154, 184, 208, 203, 198, 164, 129, 92], [63, 33, 39, 44, 49, 83, 118]].freeze
 
-colour_sets = (all_colours + other_colours).map! { |i| i.to_a.tap { |x| x.concat(x.reverse) } }.tap { |cs| cs.concat(all_colours.map { |i| i.to_a.reverse.tap { |x| x.concat(x.reverse) } }) }
+colour_sets = all_colours.+(other_colours).map! { |i| i.to_a.tap { |x| x.concat(x.reverse) } }.tap { |cs| cs.concat(all_colours.map { |i| i.to_a.reverse.tap { |x| x.concat(x.reverse) } }) }
 available_colours = [[154, 184, 208, 203, 198, 164, 129, 92], [63, 33, 39, 44, 49, 83, 118]].concat(colour_sets).tap { |ac| ac.concat(ac.map(&:reverse)) }
 
 colourize = proc do |string|
@@ -97,6 +93,20 @@ colourize = proc do |string|
 	else
 		STDOUT.print "\e[5m" if blink
 		STDOUT.print enum.to_a.join
+	end
+end
+
+def Animate(str = 'Please Wait', &block)
+	begin
+		anim, str_size = %W(\xE2\xA0\x82 \xE2\xA0\x92 \xE2\xA0\xB2 \xE2\xA0\xB6), str.size
+		t = Thread.new { loop while str_size.times { |i| print(" \e[2K#{anim.rotate![0]} #{str[0...i]}#{str[i].swapcase}#{str[i + 1..-1]}#{?..*((i + 1) % 4)}\r") || sleep(0.05) } }
+		block.(self).tap { t.kill }.tap { print "\e[2K\r" }
+
+	rescue Exception => e
+		raise e
+
+	ensure
+		t&.kill
 	end
 end
 
@@ -190,7 +200,7 @@ help.(true)
 end
 
 if ARGV.include?('--show-arts') || ARGV.include?('-sa')
-	puts Dir.entries(File.join(PATH, 'arts')).drop(2).sort!.map!.with_index { |file, i| colourize.("\xE2\x80\xA3 #{i + 1}\n#{IO.read(File.join(PATH, 'arts', file))}\nPath: #{File.join(PATH, 'arts', file)}\n\n") }.compact
+	Dir.entries(File.join(PATH, 'arts')).drop(2).each_with_index { |file, i| colourize.("\xE2\x80\xA3 #{i + 1}\n#{IO.read(File.join(PATH, 'arts', file))}\nPath: #{File.join(PATH, 'arts', file)}\n\n") }
 	exit! 0
 end
 
@@ -276,21 +286,25 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 
 	begin
 		require 'net/https'
-		puts colourize.('Looking for updates! Please wait a moment...')
-		current_version = VERSION.scan(/\d+.\d+/).join
-		downloaded_data, raw_man_page = Net::HTTP.get(URI(SOURCE_CODE)), Net::HTTP.get(URI(MAN_PAGE))
+		downloaded_data, raw_man_page = Animate('Looking for updates!') { [Net::HTTP.get(URI(SOURCE_CODE)), Net::HTTP.get(URI(MAN_PAGE))] }
+		current_version = VERSION[/\d+.\d+/]
 		puts colourize.("Current version: #{current_version}")
 
 	rescue SocketError, OpenSSL::SSL::SSLError
 		puts colourize.call "Can't get version info of cowspeak. Do you have an active internet connection?"
 		exit! ERR_NO_INTERNET
 
+	rescue Interrupt, SignalException, SystemExit
+		puts
+		puts colourize.('The download was interrupted!')
+		exit!
+
 	rescue Exception => e
 		puts colourize.call 'Something weird happened while trying to contact the server.'
 		exception_handle.(e)
 	end
 
-	download_version = downloaded_data.to_s.split($-n).select! { |line| line.start_with?('VERSION') }[0].to_s.scan(/\d+.\d+/).to_a[0]
+	download_version = downloaded_data.to_s.split($-n).find { |line| line.start_with?('VERSION') }.to_s[/\d+\.\d+/]
 	new_version = download_version.to_f > current_version.to_f
 
 	unless new_version || force_update
@@ -299,11 +313,16 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		puts colourize.call "A new update is available." if new_version
 		puts colourize.("New Version: #{download_version}\n")
 
-		puts(colourize.(Kernel.eval(downloaded_data.to_s.split($-n).select! { |line| line.start_with?('NEW_FEATURES') }[0].to_s.split(?=).drop(1).join.to_s)))
+		puts(colourize.(Kernel.eval(downloaded_data.to_s.split($-n).find { |line| line.start_with?('NEW_FEATURES'.freeze) }.to_s.split(?=).drop(1).join.to_s)))
 		puts
 
-		puts colourize.call "#{new_version ? ?U : 'Reu'}pdate to version #{download_version}? (Y/n): "
-		exit 0 if STDIN.gets.to_s.strip.downcase == ?n
+		colourize.call "#{new_version ? ?U : 'Reu'}pdate to version #{download_version}? (Y/n): "
+		begin
+			exit 0 if STDIN.gets.to_s.strip.downcase == ?n
+		rescue Interrupt
+			puts
+			exit!
+		end
 
 		begin
 			puts colourize.call "Trying to update #{__FILE__}"
@@ -341,20 +360,6 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 	end
 end
 
-def Animate(str = 'Please Wait', &block)
-	begin
-		anim = %W(\xE2\xA0\x82 \xE2\xA0\x92 \xE2\xA0\xB2 \xE2\xA0\xB6)
-		t = Thread.new { loop while str.size.times { |i| print(" \e[2K#{anim.rotate![0]} #{str[0...i]}#{str[i].swapcase}#{str[i + 1..-1]}#{?..*((i + 1) % 4)}\r") || sleep(0.05) } }
-		block.(self).tap { t.kill }.tap { print "\e[2K\r" }
-
-	rescue Exception => e
-		raise e
-
-	ensure
-		t&.kill
-	end
-end
-
 if ARGV.include?('--download') || ARGV.include?('-dl')
 	ARGV.delete('--download')
 	ARGV.delete('-dl')
@@ -370,7 +375,6 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		end
 
 		# The fortune database originally came from https://raw.githubusercontent.com/bmc/fortunes/master/fortunes
-		# But I like to use my own repo, so that I don't have to worry about deletion.
 
 		Warning.warn "#{PATH} cannot be accesses. Please be root..." unless File.writable?(File.join(PATH))
 		sleep 1
@@ -387,25 +391,9 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 			puts colourize.call "Downloading art files...\n"
 
 			# Install the art files...
-			uris = %w(
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/cow.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/dolphin.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/killer_squirrels.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/penguin.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/spider.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/squirrels.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/cat.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/deer.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/dog.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/eagle.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/hippo.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/scorpion.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/camel.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/turtle.art
-					https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/mouse.art
-				)
-
 			write_to = %w(cow dolphin killer_squirrels penguin spider squirrels cat deer dog eagle hippo scorpion camel turtle mouse)
+			uris = write_to.map { |x| 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/'.freeze + x + '.art' }
+
 			raise RuntimeError, "Dear Developer, the uris has to match write_to size, line: #{__LINE__}" unless write_to.size == uris.size
 
 			uris.size.times do |index|
@@ -506,9 +494,7 @@ begin
 		ssh_connection = ENV['SSH_CONNECTION']
 		ssh_connection = ssh_connection ? "\n:: SSH: #{ssh_connection}" : ''
 
-		local_ip = Socket.ip_address_list.detect { |intf| intf.ipv4_private? }
-		local_ip = local_ip ? (local_ip.ip? ? "\n:: Local IP: #{local_ip.ip_unpack[0]}" : '') : ''
-
+		local_ip = Socket.ip_address_list.detect { |intf| intf.ipv4_private? }.then { |x| x ? x.ip? ? "\n:: Local IP: #{x.ip_unpack[0]}" : '' : '' }
 		files = " (#{Dir.entries(Dir.pwd).drop(2).count} items)" rescue ''
 
 		# We are not using any File.join because Linux always has "/" as File::SEPARATOR
@@ -525,7 +511,7 @@ begin
 			memory = IO.readlines('/proc/meminfo')
 
 			used = (((total = memory[0].split[1].to_f) - (available = memory[2].split[1].to_f))/UNIT).round(2)
-			val = "\n:: Memory: #{(used).round(2)} #{suffix} / #{(total/UNIT).round(2)} #{suffix} (av #{(available/UNIT).round(2)} #{suffix})"
+			val = "\n:: Memory: #{(used).round(2)} #{suffix} / #{(total/UNIT).round(2)} #{suffix} (#{used.*(100)./(total./(UNIT)).round(2)}%)"
 		else
 			''
 		end
@@ -535,17 +521,21 @@ begin
 			used, total = *IO.readlines('/proc/swaps').drop(1).map! { |x| x.strip.split.values_at(2, 3).map!(&:to_f) }
 				.then { |x| [x.map(&:last).sum./(UNIT).round(2), x.map(&:first).sum./(UNIT).round(2)] }
 
-			total == 0 ? '' : "\n:: Swap: #{used} #{suffix} / #{total} #{suffix} (av #{total.-(used).round(2)} #{suffix})"
+			total == 0 ? '' : "\n:: Swap: #{used} #{suffix} / #{total} #{suffix} (#{used.*(100)./(total).round(2)}%)"
 		else
 			''
 		end
 
+		require 'etc'
 		cpu_stat = if File.readable?('/proc/cpuinfo')
-				cpu = IO.readlines('/proc/cpuinfo')
-				val = "\n:: CPU: #{cpu.find { |x| x.start_with?('model name') }.split(?:).drop(1).join.strip}"
-				val.concat("\n:: CPU Cores: #{cpu.count { |x| x.start_with? ('processor')} }")
+			cpu = IO.readlines('/proc/cpuinfo')
+
+			val = "\n:: CPU: #{cpu.find { |x| x.start_with?('model name') }.to_s.split(?:).drop(1).join.strip}"
+			cpu_count = cpu.count { |x| x.start_with?('processor'.freeze) }.then { |x| x == Etc.nprocessors ? x : 0 }
+			val.concat("\n:: CPU Cores: #{cpu_count}") unless cpu_count == 0
+			val
 		else
-			''
+			"\n:: CPU Cores: #{Etc.nprocessors}"
 		end
 
 		cpu_usage = if File.readable?('/proc/stat')
@@ -558,7 +548,7 @@ begin
 			previdle, idle = @prev_idle + @prev_iowait, @idle + @iowait
 			totald = idle + (@user + @nice + @sys + @irq + @softirq + @steal) -
 				(previdle + (@prev_user + @prev_nice + @prev_sys + @prev_irq + @prev_softirq + @prev_steal))
-			"\n:: Total CPU Usage: #{((totald - (idle - previdle)) / totald * 100).round(2).abs.then { |x| x.to_s == 'NaN' ? 0 : x }.abs} %"
+			"\n:: Total CPU Usage: #{((totald - (idle - previdle)) / totald * 100).round(2).abs.then { |x| x.to_s == 'NaN' ? 0 : x }.abs}%"
 		else
 			''
 		end
@@ -571,10 +561,19 @@ begin
 			"#{uptime.%(3600).div(60).then { |x| x != 1 ? "#{x} minutes" : "#{x} minute" } }, "\
 			"#{uptime.%(60).then { |x| x != 1 ? "#{x} seconds" : "#{x} second" } } "
 
+		procfiles = Dir['/proc/**']
+		running_processes = procfiles.select { |x| File.split(x)[1].then { |y| y.to_i.to_s == y } } #.then { |x| x == 0 ? '' : "\n:: Processes Running: #{x}" }
+		running = running_processes.size.then { |x| x == 0 ? '' : "\n:: Processes Running: #{x}" }
+
+		zombies = running_processes.count do |x|
+				status_file = File.join(x, 'status')
+				IO.foreach(status_file).tap(&:next).next.split[1] == ?Z.freeze if File.readable?(status_file)
+		end.then { |x| x == 0 ? '' : " (#{x} zombies)"}
+
 		session = ENV['DESKTOP_SESSION'] ? "\n:: Desktop Session: #{ENV['DESKTOP_SESSION']}" : ''
 		text = <<~EOF.rstrip
 				>> Welcome#{user}!#{logname}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
-				:: Uptime: #{up}
+				:: Uptime: #{up}#{running}#{zombies}
 				:: Shell: #{ENV['SHELL']}
 				:: PWD: #{Dir.pwd}#{files}#{terminal_size}
 				:: Date & Time: #{Time.new.strftime('%B %d, %A, %H:%M:%S %p')}
