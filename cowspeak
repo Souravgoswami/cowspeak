@@ -2,31 +2,26 @@
 # Encoding: UTF-8
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
-# This program requires io/console, open-uri, net/https, timeout, socket, etc. (and yes, no optparse)! They are loaded as needed.
+
+# TARGET can either be [non-zero number] for local installation [0] for root installation
+TARGET = 1
+
 VERSION = "Cowspeak version 2.60"
-
-BASENAME = File.basename(__FILE__)
-NEW_FEATURES = "\t1. Fixed several bugs!\n\t2. Cowspeak now works outside TTY with a predefined term size 40x40 and disabled colour.\n\t3. Shows Running and Zombie processes in welcome screen.\n\t4. Shows % in the welcome screen.\n\t5. Other minor performance improvements."
-
-# Debugging purpose:
-# puts(Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join)) || exit!(0)
-
-# Set the path where to look for files and download (--download or -dl) the new cowspeak files
-
-# Uncomment the following to run without root:
-PATH = "#{File.dirname(__FILE__)}/cowspeak_files"
-SOURCE_CODE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak'
-MAN_PAGE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz'
-MAN_PAGE_DIR = File.join(PATH, 'cowspeak.1.gz')
-
-# Uncomment the fllowing ONLY if ALL of the ABOVE constants are COMMENTED (except VERSION, BASENAME and NEW_FEATURES):
-# PATH ||= "/usr/share/cowspeak"
-# SOURCE_CODE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak'
-# MAN_PAGE ||= 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/share/man/man1/cowspeak.1.gz'
-# MAN_PAGE_DIR ||= '/usr/share/man/man1/cowspeak.1.gz'
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
+
+BASENAME = File.basename(__FILE__)
+NEW_FEATURES = "\t1. Fixed several bugs!\n\t2. Cowspeak now works outside TTY with a predefined term size 40x40\n\t   and disabled colour.\n\t3. Shows Running and Zombie processes in welcome screen.\n\t4. Shows % in the welcome screen.\n\t5. Other minor performance improvements."
+# puts('Debugging Purpose:', 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join)) || exit!(0)
+
+PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = if TARGET != 0
+	[ "#{Dir.pwd}/cowspeak_files", 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak',
+	'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz', File.join(Dir.pwd, 'cowspeak.1.gz') ]
+else
+	[ '/usr/share/cowspeak', 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak',
+	'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/share/man/man1/cowspeak.1.gz', '/usr/share/man/man1/cowspeak.1.gz' ]
+end
 
 # Errors
 ERR_NO_TTY = 128
@@ -42,7 +37,6 @@ ERR_DIAGNOSED = 100
 Kernel.class_exec { define_method(:then) { |&block| block === self } } unless defined?(Kernel.then)
 Array.class_exec { define_method(:sum) { reduce(:+) } } unless [].respond_to?(:sum)
 
-# $-s, $-n is used in order to not create new string when?\n, ?\s is needed. Changing them would be disastrous
 $-s, $-n, $-v = ?\s.freeze, ?\n.freeze, true
 
 # Check if the output should be colourized, blinked, rotated each line, inverted, reversed, whether to display text and the art
@@ -51,7 +45,6 @@ coloured, blink, rotate_colour = !check_args.('--no-colour', '-nc'), check_args.
 invert, reverse, display_text, show_art = check_args.('--invert', '-inv'), check_args.('--reverse', '-rev'), !check_args.('--no-text', '-nt'), !check_args.('--no-art', '-na')
 
 require 'io/console'
-
 Terminal_Width = begin
 	STDOUT.winsize[1].fdiv(1.5).ceil
 
@@ -101,10 +94,8 @@ def Animate(str = 'Please Wait', &block)
 		anim, str_size = %W(\xE2\xA0\x82 \xE2\xA0\x92 \xE2\xA0\xB2 \xE2\xA0\xB6), str.size
 		t = Thread.new { loop while str_size.times { |i| print(" \e[2K#{anim.rotate![0]} #{str[0...i]}#{str[i].swapcase}#{str[i + 1..-1]}#{?..*((i + 1) % 4)}\r") || sleep(0.05) } }
 		block.(self).tap { t.kill }.tap { print "\e[2K\r" }
-
 	rescue Exception => e
 		raise e
-
 	ensure
 		t&.kill
 	end
@@ -479,12 +470,10 @@ begin
 		text.concat(pipe)
 		text.concat(STDIN.readpartial(4096)) until STDIN.eof?
 		text.strip!
-
 	elsif ARGV.include?('--version') || ARGV.include?('-v')
 		ARGV.delete('--version')
 		ARGV.delete('-v')
 		text = VERSION
-
 	elsif ARGV.include?('--welcome') || ARGV.include?('-w')
 		require 'socket'
 
@@ -629,7 +618,6 @@ begin
 				colourize.call "Failed to open the URL. Have you mentioned the protocol?\n"
 				colourize.call "Example:\n\thttp://www.example.net\n"
 				exit! ERR_SITE_INACCESSIBLE
-
 			end
 		end
 	end
@@ -674,7 +662,6 @@ begin
 
 rescue SystemExit, Interrupt, SignalException
 	abort $-n * 2
-
 rescue Exception => e
 	exception_handle.(e)
 end
