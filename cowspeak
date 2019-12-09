@@ -294,7 +294,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		puts colourize.call "Can't get version info of cowspeak. Do you have an active internet connection?"
 		exit! ERR_NO_INTERNET
 
-	rescue Interrupt, SignalException, SystemExit
+	rescue Interrupt, SignalException
 		puts
 		puts colourize.('The download was interrupted!')
 		exit!
@@ -426,7 +426,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		colourize.call "Requires root privilege to write to #{PATH}/ directory. Please run #{BASENAME} with proper permission.\n"
 		exit! ERR_NO_PERMISSION
 
-	rescue SignalException, Interrupt, SystemExit
+	rescue SignalException, Interrupt
 		colourize.call "\nUh Oh! The download is interrupted!\n\n\n"
 		exit! ERR_BAD_EXIT
 
