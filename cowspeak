@@ -294,7 +294,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		puts colourize.call "Can't get version info of cowspeak. Do you have an active internet connection?"
 		exit! ERR_NO_INTERNET
 
-	rescue Interrupt, SignalException
+	rescue Interrupt, SignalException, SystemExit
 		puts
 		puts colourize.('The download was interrupted!')
 		exit!
@@ -318,7 +318,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 
 		colourize.call "#{new_version ? ?U : 'Reu'}pdate to version #{download_version}? (Y/n): "
 		begin
-			exit 0 if STDIN.gets.to_s.strip.downcase == ?n
+			exit! 0 if STDIN.gets.to_s.strip.downcase == ?n
 		rescue Interrupt
 			puts
 			exit!
@@ -340,7 +340,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 			exception_handle.(e)
 		end
 
-		puts colourize.call "Update the man page at /usr/share/man/man1/cowspeak.1? (Y/n): "
+		colourize.call "Update the man page at #{MAN_PAGE_DIR}? (Y/n): "
 
 		unless STDIN.gets.to_s.strip.downcase == ?n
 			begin
@@ -367,7 +367,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 	begin
 		require 'net/https'
 		colourize.("Download Data from the internet and save them into #{PATH}/?(Y/n): ")
-		exit if STDIN.gets.to_s.strip.downcase == ?n
+		exit!(0) if STDIN.gets.to_s.strip.downcase == ?n
 
 		unless File.exist?(PATH)
 			Dir.mkdir(PATH)
@@ -426,7 +426,7 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 		colourize.call "Requires root privilege to write to #{PATH}/ directory. Please run #{BASENAME} with proper permission.\n"
 		exit! ERR_NO_PERMISSION
 
-	rescue SignalException, Interrupt
+	rescue SignalException, Interrupt, SystemExit
 		colourize.call "\nUh Oh! The download is interrupted!\n\n\n"
 		exit! ERR_BAD_EXIT
 
