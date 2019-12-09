@@ -567,7 +567,7 @@ begin
 
 		zombies = running_processes.count do |x|
 				status_file = File.join(x, 'status')
-				IO.foreach(status_file).tap(&:next).next.split[1] == ?Z.freeze if File.readable?(status_file)
+				IO.readlines(status_file)[1].split[1] == ?Z.freeze if File.readable?(status_file)
 		end.then { |x| x == 0 ? '' : " (#{x} zombies)"}
 
 		session = ENV['DESKTOP_SESSION'] ? "\n:: Desktop Session: #{ENV['DESKTOP_SESSION']}" : ''
