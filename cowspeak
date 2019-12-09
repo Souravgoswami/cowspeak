@@ -37,7 +37,7 @@ ERR_DIAGNOSED = 100
 Kernel.class_exec { define_method(:then) { |&block| block === self } } unless defined?(Kernel.then)
 Array.class_exec { define_method(:sum) { reduce(:+) } } unless [].respond_to?(:sum)
 
-$-s, $-n, $-v = ?\s.freeze, ?\n.freeze, true
+$-s, $-n, $-v = ?\s.freeze, ?\n.freeze, nil
 
 # Check if the output should be colourized, blinked, rotated each line, inverted, reversed, whether to display text and the art
 check_args = proc { |*opts| opts.any?(&ARGV.method(:include?)).tap { opts.each { |x| ARGV.delete(x) } } }
@@ -550,7 +550,7 @@ begin
 
 		procfiles = Dir['/proc/**']
 		running_processes = procfiles.select { |x| File.split(x)[1].then { |y| y.to_i.to_s == y } }
-		total_tasks, tasks_info = running_processes.size, ''
+		total_tasks, tasks_info = running_processes.size - 1, ''
 		sleeping_count = idle_count = running_count = zombies_count = 0
 
 		running_processes.each do |x|
