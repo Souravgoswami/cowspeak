@@ -550,7 +550,7 @@ begin
 
 		procfiles = Dir['/proc/**']
 		running_processes = procfiles.select { |x| File.split(x)[1].then { |y| y.to_i.to_s == y } }
-		total_tasks, tasks_info = running_processes.size - 1, ''
+		total_tasks, tasks_info = running_processes.size, ''
 		sleeping_count = idle_count = running_count = zombies_count = 0
 
 		running_processes.each do |x|
