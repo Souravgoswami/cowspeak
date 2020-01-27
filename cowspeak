@@ -6,13 +6,13 @@
 # TARGET can either be [non-zero number] for local installation [0] for root installation
 TARGET = 1
 
-VERSION = "Cowspeak version 2.60"
+VERSION = "Cowspeak version 2.70"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
 
 BASENAME = File.basename(__FILE__)
-NEW_FEATURES = "\t1. Fixed several bugs!\n\t2. Cowspeak now works outside TTY with a predefined term size 40x40\n\t   and disabled colour.\n\t3. Shows Running and Zombie processes in welcome screen.\n\t4. Shows % in the welcome screen.\n\t5. Other minor performance improvements."
+NEW_FEATURES = "\t1. Full RGB Colours on 256 Colour Terminals."
 # puts('Debugging Purpose:', 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join)) || exit!(0)
 
 PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = if TARGET != 0
@@ -54,34 +54,53 @@ rescue Errno::ENOTTY
 	STDOUT.winsize[1].fdiv(1.5).ceil
 end
 
-# Let's make one colour array here so it won't get created everytime in the 'chars' stabby lambda...
-all_colours = [40..45, 196..201, 208..213, 28..33].freeze
-other_colours = [[154, 184, 208, 203, 198, 164, 129, 92], [63, 33, 39, 44, 49, 83, 118]].freeze
-
-colour_sets = all_colours.+(other_colours).map! { |i| i.to_a.tap { |x| x.concat(x.reverse) } }.tap { |cs| cs.concat(all_colours.map { |i| i.to_a.reverse.tap { |x| x.concat(x.reverse) } }) }
-available_colours = [[154, 184, 208, 203, 198, 164, 129, 92], [63, 33, 39, 44, 49, 83, 118]].concat(colour_sets).tap { |ac| ac.concat(ac.map(&:reverse)) }
-
 colourize = proc do |string|
 	string = string.reverse!.concat($-n) if invert
 	enum = reverse ? string.each_line.reverse_each : string.each_line
 
+	colours, line_length = [], -1
+	sample_colour, rev, repeat = rand(6), rand < 0.5, rand < 0.5
+
 	if coloured
-		temp, selected_colour_array = '', available_colours.sample
+		temp, selected_colour_array = '', []
 		STDOUT.print "\e[5m" if blink
 
 		enum.each do |c|
-			clength, arr_len = c.length, selected_colour_array.size
-			div, index, i, arr_len = clength.div(arr_len).then { |x| x == 0 ? 1 : x }, 0, -1, arr_len - 1
+			n, i = c.length, -1
+			step = 255.0./(n)
+			colours.clear unless line_length == n
 
-			while i < clength
-				index += 1 if ((i += 1) % div == 0 && index < arr_len) && i > 1
-				temp.concat("\e[38;5;#{selected_colour_array[index]}m#{c[i]}\e[0m")
+			unless line_length == n
+				while (i += 1) < n
+					colours.<<(
+						case sample_colour
+							when 0 then i.*(step).then { |l| [ l.*(2).to_i.clamp(0..255), l.to_i.clamp(0..255), 255.-(l).to_i.clamp(0..255) ] }
+							when 1 then i.*(step).then { |l| [ 255, 255.-(l).to_i.clamp(0..255), l.to_i.clamp(0..255) ] }
+							when 2 then i.*(step).then { |l| [ 255.-(l).to_i.clamp(0..255), 80, (l).to_i.clamp(0..255) ] }
+							when 3 then i.*(step).then { |l| [ l.*(2).to_i.clamp(0..255), 255.-(l).to_i.clamp(0..255), 100.+(l / 2).to_i.clamp(0..255) ] }
+							when 4 then i.*(step).then { |l| [ 30, 255.-(l / 2).to_i.clamp(0..255), 110.+(l / 2).to_i.clamp(0..255) ] }
+							when 5 then i.*(step).then { |l| [ 255.-(l * 2).to_i.clamp(0..255), l.to_i.clamp(0..255), 200 ] }
+						end
+					).tap { | x | x.reverse! if repeat }
+				end
+
+				colours.reverse! if rev && !repeat
+				line_length = n
 			end
 
-			selected_colour_array = available_colours.rotate![0] if rotate_colour
+			selected_colour_array = colours unless selected_colour_array == colours
+			clength, arr_len = c.length, selected_colour_array.size
+			div, ix, i, arr_len = clength.div(arr_len).then { | x | x == 0 ? 1 : x }, 0, -1, arr_len - 1
+
+			while (i += 1) < clength
+				ix += 1 if (i % div == 0 && ix < arr_len) && i > 1
+				temp.concat("\e[38;2;#{ selected_colour_array[ix][0] };#{ selected_colour_array[ix][1] };#{ selected_colour_array[ix][2] }m#{ c[i] }")
+			end
+
+			sample_colour, rev = Array(0..5).-([sample_colour]).sample, rand < 0.5 if rotate_colour
 		end
 
-		STDOUT.print(temp)
+		STDOUT.print(temp, "\e[0m")
 	else
 		STDOUT.print "\e[5m" if blink
 		STDOUT.print enum.to_a.join
@@ -550,7 +569,7 @@ begin
 
 		procfiles = Dir['/proc/**']
 		running_processes = procfiles.select { |x| File.split(x)[1].then { |y| y.to_i.to_s == y } }
-		total_tasks, tasks_info = running_processes.size, ''
+		total_tasks, tasks_info = running_processes.size - 1, ''
 		sleeping_count = idle_count = running_count = zombies_count = 0
 
 		running_processes.each do |x|
