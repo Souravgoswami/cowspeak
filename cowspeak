@@ -6,13 +6,13 @@
 # TARGET can either be [non-zero number] for local installation [0] for root installation
 TARGET = 1
 
-VERSION = "Cowspeak version 2.70"
+VERSION = "Cowspeak version 2.71"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
 
 BASENAME = File.basename(__FILE__)
-NEW_FEATURES = "\t1. Full RGB Colours on 256 Colour Terminals."
+NEW_FEATURES = "\t1. Cowspeak with Full RGB Colours."
 # puts('Debugging Purpose:', 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join)) || exit!(0)
 
 PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = if TARGET != 0
@@ -74,12 +74,12 @@ colourize = proc do |string|
 				while (i += 1) < n
 					colours.<<(
 						case sample_colour
-							when 0 then i.*(step).then { |l| [ l.*(2).to_i.clamp(0..255), l.to_i.clamp(0..255), 255.-(l).to_i.clamp(0..255) ] }
-							when 1 then i.*(step).then { |l| [ 255, 255.-(l).to_i.clamp(0..255), l.to_i.clamp(0..255) ] }
-							when 2 then i.*(step).then { |l| [ 255.-(l).to_i.clamp(0..255), 80, (l).to_i.clamp(0..255) ] }
-							when 3 then i.*(step).then { |l| [ l.*(2).to_i.clamp(0..255), 255.-(l).to_i.clamp(0..255), 100.+(l / 2).to_i.clamp(0..255) ] }
-							when 4 then i.*(step).then { |l| [ 30, 255.-(l / 2).to_i.clamp(0..255), 110.+(l / 2).to_i.clamp(0..255) ] }
-							when 5 then i.*(step).then { |l| [ 255.-(l * 2).to_i.clamp(0..255), l.to_i.clamp(0..255), 200 ] }
+							when 0 then i.*(step).then { |l| [ l.*(2).to_i.clamp(0, 255), l.to_i.clamp(0, 255), 255.-(l).to_i.clamp(0, 255) ] }
+							when 1 then i.*(step).then { |l| [ 255, 255.-(l).to_i.clamp(0, 255), l.to_i.clamp(0, 255) ] }
+							when 2 then i.*(step).then { |l| [ 255.-(l).to_i.clamp(0, 255), 80, (l).to_i.clamp(0, 255) ] }
+							when 3 then i.*(step).then { |l| [ l.*(2).to_i.clamp(0, 255), 255.-(l).to_i.clamp(0, 255), 100.+(l / 2).to_i.clamp(0, 255) ] }
+							when 4 then i.*(step).then { |l| [ 30, 255.-(l / 2).to_i.clamp(0, 255), 110.+(l / 2).to_i.clamp(0, 255) ] }
+							when 5 then i.*(step).then { |l| [ 255.-(l * 2).to_i.clamp(0, 255), l.to_i.clamp(0, 255), 200 ] }
 						end
 					).tap { | x | x.reverse! if repeat }
 				end
@@ -263,7 +263,7 @@ exception_handle = ->(error) do
 
 	case STDIN.gets.to_i
 		when 2 then help.call
-		when 3 then puts(error.full_message + $-n)
+		when 3 then puts(error.backtrace + $-n)
 		when 4
 			open('/tmp/cowspeak-log.txt', 'a+') do |log_file|
 				log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{error}\n#{error.backtrace.join($-n)}\n\n")
