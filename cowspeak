@@ -3,19 +3,19 @@
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
 
-# TARGET can either be [non-zero number] for local installation [0] for root installation
-TARGET = 1
+# For ROOT installation, set Root to true else false
+ROOT = false
 
-VERSION = "Cowspeak version 2.71"
+VERSION = "Cowspeak version 2.72"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
 
-BASENAME = File.basename(__FILE__)
+BASENAME = Process.argv0
 NEW_FEATURES = "\t1. Cowspeak with Full RGB Colours."
 # puts('Debugging Purpose:', 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join)) || exit!(0)
 
-PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = if TARGET != 0
+PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = unless ROOT
 	[ "#{Dir.pwd}/cowspeak_files", 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak',
 	'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz', File.join(Dir.pwd, 'cowspeak.1.gz') ]
 else
@@ -36,6 +36,8 @@ ERR_DIAGNOSED = 100
 
 Kernel.class_exec { define_method(:then) { |&block| block === self } } unless defined?(Kernel.then)
 Array.class_exec { define_method(:sum) { reduce(:+) } } unless [].respond_to?(:sum)
+Integer.class_exec { define_method(:clamp) { |l, u| self < l ? l : self > u ? u : self } } unless 0.respond_to?(:clamp)
+String.class_exec { define_method(:delete_suffix!) { |a| slice(-a.length..-1) == a ? replace(slice(0..-a.length.next)) : self } } unless ''.respond_to?(:delete_suffix!)
 
 $-s, $-n, $-v = ?\s.freeze, ?\n.freeze, nil
 
@@ -263,7 +265,7 @@ exception_handle = ->(error) do
 
 	case STDIN.gets.to_i
 		when 2 then help.call
-		when 3 then puts(error.backtrace + $-n)
+		when 3 then puts(error.backtrace.join($-n) + $-n)
 		when 4
 			open('/tmp/cowspeak-log.txt', 'a+') do |log_file|
 				log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{error}\n#{error.backtrace.join($-n)}\n\n")
