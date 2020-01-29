@@ -6,7 +6,7 @@
 # For ROOT installation, set Root to true else false
 ROOT = false
 
-VERSION = "Cowspeak version 2.73"
+VERSION = "Cowspeak version 2.74"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
@@ -16,7 +16,6 @@ NEW_FEATURES = "\t1. Cowspeak with Full RGB Colours.\n\t2. Fixed Bugs"
 # puts('Debugging Purpose:', 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
 
 PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = unless ROOT
-	# p File.dirname()
 	[ "#{__dir__}/cowspeak_files", 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak',
 	'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz', File.join(__dir__, 'cowspeak.1.gz') ]
 else
@@ -504,7 +503,7 @@ begin
 		ssh_connection = ssh_connection ? "\n:: SSH: #{ssh_connection}" : ''
 
 		local_ip = Socket.ip_address_list.detect { |intf| intf.ipv4_private? }.then { |x| x ? x.ip? ? "\n:: Local IP: #{x.ip_unpack[0]}" : '' : '' }
-		files = " (#{Dir.entries(__dir__).drop(2).count} items)" rescue ''
+		files = " (#{Dir.entries(Dir.pwd).drop(2).count} items)" rescue ''
 
 		# We are not using any File.join because Linux always has "/" as File::SEPARATOR
 		os = if File.readable?('/etc/os-release')
@@ -607,7 +606,7 @@ begin
 				>> Welcome#{user}!#{logname}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
 				:: Uptime: #{up}#{tasks_info}
 				:: Shell: #{ENV['SHELL']}
-				:: PWD: #{__dir__}#{files}#{terminal_size}
+				:: PWD: #{Dir.pwd}/#{files}#{terminal_size}
 				:: Date & Time: #{Time.new.strftime('%B %d, %A, %H:%M:%S %p')}
 		EOF
 
