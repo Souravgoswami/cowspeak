@@ -6,13 +6,13 @@
 # For ROOT installation, set Root to true else false
 ROOT = false
 
-VERSION = "Cowspeak version 2.74"
+VERSION = "Cowspeak version 2.75"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
 
 BASENAME = Process.argv0
-NEW_FEATURES = "\t1. Cowspeak with Full RGB Colours.\n\t2. Fixed Bugs"
+NEW_FEATURES = "\t1. Cowspeak with Full RGB Colours.\n\t2. Fixed Bugs."
 # puts('Debugging Purpose:', 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
 
 PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = unless ROOT
@@ -39,7 +39,7 @@ Array.class_exec { define_method(:sum) { reduce(:+) } } unless [].respond_to?(:s
 Integer.class_exec { define_method(:clamp) { |l, u| self < l ? l : self > u ? u : self } } unless 0.respond_to?(:clamp)
 String.class_exec { define_method(:delete_suffix!) { |a| slice(-a.length..-1) == a ? replace(slice(0..-a.length.next)) : self } } unless ''.respond_to?(:delete_suffix!)
 
-$-s, $-n, $-v = ?\s.freeze, ?\n.freeze, nil
+$-s, $-n, $_esc, $-v = ?\s.freeze, ?\n.freeze, ?\e.freeze, false
 
 # Check if the output should be colourized, blinked, rotated each line, inverted, reversed, whether to display text and the art
 check_args = proc { |*opts| opts.any?(&ARGV.method(:include?)).tap { opts.each { |x| ARGV.delete(x) } } }
@@ -64,42 +64,36 @@ colourize = proc do |string|
 	sample_colour, rev, repeat = rand(6), rand < 0.5, rand < 0.5
 
 	if coloured
-		temp, selected_colour_array = '', []
+		temp = ''
 		STDOUT.print "\e[5m" if blink
 
 		enum.each do |c|
 			n, i = c.length, -1
-			step = 255.0./(n)
-			colours.clear unless line_length == n
 
-			unless line_length == n
+			if line_length != n || rotate_colour
+				step, line_length = 255.0./(n), n
+				colours.clear
+
 				while (i += 1) < n
 					colours.<<(
 						case sample_colour
 							when 0 then i.*(step).then { |l| [ l.*(2).to_i.clamp(0, 255), l.to_i.clamp(0, 255), 255.-(l).to_i.clamp(0, 255) ] }
 							when 1 then i.*(step).then { |l| [ 255, 255.-(l).to_i.clamp(0, 255), l.to_i.clamp(0, 255) ] }
-							when 2 then i.*(step).then { |l| [ 255.-(l).to_i.clamp(0, 255), 80, (l).to_i.clamp(0, 255) ] }
+							when 2 then i.*(step).then { |l| [ l.to_i.clamp(0, 255), 255.-(l).to_i.clamp(0, 255), l.to_i.clamp(0, 255) ] }
 							when 3 then i.*(step).then { |l| [ l.*(2).to_i.clamp(0, 255), 255.-(l).to_i.clamp(0, 255), 100.+(l / 2).to_i.clamp(0, 255) ] }
 							when 4 then i.*(step).then { |l| [ 30, 255.-(l / 2).to_i.clamp(0, 255), 110.+(l / 2).to_i.clamp(0, 255) ] }
 							when 5 then i.*(step).then { |l| [ 255.-(l * 2).to_i.clamp(0, 255), l.to_i.clamp(0, 255), 200 ] }
+							else  i.*(step).then { |l| [ l.*(2).to_i.clamp(0, 255), 255.-(l).to_i.clamp(0, 255), 100.+(l / 2).to_i.clamp(0, 255) ] }
 						end
 					).tap { | x | x.reverse! if repeat }
 				end
 
 				colours.reverse! if rev && !repeat
-				line_length = n
 			end
 
-			selected_colour_array = colours unless selected_colour_array == colours
-			clength, arr_len = c.length, selected_colour_array.size
-			div, ix, i, arr_len = clength.div(arr_len).then { | x | x == 0 ? 1 : x }, 0, -1, arr_len - 1
-
-			while (i += 1) < clength
-				ix += 1 if (i % div == 0 && ix < arr_len) && i > 1
-				temp.concat("\e[38;2;#{ selected_colour_array[ix][0] };#{ selected_colour_array[ix][1] };#{ selected_colour_array[ix][2] }m#{ c[i] }")
-			end
-
-			sample_colour, rev = Array(0..5).-([sample_colour]).sample, rand < 0.5 if rotate_colour
+			i = -1
+			temp.concat "\e[38;2;#{colours[i][0]};#{colours[i][1]};#{colours[i][2]}m#{c[i]}" while (i += 1) < n
+			sample_colour, rev, repeat = Array(0..5).-([sample_colour]).sample, rand < 0.5, rand < 0.5 if rotate_colour
 		end
 
 		STDOUT.print(temp, "\e[0m")
@@ -483,12 +477,15 @@ begin
 	# Check if pipe and output is redicred from another program, waste no time on gets if not. It can use huge amount of memory for huge files.
 	text, pipe = '', false
 	require 'timeout'
-	Timeout.timeout(0.000_000_000_000_1) { pipe = STDIN.getc } rescue nil
+	Timeout.timeout(0.000_000_000_000_1) { pipe = STDIN.getc.force_encoding('UTF-8'.freeze) } rescue nil
 
 	if pipe
-		text.concat(pipe)
-		text.concat(STDIN.readpartial(4096)) until STDIN.eof?
-		text.strip!
+		begin
+			text.concat(pipe)
+			text << STDIN.readpartial(8192).force_encoding('UTF-8'.freeze) until STDIN.eof?
+			text.strip!
+		rescue Exception
+		end
 	elsif ARGV.include?('--version') || ARGV.include?('-v')
 		ARGV.delete('--version')
 		ARGV.delete('-v')
@@ -673,10 +670,10 @@ begin
 		all_chars.concat("#{corners[0]}#{init}#{corners[1]}\n #{borderv}")
 
 		text.each_char do |c|
-			unless (count >= init_length_lower && c== $-s) || count >= init_length || c == $-n
-				all_chars.concat(c)
+			unless (count >= init_length_lower && c== $-s) || count >= init_length || c == $-n || c == $_esc
+				all_chars << c
 			else
-				all_chars.concat((c == $-n ? fill_chars : c) + fill_chars * (init_length - count + 2) + borderv + "\n #{borderv} ")
+				all_chars.concat((c == $-n || $_esc ? fill_chars : c) + fill_chars * (init_length - count + 2) + borderv + "\n #{borderv} ".freeze)
 				count = 0
 			end
 
