@@ -6,18 +6,19 @@
 # For ROOT installation, set Root to true else false
 ROOT = false
 
-VERSION = "Cowspeak version 2.72"
+VERSION = "Cowspeak version 2.73"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
 
 BASENAME = Process.argv0
-NEW_FEATURES = "\t1. Cowspeak with Full RGB Colours."
-# puts('Debugging Purpose:', 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join)) || exit!(0)
+NEW_FEATURES = "\t1. Cowspeak with Full RGB Colours.\n\t2. Fixed Bugs"
+# puts('Debugging Purpose:', 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
 
 PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = unless ROOT
-	[ "#{Dir.pwd}/cowspeak_files", 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak',
-	'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz', File.join(Dir.pwd, 'cowspeak.1.gz') ]
+	# p File.dirname()
+	[ "#{__dir__}/cowspeak_files", 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak',
+	'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz', File.join(__dir__, 'cowspeak.1.gz') ]
 else
 	[ '/usr/share/cowspeak', 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak',
 	'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/share/man/man1/cowspeak.1.gz', '/usr/share/man/man1/cowspeak.1.gz' ]
@@ -324,7 +325,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		puts colourize.call "A new update is available." if new_version
 		puts colourize.("New Version: #{download_version}\n")
 
-		puts(colourize.(Kernel.eval(downloaded_data.to_s.split($-n).find { |line| line.start_with?('NEW_FEATURES'.freeze) }.to_s.split(?=).drop(1).join.to_s)))
+		puts(colourize.(Kernel.eval(downloaded_data.to_s.split($-n).find { |line| line.start_with?('NEW_FEATURES'.freeze) }.to_s.split(?=).drop(1).join(?=).to_s)))
 		puts
 
 		colourize.call "#{new_version ? ?U : 'Reu'}pdate to version #{download_version}? (Y/n): "
@@ -503,15 +504,15 @@ begin
 		ssh_connection = ssh_connection ? "\n:: SSH: #{ssh_connection}" : ''
 
 		local_ip = Socket.ip_address_list.detect { |intf| intf.ipv4_private? }.then { |x| x ? x.ip? ? "\n:: Local IP: #{x.ip_unpack[0]}" : '' : '' }
-		files = " (#{Dir.entries(Dir.pwd).drop(2).count} items)" rescue ''
+		files = " (#{Dir.entries(__dir__).drop(2).count} items)" rescue ''
 
 		# We are not using any File.join because Linux always has "/" as File::SEPARATOR
 		os = if File.readable?('/etc/os-release')
-			"\n:: OS: #{IO.readlines('/etc/os-release').find { |line| line.start_with?('NAME=') }.split(?=).drop(1).join.strip.gsub!(?", '') } (#{RUBY_PLATFORM})"
+			"\n:: OS: #{IO.foreach('/etc/os-release').find { |x| x.start_with?('NAME=') }.to_s.split(?=).drop(1).join(?=).strip.gsub!(?", '').then { |x| x ? "#{x} " : '' } }(#{RUBY_PLATFORM})"
 		elsif File.readable?('/etc/lsb-release')
-			"\n:: OS: #{IO.readlines('/etc/os-release').find { |line| line.start_with?('NAME=') }.split(?=).drop(1).join.strip.gsub!(?", '') } (#{RUBY_PLATFORM})"
+			"\n:: OS: #{IO.foreach('/etc/lsb-release').find { |x| x.start_with?('DISTRIB_DESCRIPTION=') }.to_s.split(?=).drop(1).join(?=).strip.gsub!(?", '').then { |x| x ? "#{x} " : '' } }(#{RUBY_PLATFORM})"
 		else
-			''
+			"\n:: OS: #{RUBY_PLATFORM}"
 		end
 
 		memory_stat = if File.readable?('/proc/meminfo')
@@ -606,7 +607,7 @@ begin
 				>> Welcome#{user}!#{logname}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
 				:: Uptime: #{up}#{tasks_info}
 				:: Shell: #{ENV['SHELL']}
-				:: PWD: #{Dir.pwd}#{files}#{terminal_size}
+				:: PWD: #{__dir__}#{files}#{terminal_size}
 				:: Date & Time: #{Time.new.strftime('%B %d, %A, %H:%M:%S %p')}
 		EOF
 
@@ -615,7 +616,7 @@ begin
 
 		text = if t.empty?
 			if File.readable?(File.join(PATH, "fortunes.data"))
-				IO.read(File.join(PATH, "fortunes.data")).split("\n%\n").sample.to_s.gsub($-n, $-s).strip
+				IO.read(File.join(PATH, "fortunes.data")).force_encoding('UTF-8').split("\n%\n").sample.to_s.gsub($-n, $-s).strip
 			else
 				"The fortune file doesn't exist.\n\tPlease run #{BASENAME} -dl to download the files to #{PATH}"
 			end
