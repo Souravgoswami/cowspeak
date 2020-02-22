@@ -6,13 +6,13 @@
 # For ROOT installation, set Root to true else false
 ROOT = false
 
-VERSION = "Cowspeak version 2.76"
+VERSION = "Cowspeak version 2.77"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
 
 BASENAME = Process.argv0
-NEW_FEATURES = "\t1. Fixed Broken Pipe Error.\n\t2. Added one more colour.\n\t3. Performance Improvements.\n\t4. Cowspeak can now read emojis.\n\t5. Other bugs fixed!"
+NEW_FEATURES = "\t1.Fixed cowspeak not displaying some characters!\n\t2.Fixed other bugs!"
 # puts('Debugging Purpose:', 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
 
 PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = unless ROOT
@@ -369,6 +369,14 @@ if ARGV.include?('--download') || ARGV.include?('-dl')
 	ARGV.delete('--download')
 	ARGV.delete('-dl')
 
+	unless STDIN.tty?
+		puts colourize.("#{BASENAME} not running in a tty!")
+		puts colourize.("This can lead to problems...")
+		puts colourize.("Make sure you are running cowspeak in a terminal without any redirection.")
+		puts colourize.("Usage Example with -dl / --download: \n\t#{BASENAME} -dl / --download")
+		exit(0)
+	end
+
 	begin
 		require 'net/https'
 		colourize.("Download Data from the internet and save them into #{PATH}/?(Y/n): ")
@@ -672,7 +680,7 @@ begin
 			unless (count >= init_length_lower && c== $-s) || count >= init_length || c == $-n || c == $_esc
 				all_chars << c
 			else
-				all_chars << (c == $-n || $_esc ? fill_chars : c) << fill_chars * (init_length - count + 2) + borderv + "\n #{borderv} ".freeze
+				all_chars << (c.==($-n).|(c == $_esc) ? fill_chars : c) << fill_chars * (init_length - count + 2) + borderv + "\n #{borderv} ".freeze
 				count = 0
 			end
 
