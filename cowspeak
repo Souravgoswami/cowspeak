@@ -3,17 +3,17 @@
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
 
-# For ROOT installation, set Root to true else false
+# For ROOT installation, set Root to true
 ROOT = false
 
-VERSION = "Cowspeak version 2.77"
+VERSION = "Cowspeak version 2.80"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
 
 BASENAME = Process.argv0
-NEW_FEATURES = "\t1.Fixed cowspeak not displaying some characters!\n\t2.Fixed other bugs!"
-# puts('Debugging Purpose:', 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
+NEW_FEATURES = "\t1. The -w option shows more information.\n\t2. Fixed several bugs.\n\t3. Cowspeak can work without art files, just make use of the -na or --no-art option.\n\t4. Cowspeak will work without the fortunes file. Just use the -nt or --no-text option."
+# puts("\e[1;4mDebugging Purpose:\e[0m", 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
 
 PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = unless ROOT
 	[ "#{__dir__}/cowspeak_files", 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak',
@@ -24,7 +24,6 @@ else
 end
 
 # Errors
-ERR_NO_TTY = 128
 ERR_FILE_NOT_FOUND = 127
 ERR_BAD_FILE = 126
 ERR_NO_INTERNET = 64
@@ -50,7 +49,7 @@ require 'io/console'
 Terminal_Width = begin
 	STDOUT.winsize[1].fdiv(1.5).ceil
 rescue Errno::ENOTTY
-	coloured, term_size = false, [40, 40].freeze
+	coloured, term_size = false, [24, 80].freeze
 	IO.undef_method(:winsize)
 	IO.define_method(:winsize) { term_size }
 	STDOUT.winsize[1].fdiv(1.5).ceil
@@ -65,7 +64,7 @@ colourize = proc do |string|
 
 	if coloured
 		temp = ''
-		STDOUT.print "\e[5m" if blink
+		STDOUT.print "\e[5m".freeze if blink
 
 		enum.each do |c|
 			n, i = c.length, -1
@@ -97,9 +96,9 @@ colourize = proc do |string|
 			sample_colour, rev, repeat = Array(0..6).tap { |x| x.delete_at(sample_colour) }.sample, rand < 0.5, rand < 0.5 if rotate_colour
 		end
 
-		STDOUT.print(temp, "\e[0m")
+		STDOUT.print(temp, "\e[0m".freeze)
 	else
-		STDOUT.print "\e[5m" if blink
+		STDOUT.print "\e[5m".freeze if blink
 		STDOUT.print enum.to_a.join
 	end
 end
@@ -206,8 +205,13 @@ help.(true)
 end
 
 if ARGV.include?('--show-arts') || ARGV.include?('-sa')
+	unless Dir.exist?(File.join(PATH, 'arts'))
+		colourize.call "Can't find #{File.join(PATH, 'arts')}. You may need to run -dl to download the files...\n"
+		exit!
+	end
+
 	Dir.entries(File.join(PATH, 'arts')).drop(2).each_with_index { |file, i| colourize.("\xE2\x80\xA3 #{i + 1}\n#{IO.read(File.join(PATH, 'arts', file))}\nPath: #{File.join(PATH, 'arts', file)}\n\n") }
-	exit! 0
+	exit 0
 end
 
 if ARGV.include?('--art') || ARGV.include?('-a')
@@ -294,15 +298,15 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		require 'net/https'
 		downloaded_data, raw_man_page = Animate('Looking for updates!') { [Net::HTTP.get(URI(SOURCE_CODE)), Net::HTTP.get(URI(MAN_PAGE))] }
 		current_version = VERSION[/\d+.\d+/]
-		puts colourize.("Current version: #{current_version}")
+		colourize.("Current version: #{current_version}\n")
 
 	rescue SocketError, OpenSSL::SSL::SSLError
-		puts colourize.call "Can't get version info of cowspeak. Do you have an active internet connection?"
+		colourize.call "Can't get version info of cowspeak. Do you have an active internet connection?\n"
 		exit! ERR_NO_INTERNET
 
 	rescue Interrupt, SignalException, SystemExit
 		puts
-		puts colourize.('The download was interrupted!')
+		colourize.("The download was interrupted!\n")
 		exit!
 
 	rescue Exception => e
@@ -316,12 +320,10 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 	unless new_version || force_update
 		puts colourize.call "#{BASENAME} is up to date! Nothing to do."
 	else
-		puts colourize.call "A new update is available." if new_version
-		puts colourize.("New Version: #{download_version}\n")
+		colourize.call "A new update is available.\n" if new_version
+		colourize.("New Version: #{download_version}\n\n")
 
-		puts(colourize.(Kernel.eval(downloaded_data.to_s.split($-n).find { |line| line.start_with?('NEW_FEATURES'.freeze) }.to_s.split(?=).drop(1).join(?=).to_s)))
-		puts
-
+		colourize.(Kernel.eval(downloaded_data.to_s.split($-n).find { |line| line.start_with?('NEW_FEATURES'.freeze) }.to_s.split(?=).drop(1).join(?=).to_s) + "\n\n")
 		colourize.call "#{new_version ? ?U : 'Reu'}pdate to version #{download_version}? (Y/n): "
 		begin
 			exit! 0 if STDIN.gets.to_s.strip.downcase == ?n
@@ -468,12 +470,15 @@ begin
 			file = File.join(PATH, 'arts', "#{%w(cow squirrels killer_squirrels cat deer dog mouse camel turtle).sample}.art")
 	end
 
-	unless File.file?(file)
+	unless File.file?(file) || !show_art
 		colourize.call "Looks like the art file doesn't exist.\n"
 		colourize.call "Type #{BASENAME} --download or #{BASENAME} -dl to download all the necessary files.\n"
 		colourize.call "Type #{BASENAME} --show-arts or #{BASENAME} -sa to see available arts in the default directory...\n"
 		colourize.call "Type #{BASENAME} --help or #{BASENAME} -h for help.\n"
 		colourize.call "Type #{BASENAME} --art or #{BASENAME} -a for help regarding art.\n"
+		print "\e[1m"
+		colourize.call "If you still want to run #{BASENAME} without the animals, use the -na or --no-art argument\n"
+		print "\e[0m"
 		file = File.join(PATH, "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art")
 
 		unless File.readable?(file)
@@ -507,7 +512,6 @@ begin
 		local_ip = Socket.ip_address_list.detect { |intf| intf.ipv4_private? }.then { |x| x ? x.ip? ? "\n:: Local IP: #{x.ip_unpack[0]}" : '' : '' }
 		files = " (#{Dir.entries(Dir.pwd).drop(2).count} items)" rescue ''
 
-		# We are not using any File.join because Linux always has "/" as File::SEPARATOR
 		os = if File.readable?('/etc/os-release')
 			"\n:: OS: #{IO.foreach('/etc/os-release').find { |x| x.start_with?('NAME=') }.to_s.split(?=).drop(1).join(?=).tap(&:strip!).tap { |x| x.delete!(%<'">) }.then { |x| x ? "#{x} " : '' } }(#{RUBY_PLATFORM})"
 		elsif File.readable?('/etc/lsb-release')
@@ -518,7 +522,7 @@ begin
 
 		memory_stat = if File.readable?('/proc/meminfo')
 			suffix = UNIT == 1000 ? 'MB' : 'MiB'
-			memory = IO.readlines('/proc/meminfo')
+			memory = IO.foreach('/proc/meminfo').first(3)
 
 			used = (((total = memory[0].split[1].to_f) - (available = memory[2].split[1].to_f))/UNIT).round(2)
 			val = "\n:: Memory: #{(used).round(2)} #{suffix} / #{(total/UNIT).round(2)} #{suffix} (#{used.*(100)./(total./(UNIT)).round(2)}%)"
@@ -542,23 +546,27 @@ begin
 
 			val = "\n:: CPU: #{cpu.find { |x| x.start_with?('model name') }.to_s.split(?:).drop(1).join.tap(&:strip!)}"
 			cpu_count = cpu.count { |x| x.start_with?('processor'.freeze) }.then { |x| x == Etc.nprocessors ? x : 0 }
-			val.concat("\n:: CPU Cores: #{cpu_count}") unless cpu_count == 0
+			val.concat("\n   [Cores: #{cpu_count}]") unless cpu_count == 0
 			val
 		else
-			"\n:: CPU Cores: #{Etc.nprocessors}"
+			Etc.nprocessors != 0 ? "\n:: CPU Cores: #{Etc.nprocessors}" : ''
 		end
 
 		cpu_usage = if File.readable?('/proc/stat')
-			data = IO.foreach('/proc/stat').first.split.map!(&:to_f)
-			Kernel.sleep(0.03)
-			prev_data = IO.foreach('/proc/stat').first.split.map!(&:to_f)
+			data = IO.readlines('/proc/stat').select! { |x| x[/^cpu\d*/] }.map! { |x| x.split.map!(&:to_f) }
+			Kernel.sleep(0.075)
+			prev_data = IO.readlines('/proc/stat').select! { |x| x[/^cpu\d*/] }.map! { |x| x.split.map!(&:to_f) }
 
-			%w(user nice sys idle iowait irq softirq steal).each_with_index { |el, ind| binding.eval("@#{el}, @prev_#{el} = #{data[ind + 1]}, #{prev_data[ind + 1]}") }
+			usages = data.size.times.map do |x|
+				%w(user nice sys idle iowait irq softirq steal).each_with_index { |el, ind| binding.eval("@#{el}, @prev_#{el} = #{data[x][ind + 1]}, #{prev_data[x][ind + 1]}") }
 
-			previdle, idle = @prev_idle + @prev_iowait, @idle + @iowait
-			totald = idle + (@user + @nice + @sys + @irq + @softirq + @steal) -
-				(previdle + (@prev_user + @prev_nice + @prev_sys + @prev_irq + @prev_softirq + @prev_steal))
-			"\n:: Total CPU Usage: #{((totald - (idle - previdle)) / totald * 100).round(2).abs.then { |x| x.to_s == 'NaN' ? 0 : x }.abs}%"
+				previdle, idle = @prev_idle + @prev_iowait, @idle + @iowait
+				totald = idle + (@user + @nice + @sys + @irq + @softirq + @steal) -
+					(previdle + (@prev_user + @prev_nice + @prev_sys + @prev_irq + @prev_softirq + @prev_steal))
+				"#{((totald - (idle - previdle)) / totald * 100).round( x == 0 ? 2 : 0 ).abs.then { |x| x.to_s == 'NaN' ? 0 : x }.abs}%"
+			end
+
+			"\n:: Total CPU Usage: #{usages[0]}\n   [#{usages.drop(1).each_with_index { |x, i| x.prepend(%Q|C#{i + 1}: |) }.join(' | ')}]"
 		else
 			''
 		end
@@ -594,12 +602,26 @@ begin
 
 			if running_count + sleeping_count + idle_count + zombies_count > 0
 				tasks_info.concat("\n   [")
-				tasks_info.concat("Running #{running_count},\s") if running_count > 0
-				tasks_info.concat("Sleeping #{sleeping_count},\s") if sleeping_count > 0
-				tasks_info.concat("Idle #{idle_count},\s") if idle_count > 0
-				tasks_info.concat("Zombies #{zombies_count},\s") if zombies_count > 0
-				tasks_info.delete_suffix!(",\s").concat(?])
+				tasks_info.concat("Running #{running_count} | ") if running_count > 0
+				tasks_info.concat("Sleeping #{sleeping_count} | ") if sleeping_count > 0
+				tasks_info.concat("Idle #{idle_count} | ") if idle_count > 0
+				tasks_info.concat("Zombies #{zombies_count} | ") if zombies_count > 0
+				tasks_info.delete_suffix!(" | ").concat(?])
 			end
+		end
+
+		battery_path = '/sys/class/power_supply/BAT0'.freeze
+		battery_details = if Dir.exist?(battery_path)
+
+			bat_model = IO.read(File.join(battery_path, 'model_name')).strip! rescue 'Unknown Model'
+			bat_manufacturer = IO.read(File.join(battery_path, 'manufacturer')).strip! rescue ''
+			bat_tech = IO.read(File.join(battery_path, 'technology')).strip! rescue ''
+			bat_status = IO.read(File.join(battery_path, 'status')).strip! rescue ''
+			bat_percentage = IO.read(File.join(battery_path, 'charge_now')).to_i.*(100.0)./(IO.read(File.join(battery_path, 'charge_full')).to_i).to_i rescue -1
+
+			val = "\n:: Battery: #{bat_model}#{bat_manufacturer.empty? ? '' : " (#{bat_manufacturer})"}#{bat_tech.empty? ? '' : " (#{bat_tech})"}\n"
+			val.concat("   [Charge: #{bat_percentage}%#{bat_status.empty? ? '' : bat_status != 'Unknown' ? " | #{bat_status}" : ' | ...'}]") if bat_percentage > -1
+			val
 		end
 
 		session = ENV['DESKTOP_SESSION'] ? "\n:: Desktop Session: #{ENV['DESKTOP_SESSION']}" : ''
@@ -607,7 +629,7 @@ begin
 				>> Welcome#{user}!#{logname}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
 				:: Uptime: #{up}#{tasks_info}
 				:: Shell: #{ENV['SHELL']}
-				:: PWD: #{Dir.pwd}/#{files}#{terminal_size}
+				:: PWD: #{Dir.pwd}/#{files}#{terminal_size}#{battery_details}
 				:: Date & Time: #{Time.new.strftime('%B %d, %A, %H:%M:%S %p')}
 		EOF
 
@@ -618,8 +640,10 @@ begin
 			if t.empty?
 				if File.readable?(File.join(PATH, "fortunes.data"))
 					IO.read(File.join(PATH, "fortunes.data")).force_encoding('UTF-8').split("\n%\n").sample.to_s.gsub($-n, $-s).tap(&:strip!)
-				else
+				elsif display_text
 					"The fortune file doesn't exist.\n\tPlease run #{BASENAME} -dl to download the files to #{PATH}"
+				else
+					""
 				end
 			else
 				t[-1].to_s.split(?=)[1] || ''
