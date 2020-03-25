@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/ruby -w
 # Encoding: UTF-8
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
@@ -6,7 +6,7 @@
 # For ROOT installation, set Root to true
 ROOT = false
 
-VERSION = "Cowspeak version 2.80"
+VERSION = "Cowspeak version 2.81"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
@@ -577,7 +577,7 @@ begin
 		uptime = File.readable?('/proc/uptime') ? IO.read('/proc/uptime').to_i : 0
 		up = "#{uptime.div(3600).then { |x| x != 1 ? "#{x} hours" : "#{x} hour" }}, "\
 			"#{uptime.%(3600).div(60).then { |x| x != 1 ? "#{x} minutes" : "#{x} minute" } }, "\
-			"#{uptime.%(60).then { |x| x != 1 ? "#{x} seconds" : "#{x} second" } } "
+			"#{uptime.%(60).then { |x| x != 1 ? "#{x} seconds" : "#{x} second" } }"
 
 		running_processes = Dir['/proc/**'].select! { |x| File.split(x)[1].then { |y| y.to_i.to_s == y } }
 		total_tasks, tasks_info = running_processes.size, ''
@@ -597,6 +597,24 @@ begin
 			end
 		end
 
+		model = if File.readable?('/sys/devices/virtual/dmi/id/product_name')
+			val1 = IO.read('/sys/devices/virtual/dmi/id/product_name').tap(&:strip!)
+			val1.concat(" #{IO.read('/sys/devices/virtual/dmi/id/product_version').tap(&:strip!)}") if File.readable?('/sys/devices/virtual/dmi/id/product_version')
+			"\n:: Model: #{val1}"
+		elsif File.readable?('/sys/firmware/devicetree/base/model')
+			"\n:: Model: #{IO.read('/sys/firmware/devicetree/base/model').tap(&:strip!)}"
+		else
+			''
+		end
+
+		bios_info = if File.readable?('/sys/devices/virtual/dmi/id/bios_vendor')
+			val1 = IO.read('/sys/devices/virtual/dmi/id/bios_vendor').tap(&:strip!)
+			val1.concat("(#{IO.read('/sys/devices/virtual/dmi/id/bios_version').tap(&:strip!)})") if File.readable?('/sys/devices/virtual/dmi/id/bios_version')
+			"\n:: BIOS: #{val1}"
+		else
+			''
+		end
+
 		if running_processes.size > 0
 			tasks_info << "\n:: Tasks: #{total_tasks}"
 
@@ -612,21 +630,20 @@ begin
 
 		battery_path = '/sys/class/power_supply/BAT0'.freeze
 		battery_details = if Dir.exist?(battery_path)
-
 			bat_model = IO.read(File.join(battery_path, 'model_name')).strip! rescue 'Unknown Model'
 			bat_manufacturer = IO.read(File.join(battery_path, 'manufacturer')).strip! rescue ''
 			bat_tech = IO.read(File.join(battery_path, 'technology')).strip! rescue ''
 			bat_status = IO.read(File.join(battery_path, 'status')).strip! rescue ''
 			bat_percentage = IO.read(File.join(battery_path, 'charge_now')).to_i.*(100.0)./(IO.read(File.join(battery_path, 'charge_full')).to_i).to_i rescue -1
 
-			val = "\n:: Battery: #{bat_model}#{bat_manufacturer.empty? ? '' : " (#{bat_manufacturer})"}#{bat_tech.empty? ? '' : " (#{bat_tech})"}\n"
-			val.concat("   [Charge: #{bat_percentage}%#{bat_status.empty? ? '' : bat_status != 'Unknown' ? " | #{bat_status}" : ' | ...'}]") if bat_percentage > -1
+			val = "\n:: Battery: #{bat_model}#{bat_manufacturer.empty? ? '' : " (#{bat_manufacturer})"}#{bat_tech.empty? ? '' : " (#{bat_tech})"}"
+			val.concat("\n   [Charge: #{bat_percentage}%#{bat_status.empty? ? '' : bat_status != 'Unknown' ? " | #{bat_status}" : ' | ...'}]") if bat_percentage > -1
 			val
 		end
 
 		session = ENV['DESKTOP_SESSION'] ? "\n:: Desktop Session: #{ENV['DESKTOP_SESSION']}" : ''
 		text = <<~EOF.tap(&:rstrip!)
-				>> Welcome#{user}!#{logname}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
+				>> Welcome#{user}!#{model}#{bios_info}#{logname}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
 				:: Uptime: #{up}#{tasks_info}
 				:: Shell: #{ENV['SHELL']}
 				:: PWD: #{Dir.pwd}/#{files}#{terminal_size}#{battery_details}
@@ -701,7 +718,7 @@ begin
 		i, text_chars = -1, text.chars
 
 		while c = text_chars[i += 1]
-			unless (count >= init_length_lower && c== $-s) || count >= init_length || c == $-n || c == $_esc
+			unless (count >= init_length_lower && c == $-s) || count >= init_length || c == $-n || c == $_esc
 				all_chars << c
 			else
 				all_chars << (c.==($-n).|(c == $_esc) ? fill_chars : c) << fill_chars * (init_length - count + 2) + borderv + "\n #{borderv} ".freeze
