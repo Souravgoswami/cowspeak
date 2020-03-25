@@ -13,7 +13,7 @@ Note that this is only for GNU/Linux systems. It depends on `ruby`. Cowspeak rec
 
 ## For Debian/Linux Mint/Ubuntu/Kali Linux/Raspbian/Other debian based systems 🐄
 
-   1. Download the latest ![deb file](https://github.com/Souravgoswami/cowspeak-deb).
+   1. Download the latest ![deb file](https://github.com/Souravgoswami/cowspeak-deb/tree/master/Deb).
 
       Cowspeak Debian edition releases can also be found [here](https://www.opendesktop.org/p/1271477/).
 
