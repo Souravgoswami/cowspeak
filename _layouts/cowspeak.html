@@ -1,0 +1,62 @@
+<!Doctype HTML>
+
+<html>
+	<head>
+		<title>{{ page.title }}</title>
+
+		<style>
+			::selection {
+				background-color: rgba(200, 255, 50, 0.3) ;
+			}
+
+			@keyframes rgb-anim {
+				0% {
+					background-position: 400% ;
+				}
+
+				100% {
+					background-position: 0 0 ;
+				}
+			}
+
+			body {
+				margin: 0 ;
+				background-color: #222 ;
+			}
+
+			.rgb, .rgb-anim {
+				background: linear-gradient(45deg, #3eb, #ff0, #f55, #f5f, #55f) ;
+				-webkit-background-clip: text ;
+				-webkit-text-fill-color: transparent ;
+				text-shadow: 0px 0px 4px rgba(255, 255, 255, 0.25) ;
+				display: inline ;
+			}
+
+			.rgb-anim {
+				background: linear-gradient(45deg, #3eb, #ff0, #f55, #f5f, #55f, #55f, #f5f, #f55, #ff0, #3eb) ;
+				-webkit-background-clip: text ;
+				-webkit-text-fill-color: transparent ;
+				background-size: 400% ;
+				animation: rgb-anim 5s linear infinite ;
+			}
+
+			.content {
+				color: #fff ;
+				text-shadow: 0px 0px 4px rgba(255, 255, 255, 0.125) ;
+				font-size: 20px ;
+			}
+		</style>
+	</head>
+
+	<body>
+		<center><h1 class="rgb-anim">{{ page.title }}</h1></center>
+		{% if page.author %}
+		<center><span class="rgb">By {{ page.author }}</span></center>
+		{% endif %}
+		<center><span class="rgb">{{ page.date | date: "%B %d, %Y" }}</span></center>
+
+		<div class="content">
+			{{ content }}
+		</div>
+	</body>
+</html>
