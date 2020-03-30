@@ -4,7 +4,7 @@ description: >-
   cowspeak - Display an animal with a random quote or your own text. on your linux terminal.
 baseurl: "cowspeak"
 url: ""
-github_username:  cowspeak
+github_username:  Souravgoswami
 
 theme: minima
 plugins:
