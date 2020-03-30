@@ -1,0 +1,72 @@
+---
+layout: cowspeak
+title: Download Cowspeak
+categories: help
+---
+
+<div id="installation">
+	<div id="non-root-installation">
+		<h2><u>Non Root Installation</u></h2>
+			<br>
+
+			<a href="https://github.com/Souravgoswami/cowspeak/archive/master.zip">Download Zip</a>
+
+			<div class="thumbnail-before">
+				{% for i in site.static_files %}
+					{% if i.img_deb or i.img_others %}
+						<img src="{{ i.path }}" width="25px" class="thumbnail">
+					{% endif %}
+				{% endfor %}
+			</div>
+	</div>
+
+	<hr width="50px" style="margin-top: 25px">
+
+	<div id="root-installation">
+		<h2><u>Root Installation</u></h2>
+
+		<div id="deb">
+			Debian/Ubuntu/Linux Mint/Kali Linux
+			<br>
+			<span class="info">
+				(Download and run dpkg -i cowspeak-latest.deb)
+			</span>
+
+			<br>
+
+			<a href="https://github.com/Souravgoswami/cowspeak-deb/raw/master/Deb/cowspeak-latest.deb">Download .deb</a>
+
+			<br>
+
+			<div class="thumbnail-before">
+				{% for i in site.static_files %}
+					{% if i.img_deb %}
+						<img src="{{ i.path }}" width="25px" class="thumbnail">
+					{% endif %}
+				{% endfor %}
+			</div>
+		</div>
+
+		<div id="others">
+			Other Distributions
+			<br>
+			<span class="info">
+				(Copy-Paste and run `ruby Root_Installer.rb`)
+			</span>
+
+			<br>
+
+			<a href="https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/Root_Installer.rb">Download .rb</a>
+
+			<br>
+
+			<div class="thumbnail-before">
+				{% for i in site.static_files %}
+					{% if i.img_others %}
+						<img src="{{ i.path }}" width="25px" class="thumbnail">
+					{% endif %}
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>

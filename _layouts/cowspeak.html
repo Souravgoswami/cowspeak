@@ -2,6 +2,8 @@
 
 <html>
 	<head>
+		<meta charset="utf-8">
+		<link rel="status icon" type="image/png" href="/assets/favicon.png">
 		<title>{{ page.title }}</title>
 
 		<style>
@@ -19,9 +21,19 @@
 				}
 			}
 
+			@keyframes hue-rotate {
+				from {
+					filter: hue-rotate(0deg) ;
+				}
+
+				to {
+					filter: hue-rotate(360deg) ;
+				}
+			}
+
 			body {
 				margin: 0 ;
-				background-color: #222 ;
+				background-color: #000 ;
 			}
 
 			.rgb, .rgb-anim {
@@ -45,10 +57,84 @@
 				text-shadow: 0px 0px 4px rgba(255, 255, 255, 0.125) ;
 				font-size: 20px ;
 			}
+
+			a, a:visited {
+				display: inline-block ;
+				margin-top: 10px ;
+				color: #fff ;
+				border-radius: 2px ;
+				text-decoration: none ;
+				transition: all 0.5s ease ;
+				background-color: rgba(0, 163, 44, 0) ;
+				border: 2px solid rgba(0, 163, 44, 1) ;
+				padding: 10px ;
+			}
+
+			a:hover {
+				background-color: rgba(255, 255, 255, 1) ;
+				border: 2px solid rgba(255, 255, 255, 1) ;
+				color: rgba(0, 163, 44, 1) ;
+			}
+
+			a:active {
+				color: rgba(255, 255, 255, 1) ;
+				background-color: rgba(0, 163, 44, 1) ;
+				border: 2px solid rgba(0, 163, 44, 1) ;
+			}
+
+			#installation {
+				text-align: center ;
+				display: grid ;
+				place-items: center ;
+			}
+
+			.info {
+				font-size: 12px ;
+			}
+
+			#root-installation {
+				width: 90% ;
+				display: block ;
+			}
+
+			#deb {
+				float: left ;
+			}
+
+			#others {
+				float: right ;
+			}
+
+			.thumbnail-before {
+				user-select: none ;
+			}
+
+			.thumbnail {
+
+				display: inline ;
+				margin: 10px 4px 4px 0px ;
+				transition: all 0.25s ease ;
+				cursor: pointer ;
+			}
+
+			.thumbnail:hover {
+				animation: hue-rotate 3s linear infinite ;
+				opacity: 0.5 ;
+			}
+
+			#starfield-canvas {
+				position: fixed ;
+				width: 100% ;
+				height: 100% ;
+				z-index: -100 ;
+				top: 0px ;
+				left: 0px ;
+			}
 		</style>
 	</head>
 
 	<body>
+		<canvas id="starfield-canvas"></canvas>
 		<center><h1 class="rgb-anim">{{ page.title }}</h1></center>
 		{% if page.author %}
 		<center><span class="rgb">By {{ page.author }}</span></center>
@@ -58,5 +144,55 @@
 		<div class="content">
 			{{ content }}
 		</div>
+
+		<script>
+			class Star {
+				constructor(x, y) {
+					this.x = x
+					this.y = y
+					this.r = Math.floor(Math.random() * 256)
+					this.g = Math.floor(Math.random() * 256)
+					this.b = Math.floor(Math.random() * 256)
+					this.a = 1
+					this.size = Math.random() * 1 + 0.25
+				}
+			}
+
+			const N = 250, stars = []
+			var starfield = document.getElementById('starfield-canvas')
+			starfield.height = window.innerHeight
+			starfield.width = window.innerWidth
+			const ctx = starfield.getContext('2d')
+
+			window.addEventListener('resize', () => {
+				starfield.height = window.innerHeight
+				starfield.width = window.innerWidth
+
+				for(let i = 0 ; i < N ; ++i)
+					stars[i] = new Star(Math.random() * starfield.width, Math.random() * starfield.height)
+			})
+
+			for(let i = 0 ; i < N ; ++i)
+				stars[i] = new Star(Math.random() * starfield.width, Math.random() * starfield.height)
+
+			setInterval(() => {
+				ctx.clearRect(0, 0, starfield.width, starfield.height)
+
+				for(let i = 0 ; i < N ; ++i) {
+					let star = stars[i]
+					star.y += Math.tan(i)
+					star.x += Math.sin(i) //* Math.cos(i)
+
+					if (star.x < 0 || star.x > starfield.width || star.y < 0 || star.y > starfield.height)
+						stars[i] = new Star(Math.random() * starfield.width, starfield.height / 2)
+
+					ctx.beginPath()
+					ctx.fillStyle= `rgba(${star.r},${star.g},${star.b},1)`
+					ctx.arc(star.x, star.y, star.size, 3.14159, 3)
+					ctx.fill()
+				}
+			}, 50)
+		</script>
+
 	</body>
 </html>
