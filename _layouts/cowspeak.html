@@ -160,7 +160,7 @@
 			}
 
 			.glow-text {
-				text-shadow: 0px 0px 16px currentColor ;
+				text-shadow: 0px 0px 10px currentColor ;
 			}
 
 			@media(max-width: 650px) {
@@ -206,11 +206,11 @@
 					this.b = Math.floor(Math.random() * 256)
 					this.a = a
 					this.size = Math.random() * 2 + 0.5
-					this.direction = Math.random() < 0.5 ? Math.random() * 4 + 1 : Math.random() * - 4 - 1
+					this.direction = Math.random() < 0.5 ? Math.random() * 7 + 1 : Math.random() * - 7 - 1
 				}
 			}
 
-			const N = 45, stars = [], TRAILS = 8
+			const N = 175, stars = []
 			var starfield = document.getElementById('starfield-canvas')
 			starfield.height = window.innerHeight
 			starfield.width = window.innerWidth
@@ -236,15 +236,21 @@
 
 					star.y += star.direction
 					star.x += star.direction
+
+					if (star.direction > 0)
+						star.direction += 0.0125
+					else
+						star.direction -= 0.0125
+
 					if (star.a < 1) star.a += 0.025
 
 					if (star.x < 0 || star.x > starfield.width || star.y < 0 || star.y > starfield.height)
 						stars[i] = new Star(Math.random() * starfield.width, Math.random() * starfield.height)
 
-					for(let j = 0 ; j < TRAILS ; ++j) {
+					for(let j = 0 ; j < Math.abs(star.direction) * 2 ; ++j) {
 						let dx = star.direction > 0 ? star.x - j : star.x + j
 						let dy = star.direction > 0 ? star.y - j : star.y + j
-						let tr = j / TRAILS
+						let tr = j / (Math.abs(star.direction) * 2)
 
 						ctx.beginPath()
 						ctx.rect(dx, dy, star.size - tr, star.size - tr)
@@ -252,7 +258,7 @@
 						ctx.fill()
 					}
 				}
-			}, 50)
+			}, 40)
 
 			function copy(string, element, value) {
 				let el = document.createElement('textarea')
