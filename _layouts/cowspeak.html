@@ -64,7 +64,7 @@
 				color: #fff ;
 				border-radius: 2px ;
 				text-decoration: none ;
-				transition: all 0.5s ease ;
+				transition: all 0.25s ease ;
 				background-color: rgba(0, 163, 44, 0) ;
 				border: 2px solid rgba(0, 163, 44, 1) ;
 				padding: 10px ;
@@ -210,6 +210,15 @@
 					ctx.fill()
 				}
 			}, 50)
+
+			function copy(string) {
+				let el = document.createElement('textarea')
+				el.value = string
+				document.body.appendChild(el)
+				el.select()
+				document.execCommand('copy')
+				document.body.removeChild(el)
+			}
 		</script>
 
 	</body>

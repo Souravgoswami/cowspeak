@@ -10,6 +10,7 @@ categories: help
 			<br>
 
 			<a href="https://github.com/Souravgoswami/cowspeak/archive/master.zip">Download Zip</a>
+			<a href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git')">Get Clone URL</a>
 
 			<div class="thumbnail-before">
 				{% for i in site.static_files %}
