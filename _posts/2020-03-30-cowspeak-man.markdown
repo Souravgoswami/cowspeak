@@ -2,7 +2,7 @@
 title: "Cowspeak Man Page"
 layout: "cowspeak"
 author: "Sourav Goswami"
-categories: help
+categories: "help"
 ---
 
 NAME

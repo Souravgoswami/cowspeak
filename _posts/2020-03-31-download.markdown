@@ -1,7 +1,8 @@
 ---
-layout: cowspeak
-title: Download Cowspeak
-categories: help
+layout: "cowspeak"
+title: "Download Cowspeak"
+author: "Sourav Goswami"
+categories: "help"
 ---
 
 <div id="installation">

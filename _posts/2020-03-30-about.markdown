@@ -1,6 +1,7 @@
 ---
 layout: "cowspeak"
 title: "About Cowspeak"
+author: "Sourav Goswami"
 permalink: "/about/"
 ---
 
