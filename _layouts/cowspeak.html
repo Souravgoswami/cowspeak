@@ -235,13 +235,14 @@
 				}
 			}, 50)
 
-			function copy(string) {
+			function copy(string, element) {
 				let el = document.createElement('textarea')
 				el.value = string
 				document.body.appendChild(el)
 				el.select()
 				document.execCommand('copy')
 				document.body.removeChild(el)
+				document.getElementById(this)
 			}
 		</script>
 

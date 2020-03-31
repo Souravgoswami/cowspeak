@@ -11,11 +11,11 @@ categories: "help"
 			<br>
 
 			<span>
-			<a href="https://github.com/Souravgoswami/cowspeak/archive/master.zip">Download Zip</a>
+				<a href="https://github.com/Souravgoswami/cowspeak/archive/master.zip">Download Zip</a>
 			</span>
 
 			<span id="clone-break">
-			<a href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git')">Copy Clone URL</a>
+				<a href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git', this)">Copy Clone URL</a>
 			</span>
 
 			<div class="thumbnail-before">
