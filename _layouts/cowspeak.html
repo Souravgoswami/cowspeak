@@ -185,32 +185,32 @@
 	</head>
 
 	<body>
-		<a href="/cowspeak/" id="home"><img src="/cowspeak/assets/home.svg" width="20px"></a>
 		<canvas id="starfield-canvas"></canvas>
+
+		<a href="/cowspeak/" id="home"><img src="/cowspeak/assets/home.svg" width="20px"></a>
 		<center><h1 class="rgb-anim">{{ page.title }}</h1></center>
 		{% if page.author %}
 		<center><span class="rgb">By {{ page.author }}</span></center>
 		{% endif %}
 		<center><span class="rgb">{{ page.date | date: "%B %d, %Y" }}</span></center>
 
-		<div class="content">
-			{{ content }}
-		</div>
+		<div class="content">{{ content }}</div>
 
 		<script>
 			class Star {
-				constructor(x, y) {
+				constructor(x, y, a = 0) {
 					this.x = x
 					this.y = y
 					this.r = Math.floor(Math.random() * 256)
 					this.g = Math.floor(Math.random() * 256)
 					this.b = Math.floor(Math.random() * 256)
-					this.a = 1
-					this.size = Math.random() * 1 + 0.25
+					this.a = a
+					this.size = Math.random() * 2 + 0.5
+					this.direction = Math.random() < 0.5 ? Math.random() * 2 + 1 : Math.random() * -2 - 1
 				}
 			}
 
-			const N = 250, stars = []
+			const N = 45, stars = [], TRAILS = 7
 			var starfield = document.getElementById('starfield-canvas')
 			starfield.height = window.innerHeight
 			starfield.width = window.innerWidth
@@ -221,27 +221,36 @@
 				starfield.width = window.innerWidth
 
 				for(let i = 0 ; i < N ; ++i)
-					stars[i] = new Star(Math.random() * starfield.width, Math.random() * starfield.height)
+					stars[i] = new Star(Math.random() * starfield.width, Math.random() * starfield.height, 0.5)
 			})
 
 			for(let i = 0 ; i < N ; ++i)
-				stars[i] = new Star(Math.random() * starfield.width, Math.random() * starfield.height)
+				stars[i] = new Star(Math.random() * starfield.width, Math.random() * starfield.height, 1)
+
 
 			setInterval(() => {
 				ctx.clearRect(0, 0, starfield.width, starfield.height)
 
 				for(let i = 0 ; i < N ; ++i) {
 					let star = stars[i]
-					star.y += Math.tan(i)
-					star.x += Math.sin(i) //* Math.cos(i)
+
+					star.y += star.direction
+					star.x += star.direction
+					if (star.a < 1) star.a += 0.025
 
 					if (star.x < 0 || star.x > starfield.width || star.y < 0 || star.y > starfield.height)
-						stars[i] = new Star(Math.random() * starfield.width, starfield.height / 2)
+						stars[i] = new Star(Math.random() * starfield.width, Math.random() * starfield.height)
 
-					ctx.beginPath()
-					ctx.fillStyle= `rgba(${star.r},${star.g},${star.b},1)`
-					ctx.arc(star.x, star.y, star.size, 3.14159, 3)
-					ctx.fill()
+					for(let j = 0 ; j < TRAILS ; ++j) {
+						let dx = star.direction > 0 ? star.x - j : star.x + j
+						let dy = star.direction > 0 ? star.y - j : star.y + j
+						let tr = j / TRAILS
+
+						ctx.beginPath()
+						ctx.rect(dx, dy, star.size - tr, star.size - tr)
+						ctx.fillStyle= `rgba(${star.r},${star.g},${star.b},${star.a - tr})`
+						ctx.fill()
+					}
 				}
 			}, 50)
 
@@ -253,9 +262,8 @@
 				document.execCommand('copy')
 				document.body.removeChild(el)
 
-				if(element) {
+				if(element)
 					swapText(element, value, 1000)
-				}
 			}
 
 			function swapText(element, value, timeout) {
