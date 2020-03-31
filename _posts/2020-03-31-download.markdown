@@ -10,8 +10,13 @@ categories: "help"
 		<h2><u>Non Root Installation</u></h2>
 			<br>
 
+			<span>
 			<a href="https://github.com/Souravgoswami/cowspeak/archive/master.zip">Download Zip</a>
-			<a href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git')">Get Clone URL</a>
+			</span>
+
+			<span id="clone-break">
+			<a href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git')">Copy Clone URL</a>
+			</span>
 
 			<div class="thumbnail-before">
 				{% for i in site.static_files %}
