@@ -130,10 +130,28 @@
 				top: 0px ;
 				left: 0px ;
 			}
+
+			#home, #home:visited {
+				position: absolute ;
+				left: 20px ;
+				padding: 0 ;
+				border: none ;
+				background-color: transparent ;
+				transition: all 0.25s ease ;
+			}
+
+			#home:hover {
+				filter: drop-shadow(0px 0px 4px #3eb) ;
+			}
+
+			#home:active {
+				filter: drop-shadow(0px 0px 6px #fff) ;
+			}
 		</style>
 	</head>
 
 	<body>
+		<a href="/" id="home"><img src="/assets/home.svg" width="20px"></a>
 		<canvas id="starfield-canvas"></canvas>
 		<center><h1 class="rgb-anim">{{ page.title }}</h1></center>
 		{% if page.author %}
