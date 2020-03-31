@@ -11,7 +11,7 @@ categories: help
 
 			<a href="https://github.com/Souravgoswami/cowspeak/archive/master.zip">Download Zip</a>
 
-			<div class="thumbnail-before">
+			<div class="thumbnail-before">hi
 				{% for i in site.static_files %}
 					{% if i.img_deb or i.img_others %}
 					a
