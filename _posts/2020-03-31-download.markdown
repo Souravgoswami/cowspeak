@@ -70,7 +70,7 @@ categories: "help"
 			<div class="thumbnail-before">
 				{% for i in site.static_files %}
 					{% if i.img_others %}
-						<img src="{{ site.url }}{{ i.path }}" width="25px" class="thumbnail">
+						<img src="{{ site.baseurl }}{{ i.path }}" width="25px" class="thumbnail">
 					{% endif %}
 				{% endfor %}
 			</div>
