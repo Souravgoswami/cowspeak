@@ -12,11 +12,11 @@ plugins:
 
 defaults:
   - scope:
-      path: "/cowspeak/assets/Distributions/deb"
+      path: "cowspeak/assets/Distributions/deb"
     values:
       img_deb: true
 
   - scope:
-      path: "/cowspeak/assets/Distributions/others"
+      path: "cowspeak/assets/Distributions/others"
     values:
       img_others: true

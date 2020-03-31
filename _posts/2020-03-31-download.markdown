@@ -14,6 +14,7 @@ categories: help
 			<div class="thumbnail-before">
 				{% for i in site.static_files %}
 					{% if i.img_deb or i.img_others %}
+					a
 						<img src="/cowspeak/assets/{{ i.name }}" width="25px" class="thumbnail">
 					{% endif %}
 				{% endfor %}
