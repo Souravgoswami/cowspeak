@@ -31,7 +31,16 @@
 				}
 			}
 
+			@font-face {
+				src: local('Baloo 2 Regular'), local('Baloo2-Regular'), url('/cowspeak/assets/fonts/baloo2.woff2') format('woff2') ;
+				font-family: 'Baloo 2' ;
+				font-style: normal ;
+				font-display: swap ;
+				font-weight: 400 ;
+			}
+
 			body {
+				font-family: 'Baloo 2' ;
 				margin: 0px ;
 				border: 0px ;
 				background-color: #000 ;
@@ -119,7 +128,7 @@
 				display: inline ;
 				margin: 10px 4px 4px 0px ;
 				transition: all 0.25s ease ;
-				cursor: pointer ;
+				cursor: not-allowed ;
 			}
 
 			.thumbnail:hover {
