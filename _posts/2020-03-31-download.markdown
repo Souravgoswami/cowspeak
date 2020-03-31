@@ -11,10 +11,10 @@ categories: help
 
 			<a href="https://github.com/Souravgoswami/cowspeak/archive/master.zip">Download Zip</a>
 
-			<div class="thumbnail-before">hi
+			<div class="thumbnail-before">
 				{% for i in site.static_files %}
 					{% if i.img_deb or i.img_others %}
-					a
+						{{ i.name }}
 						<img src="/cowspeak/assets/{{ i.name }}" width="25px" class="thumbnail">
 					{% endif %}
 				{% endfor %}
