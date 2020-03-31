@@ -1,4 +1,6 @@
 # Cowspeak 🐮
+https://souravgoswami.github.io/cowspeak/
+
 Display a gradient colourful animal with a random quote or your own text in your terminal.
 
 ![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/a.png)
