@@ -14,8 +14,7 @@ categories: help
 			<div class="thumbnail-before">
 				{% for i in site.static_files %}
 					{% if i.img_deb or i.img_others %}
-						{{ i.path }}
-						<img src="/cowspeak/assets/{{ i.name }}" width="25px" class="thumbnail">
+						<img src="cowspeak/{{ i.path }}" width="25px" class="thumbnail">
 					{% endif %}
 				{% endfor %}
 			</div>
@@ -42,7 +41,7 @@ categories: help
 			<div class="thumbnail-before">
 				{% for i in site.static_files %}
 					{% if i.img_deb %}
-						<img src="/cowspeak/{{ i.path }}" width="25px" class="thumbnail">
+						<img src="/cowspeak{{ i.path }}" width="25px" class="thumbnail">
 					{% endif %}
 				{% endfor %}
 			</div>
@@ -64,7 +63,7 @@ categories: help
 			<div class="thumbnail-before">
 				{% for i in site.static_files %}
 					{% if i.img_others %}
-						<img src="{{ i.path }}" width="25px" class="thumbnail">
+						<img src="cowspeak/{{ i.path }}" width="25px" class="thumbnail">
 					{% endif %}
 				{% endfor %}
 			</div>
