@@ -206,11 +206,11 @@
 					this.b = Math.floor(Math.random() * 256)
 					this.a = a
 					this.size = Math.random() * 2 + 0.5
-					this.direction = Math.random() < 0.5 ? Math.random() * 2 + 1 : Math.random() * -2 - 1
+					this.direction = Math.random() < 0.5 ? Math.random() * 4 + 1 : Math.random() * - 4 - 1
 				}
 			}
 
-			const N = 45, stars = [], TRAILS = 7
+			const N = 45, stars = [], TRAILS = 8
 			var starfield = document.getElementById('starfield-canvas')
 			starfield.height = window.innerHeight
 			starfield.width = window.innerWidth
@@ -273,6 +273,5 @@
 				setTimeout(() => { element.innerHTML = prevValue }, timeout)
 			}
 		</script>
-
 	</body>
 </html>
