@@ -12,11 +12,11 @@ plugins:
 
 defaults:
   - scope:
-      path: "/assets/Distributions/deb"
+      path: "assets/Distributions/deb"
     values:
       img_deb: true
 
   - scope:
-      path: "/assets/Distributions/others"
+      path: "assets/Distributions/others"
     values:
       img_others: true
