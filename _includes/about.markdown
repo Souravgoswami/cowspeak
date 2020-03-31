@@ -21,7 +21,7 @@ Display a gradient colourful animal with a random quote or your own text in your
 </pre>
 </div>
 
-![cowspeak](/cowspeak/assets/Screenshots/a.png)
+![](/cowspeak/assets/Screenshots/a.png)
 
 ---
 
