@@ -19,7 +19,7 @@ Display a gradient colourful animal with a random quote or your own text in your
 <font color="#1E88E5"> </font><font color="#1E90DC"> </font><font color="#1E99D4"> </font><font color="#1EA1CB"> </font><font color="#1EAAC3"> </font><font color="#1EB2BA">|</font><font color="#1EBBB2">|</font><font color="#1EC3A9">|</font><font color="#1ECCA1"> </font><font color="#1ED498"> </font><font color="#1EDD90"> </font><font color="#1EE587">|</font><font color="#1EEE7F">|</font><font color="#1EF676">|</font>
 </pre>
 
-![cowspeak](/assets/Screenshots/a.png)
+![cowspeak](/cowspeak/assets/Screenshots/a.png)
 
 ---
 
