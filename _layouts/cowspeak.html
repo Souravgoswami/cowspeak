@@ -235,14 +235,24 @@
 				}
 			}, 50)
 
-			function copy(string, element) {
+			function copy(string, element, value) {
 				let el = document.createElement('textarea')
 				el.value = string
 				document.body.appendChild(el)
 				el.select()
 				document.execCommand('copy')
 				document.body.removeChild(el)
-				document.getElementById(this)
+
+				if(element) {
+					swapText(element, value, 1000)
+				}
+			}
+
+			function swapText(element, value, timeout) {
+				let prevValue = element.innerHTML
+				element.innerHTML = value
+
+				setTimeout(() => { element.innerHTML = prevValue }, timeout)
 			}
 		</script>
 

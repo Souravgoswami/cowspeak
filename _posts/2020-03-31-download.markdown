@@ -11,11 +11,11 @@ categories: "help"
 			<br>
 
 			<span>
-				<a href="https://github.com/Souravgoswami/cowspeak/archive/master.zip">Download Zip</a>
+				<a href="https://github.com/Souravgoswami/cowspeak/archive/master.zip" onclick="swapText(this, 'Downloading...', 2000)">Download Zip</a>
 			</span>
 
 			<span id="clone-break">
-				<a href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git', this)">Copy Clone URL</a>
+				<a href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git', this, 'URL Copied!')">Copy Clone URL</a>
 			</span>
 
 			<div class="thumbnail-before">
@@ -41,7 +41,7 @@ categories: "help"
 
 			<br>
 
-			<a href="https://github.com/Souravgoswami/cowspeak-deb/raw/master/Deb/cowspeak-latest.deb">Download .deb</a>
+			<a href="https://github.com/Souravgoswami/cowspeak-deb/raw/master/Deb/cowspeak-latest.deb" onclick="swapText(this, 'Downloading...', 2000)">Download .deb</a>
 
 			<br>
 
@@ -63,7 +63,7 @@ categories: "help"
 
 			<br>
 
-			<a href="https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/Root_Installer.rb">Download .rb</a>
+			<a href="https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/Root_Installer.rb" onclick="swapText(this, 'Redirecting...', 2000)">Download .rb</a>
 
 			<br>
 
