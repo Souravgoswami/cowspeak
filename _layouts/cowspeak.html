@@ -195,8 +195,10 @@
 
 	<body>
 		<canvas id="starfield-canvas"></canvas>
+		<!-- <a>h{{ site.url }}</a> -->
 
-		<a href="/cowspeak/" id="home"><img src="/cowspeak/assets/home.svg" width="20px"></a>
+
+		<a href="{{ site.url }}" id="home"><img src="/cowspeak/assets/home.svg" width="20px"></a>
 		<center><h1 class="rgb-anim">{{ page.title }}</h1></center>
 		{% if page.author %}
 		<center><span class="rgb">By {{ page.author }}</span></center>
