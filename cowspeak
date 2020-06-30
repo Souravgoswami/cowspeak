@@ -4,9 +4,9 @@
 # The GNU General Public License v3.0
 
 # For ROOT installation, set Root to true
-ROOT = true
+ROOT = false
 
-VERSION = "Cowspeak version 2.81"
+VERSION = "Cowspeak version 2.82"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
