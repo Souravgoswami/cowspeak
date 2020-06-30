@@ -1,4 +1,4 @@
-#!/usr/bin/ruby -w
+#!/usr/bin/ruby -W0
 # Encoding: UTF-8
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # The GNU General Public License v3.0
@@ -6,13 +6,13 @@
 # For ROOT installation, set Root to true
 ROOT = false
 
-VERSION = "Cowspeak version 2.81"
+VERSION = "Cowspeak version 2.82"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
 
 BASENAME = Process.argv0
-NEW_FEATURES = "\t1. The -w option shows more information.\n\t2. Fixed several bugs.\n\t3. Cowspeak can work without art files, just make use of the -na or --no-art option.\n\t4. Cowspeak will work without the fortunes file. Just use the -nt or --no-text option."
+NEW_FEATURES = "\t1. Minor warnings fixed."
 # puts("\e[1;4mDebugging Purpose:\e[0m", 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
 
 PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = unless ROOT
@@ -524,7 +524,7 @@ begin
 			suffix = UNIT == 1000 ? 'MB' : 'MiB'
 			memory = IO.foreach('/proc/meminfo').first(3)
 
-			used = (((total = memory[0].split[1].to_f) - (available = memory[2].split[1].to_f))/UNIT).round(2)
+			used = (((total = memory[0].split[1].to_f) - (memory[2].split[1].to_f))/UNIT).round(2)
 			val = "\n:: Memory: #{(used).round(2)} #{suffix} / #{(total/UNIT).round(2)} #{suffix} (#{used.*(100)./(total./(UNIT)).round(2)}%)"
 		else
 			''
@@ -563,7 +563,7 @@ begin
 				previdle, idle = @prev_idle + @prev_iowait, @idle + @iowait
 				totald = idle + (@user + @nice + @sys + @irq + @softirq + @steal) -
 					(previdle + (@prev_user + @prev_nice + @prev_sys + @prev_irq + @prev_softirq + @prev_steal))
-				"#{((totald - (idle - previdle)) / totald * 100).round( x == 0 ? 2 : 0 ).abs.then { |x| x.to_s == 'NaN' ? 0 : x }.abs}%"
+				"#{((totald - (idle - previdle)) / totald * 100).round( x == 0 ? 2 : 0 ).abs.then { |y| y.to_s == 'NaN' ? 0 : y }.abs}%"
 			end
 
 			"\n:: Total CPU Usage: #{usages[0]}\n   [#{usages.drop(1).each_with_index { |x, i| x.prepend(%Q|C#{i + 1}: |) }.join(' | ')}]"
@@ -651,7 +651,7 @@ begin
 		EOF
 
 	else
-		t = ARGV.select { |t| t.start_with?('--text='.freeze) || t.start_with?('-t='.freeze) }.each(&ARGV.method(:delete))
+		t = ARGV.select { |x| x.start_with?('--text='.freeze) || x.start_with?('-t='.freeze) }.each(&ARGV.method(:delete))
 
 		text.replace(
 			if t.empty?
