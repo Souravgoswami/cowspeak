@@ -4,7 +4,7 @@
 # The GNU General Public License v3.0
 
 # For ROOT installation, set Root to true
-ROOT = true
+ROOT = false
 
 VERSION = "Cowspeak version 2.81"
 
