@@ -4,9 +4,9 @@
 # The GNU General Public License v3.0
 
 # For ROOT installation, set Root to true
-ROOT = false
+ROOT = true
 
-VERSION = "Cowspeak version 2.82"
+VERSION = "Cowspeak version 2.81"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
@@ -19,8 +19,8 @@ PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = unless ROOT
 	[ "#{__dir__}/cowspeak_files", 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak',
 	'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz', File.join(__dir__, 'cowspeak.1.gz') ]
 else
-	[ '/usr/share/cowspeak', 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/bin/cowspeak',
-	'https://raw.githubusercontent.com/Souravgoswami/cowspeak-deb/master/cowspeak/usr/share/man/man1/cowspeak.1.gz', '/usr/share/man/man1/cowspeak.1.gz' ]
+	[ '/usr/share/cowspeak', 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-root/master/latest-src/usr/bin/cowspeak',
+	'https://github.com/Souravgoswami/cowspeak-root/raw/master/latest-src/usr/share/man/man1/cowspeak.1.gz', '/usr/share/man/man1/cowspeak.1.gz' ]
 end
 
 # Errors
