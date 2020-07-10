@@ -20,11 +20,13 @@ show_header: false
 		<li class="lighting" style="animation-delay: 0.8s;">C</li>
 		<li class="lighting" style="animation-delay: 0.9s;">o</li>
 		<li class="lighting" style="animation-delay: 1.0s;">w</li>
-		<li class="lighting" style="animation-delay: 1.1s;">s</li>
-		<li class="lighting" style="animation-delay: 1.2s;">p</li>
-		<li class="lighting" style="animation-delay: 1.3s;">e</li>
-		<li class="lighting" style="animation-delay: 1.4s;">a</li>
-		<li class="lighting" style="animation-delay: 1.5s;">k</li>
+		<li class="lighting" style="animation-delay: 1.1s;">'</li>
+		<li class="lighting" style="animation-delay: 1.2s;">s</li>
+		<li class="lighting" style="animation-delay: 1.3s;">&nbsp;</li>
+		<li class="lighting" style="animation-delay: 1.4s;">P</li>
+		<li class="lighting" style="animation-delay: 1.5s;">e</li>
+		<li class="lighting" style="animation-delay: 1.6s;">a</li>
+		<li class="lighting" style="animation-delay: 1.7s;">k</li>
 	</div>
 </center>
 
