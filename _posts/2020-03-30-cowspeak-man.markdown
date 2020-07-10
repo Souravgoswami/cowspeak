@@ -7,7 +7,7 @@ show_header: false
 ---
 
 <center>
-	<div style="user-select: none">
+	<div class="head nowrap">
 		<li class="lighting" style="animation-delay: 0s;">C</li>
 		<li class="lighting" style="animation-delay: 0.1s;">o</li>
 		<li class="lighting" style="animation-delay: 0.2s;">w</li>
@@ -26,8 +26,8 @@ show_header: false
 	</div>
 </center>
 
-<center><span class="rgb">By {{ page.author }}</span></center>
-<center><span class="rgb">{{ page.date | date: "%B %d, %Y" }}</span></center>
+<center><span class="rgb nowrap">By {{ page.author }}</span></center>
+<center><span class="rgb nowrap">{{ page.date | date: "%B %d, %Y" }}</span></center>
 
 
 NAME

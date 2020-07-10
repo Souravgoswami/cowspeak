@@ -7,7 +7,7 @@ show_header: false
 ---
 
 <center>
-	<div style="user-select: none">
+	<div class="head nowrap">
 		<li class="lighting" style="animation-delay: 0s;">C</li>
 		<li class="lighting" style="animation-delay: 0.1s;">o</li>
 		<li class="lighting" style="animation-delay: 0.2s;">w</li>
@@ -24,8 +24,8 @@ show_header: false
 	</div>
 </center>
 
-<center><span class="rgb">By {{ page.author }}</span></center>
-<center><span class="rgb">{{ page.date | date: "%B %d, %Y" }}</span></center>
+<center><span class="rgb nowrap">By {{ page.author }}</span></center>
+<center><span class="rgb nowrap">{{ page.date | date: "%B %d, %Y" }}</span></center>
 
 
 <pre><font color="#FF03FB">H</font><font color="#FF0BF3">i</font><font color="#FF12EC">,</font><font color="#FF1AE4"> </font><font color="#FF21DD">m</font><font color="#FF29D5">y</font><font color="#FF30CE"> </font><font color="#FF38C6">n</font><font color="#FF3FBF">a</font><font color="#FF47B7">m</font><font color="#FF4EB0">e</font><font color="#FF56A8"> </font><font color="#FF5DA1">i</font><font color="#FF6599">s</font><font color="#FF6C92"> </font><font color="#FF748A">/</font><font color="#FF7B83">u</font><font color="#FF837B">s</font><font color="#FF8A74">r</font><font color="#FF926C">/</font><font color="#FF9965">b</font><font color="#FFA15D">i</font><font color="#FFA856">n</font><font color="#FFB04E">/</font><font color="#FFB747">c</font><font color="#FFBF3F">o</font><font color="#FFC638">w</font><font color="#FFCE30">s</font><font color="#FFD529">p</font><font color="#FFDD21">e</font><font color="#FFE41A">a</font><font color="#FFEC12">k</font><font color="#FFF30B">.</font><font color="#FFFB03"> </font><font color="#FFFF00">I</font><font color="#FFF707"> </font><font color="#FFF00F">s</font><font color="#FFE816">p</font><font color="#FFE11E">e</font><font color="#FFD925">a</font><font color="#FFD22D">k</font><font color="#FFCA34"> </font><font color="#FFC33C">a</font><font color="#FFBB43"> </font><font color="#FFB44B">q</font><font color="#FFAC52">u</font><font color="#FFA55A">o</font><font color="#FF9D61">t</font><font color="#FF9669">e</font><font color="#FF8E70"> </font><font color="#FF8778">o</font><font color="#FF7F7F">n</font><font color="#FF7887"> </font><font color="#FF708E">y</font><font color="#FF6996">o</font><font color="#FF619D">u</font><font color="#FF5AA5">r</font><font color="#FF52AC"> </font><font color="#FF4BB4">t</font><font color="#FF43BB">e</font><font color="#FF3CC3">r</font><font color="#FF34CA">m</font><font color="#FF2DD2">i</font><font color="#FF25D9">n</font><font color="#FF1EE1">a</font><font color="#FF16E8">l</font><font color="#FF0FF0">.</font>

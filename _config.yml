@@ -5,7 +5,7 @@ description: >-
 # baseurl for github.io
 baseurl: "/cowspeak"
 # baseurl for testing on localhost
-# baseurl: ""
+baseurl: ""
 url: ""
 github_username:  Souravgoswami
 

@@ -216,10 +216,21 @@
 				text-shadow: 0px 0px 10px currentColor ;
 			}
 
+			.nowrap {
+				white-space: nowrap ;
+			}
+
+			.head {
+				user-select: none ;
+			}
+
+			.head li {
+				font-size: 48px ;
+			}
+
 			.lighting {
 				color: #555 ;
 				display: inline-block ;
-				font-size: 48px ;
 				list-style: none ;
 				animation: lighting-animation 3s linear infinite
 			}
@@ -257,6 +268,12 @@
 				#root-installation {
 					display: grid ;
 					place-items: center ;
+				}
+			}
+
+			@media(max-width: 420px) {
+				.head li {
+					font-size: 36px ;
 				}
 			}
 		</style>
