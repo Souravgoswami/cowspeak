@@ -38,11 +38,11 @@ show_header: false
 		<br>
 
 		<span>
-			<a class="btn" data-content="&#x2B8B; Download" href="https://github.com/Souravgoswami/cowspeak/archive/master.zip" onclick="swapText(this, '&#x2713; Downloading...', 2000)">&#x2B8B; Download Zip</a>
+			<a class="btn" data-content="Download" href="https://github.com/Souravgoswami/cowspeak/archive/master.zip" onclick="swapText(this, '&#x2713; Downloading...', 2000)">Download Zip</a>
 		</span>
 
 		<span id="clone-break">
-			<a class="btn" data-content="&#x1F5DF; Copy" href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git', this, '&#x2713; URL Copied!')">&#x1F5DF; Git Clone URL</a>
+			<a class="btn" data-content="&#x1F5DF; Copy" href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git', this, '&#x2713; URL Copied!')">Git Clone URL</a>
 		</span>
 
 		<div class="thumbnail-before">
@@ -70,7 +70,7 @@ show_header: false
 
 			<br>
 
-			<a class="btn" data-content="&#x2B8B; Download" href="https://github.com/Souravgoswami/cowspeak-root/raw/master/Debian/cowspeak-latest.deb" onclick="swapText(this, '&#x2713; Downloading...', 2000)">&#x2B8B; Download .deb</a>
+			<a class="btn" data-content="Download" href="https://github.com/Souravgoswami/cowspeak-root/raw/master/Debian/cowspeak-latest.deb" onclick="swapText(this, '&#x2713; Downloading...', 2000)">Download .deb</a>
 
 			<br>
 
@@ -95,7 +95,7 @@ show_header: false
 
 			<br>
 
-			<a class="btn" data-content="&#x2B8B; Download" href="https://github.com/Souravgoswami/cowspeak-root/raw/master/Arch%20Linux/cowspeak-latest.tar.xz" onclick="swapText(this, '&#x2713; Downloading...', 2000)">&#x2B8B; Download .tar.gz</a>
+			<a class="btn" data-content="Download" href="https://github.com/Souravgoswami/cowspeak-root/raw/master/Arch%20Linux/cowspeak-latest.tar.xz" onclick="swapText(this, '&#x2713; Downloading...', 2000)">Download .tar.gz</a>
 			<br>
 
 			<div class="thumbnail-before">
@@ -119,7 +119,7 @@ show_header: false
 
 			<br>
 
-			<a class="btn" data-content="&#x2B8B; Download" href="https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/Root_Installer.rb" onclick="swapText(this, '&#x21B7; Redirecting...', 2000)">&#x2B8B; Download .rb</a>
+			<a class="btn" data-content="Download" href="https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/Root_Installer.rb" onclick="swapText(this, '&#x21B7; Redirecting...', 2000)">Download .rb</a>
 
 			<br>
 

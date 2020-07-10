@@ -94,7 +94,7 @@
 				border: 3px solid #00A32C ;
 				text-decoration: none ;
 				border-radius: 4px ;
-				min-width: 165px ;
+				min-width: 150px ;
 				padding: 10px ;
 				outline: none ;
 				margin: 10px ;
@@ -305,12 +305,12 @@
 					this.g = Math.floor(Math.random() * 256)
 					this.b = Math.floor(Math.random() * 256)
 					this.a = a
-					this.size = Math.random() * 2 + 0.5
+					this.size = Math.random() * 2.5 + 1
 					this.direction = Math.random() < 0.5 ? Math.random() * 7 + 1 : Math.random() * - 7 - 1
 				}
 			}
 
-			const N = 100, stars = []
+			const N = 50, stars = []
 			var starfield = document.getElementById('starfield-canvas')
 			starfield.height = window.innerHeight
 			starfield.width = window.innerWidth
@@ -327,15 +327,14 @@
 			for(let i = 0 ; i < N ; ++i)
 				stars[i] = new Star(Math.random() * starfield.width, Math.random() * starfield.height, 1)
 
-
 			setInterval(() => {
 				ctx.clearRect(0, 0, starfield.width, starfield.height)
 
 				for(let i = 0 ; i < N ; ++i) {
 					let star = stars[i]
 
-					star.y += star.direction
 					star.x += star.direction
+					star.y += star.direction
 
 					if (star.direction > 0)
 						star.direction += 0.0125
