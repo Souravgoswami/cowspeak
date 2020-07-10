@@ -42,7 +42,7 @@ show_header: false
 		</span>
 
 		<span id="clone-break">
-			<a class="btn" data-content="&#x1F5DF; Copy" href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git', this, '&#x2713; URL Copied!')">Git Clone URL</a>
+			<a class="btn" data-content="Copy" href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git', this, '&#x2713; URL Copied!')">Git Clone URL</a>
 		</span>
 
 		<div class="thumbnail-before">
