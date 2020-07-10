@@ -3,7 +3,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<link rel="status icon" type="image/png" href="/cowspeak/assets/favicon.png">
+		<link rel="status icon" type="image/png" href="{{ site.baseurl }}/assets/favicon.png">
 		<title>{{ page.title }}</title>
 
 		<style>
@@ -49,7 +49,9 @@
 			.rgb, .rgb-anim {
 				background: linear-gradient(45deg, #3eb, #ff0, #f55, #f5f, #55f) ;
 				-webkit-background-clip: text ;
+				background-clip: text ;
 				-webkit-text-fill-color: transparent ;
+				color: transparent ;
 				text-shadow: 0px 0px 4px rgba(255, 255, 255, 0.25) ;
 				display: inline ;
 			}
@@ -57,6 +59,7 @@
 			.rgb-anim {
 				background: linear-gradient(45deg, #3eb, #ff0, #f55, #f5f, #55f, #55f, #f5f, #f55, #ff0, #3eb) ;
 				-webkit-background-clip: text ;
+				background-clip: text ;
 				-webkit-text-fill-color: transparent ;
 				background-size: 400% ;
 				animation: rgb-anim 5s linear infinite ;
@@ -68,31 +71,55 @@
 				font-size: 20px ;
 			}
 
-			a, a:visited {
-				display: inline-block ;
-				margin-top: 10px ;
-				text-align: center ;
-				color: #fff ;
-				border-radius: 2px ;
+			.btn {
+				color: #00A32C ;
+				position: relative ;
+				background-color: transparent ;
+				border: 3px solid #00A32C ;
 				text-decoration: none ;
-				outline: none ;
-				min-width: 140px ;
-				transition: all 0.25s ease ;
-				background-color: rgba(0, 163, 44, 0) ;
-				border: 2px solid rgba(0, 163, 44, 1) ;
+				border-radius: 4px ;
+				min-width: 165px ;
 				padding: 10px ;
+				outline: none ;
+				margin: 10px ;
+				display: inline-flex ;
+				align-items: center ;
+				justify-content: center ;
+				text-align: center ;
+				overflow: hidden ;
+				transition: all 0.25s ease ;
 			}
 
-			a:hover {
-				background-color: rgba(255, 255, 255, 1) ;
-				border: 2px solid rgba(255, 255, 255, 1) ;
-				color: rgba(0, 163, 44, 1) ;
+			.btn::before {
+				content: attr(data-content) ;
+				color: #fff ;
+				background-color: #00A32C ;
+				position: absolute ;
+				top: 0 ;
+				left: 0 ;
+				width: 100% ;
+				height: 100% ;
+				display: flex ;
+				justify-content: center ;
+				align-items: center ;
+				opacity: 0 ;
+				transform: scale(5) ;
+				transition: all 0.25s ease ;
 			}
 
-			a:active {
-				color: rgba(255, 255, 255, 1) ;
-				background-color: rgba(0, 163, 44, 1) ;
-				border: 2px solid rgba(0, 163, 44, 1) ;
+			.btn:hover::before {
+				transform: scale(1.025) ;
+				opacity: 1 ;
+			}
+
+			.btn:active::before {
+				transform: scale(1.025) ;
+				color: #fff ;
+				background-color: #912BFF ;
+			}
+
+			.btn:active {
+				border-color: #912BFF ;
 			}
 
 			#installation {
@@ -128,7 +155,12 @@
 				display: inline ;
 				margin: 10px 4px 4px 0px ;
 				transition: all 0.25s ease ;
-				cursor: not-allowed ;
+				cursor: pointer ;
+			}
+
+			.link-no-style {
+				text-decoration: none ;
+				outline: none ;
 			}
 
 			.thumbnail:hover {
@@ -147,12 +179,8 @@
 
 			#home, #home:visited {
 				position: absolute ;
-				left: 10px ;
-				top: 0px ;
-				min-width: 0px ;
-				padding: 0px ;
-				border: none ;
-				background-color: transparent ;
+				left: 16px ;
+				top: 16px ;
 				transition: all 0.25s ease ;
 			}
 
@@ -170,6 +198,29 @@
 
 			.glow-text {
 				text-shadow: 0px 0px 10px currentColor ;
+			}
+
+			.lighting {
+				color: #555 ;
+				display: inline-block ;
+				font-size: 48px ;
+				list-style: none ;
+				animation: lighting-animation 3s linear infinite
+			}
+
+			@keyframes lighting-animation {
+				0%, 70% {
+					color: #555 ;
+					text-shadow: none ;
+				}
+
+				75% {
+					color: #ff0 ;
+					text-shadow: 0 0 8px #ff0,
+						0 0 50px #ff5b,
+						0 0 75px #fa5c,
+						0 0 100px #f55f ;
+				}
 			}
 
 			@media(max-width: 715px) {
@@ -198,13 +249,17 @@
 	<body>
 		<canvas id="starfield-canvas"></canvas>
 
-		<a href="{% if site.baseurl != '' %} {{ site.baseurl }} {% else %} / {% endif %}" id="home"><img src="{{ site.baseurl }}/assets/home.svg" width="20px"></a>
-		<center><h1 class="rgb-anim">{{ page.title }}</h1></center>
-		{% if page.author %}
-			<center><span class="rgb">By {{ page.author }}</span></center>
-		{% endif %}
+		<a href="{% if site.baseurl != '' %} {{ site.baseurl }} {% else %} / {% endif %}" id="home"><img src="{{ site.baseurl }}/assets/home.svg" width="24px"></a>
 
-		<center><span class="rgb">{{ page.date | date: "%B %d, %Y" }}</span></center>
+		{% if page.show_header != false %}
+			<center><h1 class="rgb-anim">{{ page.title }}</h1></center>
+
+			{% if page.author %}
+				<center><span class="rgb">By {{ page.author }}</span></center>
+			{% endif %}
+
+			<center><span class="rgb">{{ page.date | date: "%B %d, %Y" }}</span></center>
+		{% endif %}
 
 		<div class="content">{{ content }}</div>
 
@@ -286,9 +341,15 @@
 
 			function swapText(element, value, timeout) {
 				let prevValue = element.innerHTML
+				let prevDataContent = element.getAttribute('data-content')
 				element.innerHTML = value
+				element.setAttribute('data-content', value)
+				element.setAttribute('data-content', value)
 
-				setTimeout(() => { element.innerHTML = prevValue }, timeout)
+				setTimeout(() => {
+					element.innerHTML = prevValue
+					element.setAttribute('data-content', prevDataContent)
+				}, timeout)
 			}
 		</script>
 	</body>

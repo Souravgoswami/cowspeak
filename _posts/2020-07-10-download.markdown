@@ -1,0 +1,138 @@
+---
+title: "Download Cowspeak"
+layout: "cowspeak"
+categories: "help"
+author: "Sourav Goswami"
+show_header: false
+---
+
+<center>
+	<div style="user-select: none">
+		<li class="lighting" style="animation-delay: 0s;">D</li>
+		<li class="lighting" style="animation-delay: 0.1s;">o</li>
+		<li class="lighting" style="animation-delay: 0.2s;">w</li>
+		<li class="lighting" style="animation-delay: 0.3s;">n</li>
+		<li class="lighting" style="animation-delay: 0.4s;">l</li>
+		<li class="lighting" style="animation-delay: 0.5s;">o</li>
+		<li class="lighting" style="animation-delay: 0.6s;">a</li>
+		<li class="lighting" style="animation-delay: 0.7s;">d</li>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		<li class="lighting" style="animation-delay: 0.8s;">C</li>
+		<li class="lighting" style="animation-delay: 0.9s;">o</li>
+		<li class="lighting" style="animation-delay: 1.0s;">w</li>
+		<li class="lighting" style="animation-delay: 1.1s;">s</li>
+		<li class="lighting" style="animation-delay: 1.2s;">p</li>
+		<li class="lighting" style="animation-delay: 1.3s;">e</li>
+		<li class="lighting" style="animation-delay: 1.4s;">a</li>
+		<li class="lighting" style="animation-delay: 1.5s;">k</li>
+	</div>
+</center>
+
+<center><span class="rgb">By {{ page.author }}</span></center>
+<center><span class="rgb">{{ page.date | date: "%B %d, %Y" }}</span></center>
+
+<div id="installation">
+	<div id="non-root-installation">
+		<h2><u>Non Root Installation</u></h2>
+
+		<br>
+
+		<span>
+			<a class="btn" data-content="&#x2B8B; Download" href="https://github.com/Souravgoswami/cowspeak/archive/master.zip" onclick="swapText(this, '&#x2713; Downloading...', 2000)">&#x2B8B; Download Zip</a>
+		</span>
+
+		<span id="clone-break">
+			<a class="btn" data-content="&#x1F5DF; Copy" href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git', this, '&#x2713; URL Copied!')">&#x1F5DF; Git Clone URL</a>
+		</span>
+
+		<div class="thumbnail-before">
+			{% for i in site.static_files %}
+				{% if i.img_deb or i.img_others or i.img_arch %}
+					<a title="{{ i.basename }}" href="{{ site.baseurl }}{{ i.path }}" class="link-no-style">
+						<img src="{{ site.baseurl }}{{ i.path }}" width="25px" class="thumbnail">
+					</a>
+				{% endif %}
+			{% endfor %}
+		</div>
+	</div>
+
+	<hr width="50px" style="margin-top: 25px">
+
+	<div id="root-installation">
+		<h2><u>Root Installation</u></h2>
+
+		<div id="deb">
+			Debian/Ubuntu/Linux Mint/Kali Linux
+			<br>
+			<span class="info">
+				(Download and run dpkg -i cowspeak-latest.deb)
+			</span>
+
+			<br>
+
+			<a class="btn" data-content="&#x2B8B; Download" href="https://github.com/Souravgoswami/cowspeak-root/raw/master/Debian/cowspeak-latest.deb" onclick="swapText(this, '&#x2713; Downloading...', 2000)">&#x2B8B; Download .deb</a>
+
+			<br>
+
+			<div class="thumbnail-before">
+				{% for i in site.static_files %}
+					{% if i.img_deb %}
+						<a title="{{ i.basename }}" href="{{ site.baseurl }}{{ i.path }}" class="link-no-style">
+							<img src="{{ site.baseurl }}{{ i.path }}" width="25px" class="thumbnail">
+						</a>
+					{% endif %}
+				{% endfor %}
+			</div>
+		</div>
+
+		<div id="arch">
+			Arch Based Distributions
+
+			<br>
+			<span class="info">
+				(Download and run `sudo pacman -U cowspeak-latest.pkg.tar.xz`)
+			</span>
+
+			<br>
+
+			<a class="btn" data-content="&#x2B8B; Download" href="https://github.com/Souravgoswami/cowspeak-root/raw/master/Arch%20Linux/cowspeak-latest.tar.xz" onclick="swapText(this, '&#x2713; Downloading...', 2000)">&#x2B8B; Download .tar.gz</a>
+			<br>
+
+			<div class="thumbnail-before">
+				{% for i in site.static_files %}
+					{% if i.img_arch %}
+						<a title="{{ i.basename }}" href="{{ site.baseurl }}{{ i.path }}" class="link-no-style">
+							<img src="{{ site.baseurl }}{{ i.path }}" width="25px" class="thumbnail">
+						</a>
+					{% endif %}
+				{% endfor %}
+			</div>
+		</div>
+
+		<div id="others">
+			<div>
+			Other Distributions
+			<br>
+			<span class="info">
+				(Copy-Paste and run `ruby Root_Installer.rb`)
+			</span>
+
+			<br>
+
+			<a class="btn" data-content="&#x2B8B; Download" href="https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/Root_Installer.rb" onclick="swapText(this, '&#x21B7; Redirecting...', 2000)">&#x2B8B; Download .rb</a>
+
+			<br>
+
+			<div class="thumbnail-before">
+				{% for i in site.static_files %}
+					{% if i.img_others %}
+						<a title="{{ i.basename }}" href="{{ site.baseurl }}{{ i.path }}" class="link-no-style">
+							<img src="{{ site.baseurl }}{{ i.path }}" width="25px" class="thumbnail">
+						</a>
+					{% endif %}
+				{% endfor %}
+			</div>
+			</div>
+		</div>
+	</div>
+</div>

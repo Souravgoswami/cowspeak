@@ -3,7 +3,30 @@ title: "Cowspeak Help Page"
 layout: "cowspeak"
 author: "Sourav Goswami"
 categories: help
+show_header: false
 ---
+
+<center>
+	<div style="user-select: none">
+		<li class="lighting" style="animation-delay: 0s;">C</li>
+		<li class="lighting" style="animation-delay: 0.1s;">o</li>
+		<li class="lighting" style="animation-delay: 0.2s;">w</li>
+		<li class="lighting" style="animation-delay: 0.3s;">s</li>
+		<li class="lighting" style="animation-delay: 0.4s;">p</li>
+		<li class="lighting" style="animation-delay: 0.5s;">e</li>
+		<li class="lighting" style="animation-delay: 0.6s;">a</li>
+		<li class="lighting" style="animation-delay: 0.7s;">k</li>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		<li class="lighting" style="animation-delay: 0.8s;">H</li>
+		<li class="lighting" style="animation-delay: 0.9s;">e</li>
+		<li class="lighting" style="animation-delay: 1s;">l</li>
+		<li class="lighting" style="animation-delay: 1.1s;">p</li>
+	</div>
+</center>
+
+<center><span class="rgb">By {{ page.author }}</span></center>
+<center><span class="rgb">{{ page.date | date: "%B %d, %Y" }}</span></center>
+
 
 <pre><font color="#FF03FB">H</font><font color="#FF0BF3">i</font><font color="#FF12EC">,</font><font color="#FF1AE4"> </font><font color="#FF21DD">m</font><font color="#FF29D5">y</font><font color="#FF30CE"> </font><font color="#FF38C6">n</font><font color="#FF3FBF">a</font><font color="#FF47B7">m</font><font color="#FF4EB0">e</font><font color="#FF56A8"> </font><font color="#FF5DA1">i</font><font color="#FF6599">s</font><font color="#FF6C92"> </font><font color="#FF748A">/</font><font color="#FF7B83">u</font><font color="#FF837B">s</font><font color="#FF8A74">r</font><font color="#FF926C">/</font><font color="#FF9965">b</font><font color="#FFA15D">i</font><font color="#FFA856">n</font><font color="#FFB04E">/</font><font color="#FFB747">c</font><font color="#FFBF3F">o</font><font color="#FFC638">w</font><font color="#FFCE30">s</font><font color="#FFD529">p</font><font color="#FFDD21">e</font><font color="#FFE41A">a</font><font color="#FFEC12">k</font><font color="#FFF30B">.</font><font color="#FFFB03"> </font><font color="#FFFF00">I</font><font color="#FFF707"> </font><font color="#FFF00F">s</font><font color="#FFE816">p</font><font color="#FFE11E">e</font><font color="#FFD925">a</font><font color="#FFD22D">k</font><font color="#FFCA34"> </font><font color="#FFC33C">a</font><font color="#FFBB43"> </font><font color="#FFB44B">q</font><font color="#FFAC52">u</font><font color="#FFA55A">o</font><font color="#FF9D61">t</font><font color="#FF9669">e</font><font color="#FF8E70"> </font><font color="#FF8778">o</font><font color="#FF7F7F">n</font><font color="#FF7887"> </font><font color="#FF708E">y</font><font color="#FF6996">o</font><font color="#FF619D">u</font><font color="#FF5AA5">r</font><font color="#FF52AC"> </font><font color="#FF4BB4">t</font><font color="#FF43BB">e</font><font color="#FF3CC3">r</font><font color="#FF34CA">m</font><font color="#FF2DD2">i</font><font color="#FF25D9">n</font><font color="#FF1EE1">a</font><font color="#FF16E8">l</font><font color="#FF0FF0">.</font>
 <font color="#0000FF">U</font><font color="#0502FC">s</font><font color="#0B05F9">a</font><font color="#1108F6">g</font><font color="#160BF3">e</font><font color="#1C0EF0">:</font><font color="#2211EE"> </font><font color="#2713EB">R</font><font color="#2D16E8">u</font><font color="#3319E5">n</font><font color="#381CE2"> </font><font color="#3E1FDF">m</font><font color="#4422DD">e</font><font color="#4924DA"> </font><font color="#4F27D7">f</font><font color="#552AD4">r</font><font color="#5A2DD1">o</font><font color="#6030CE">m</font><font color="#6633CC"> </font><font color="#6B35C9">t</font><font color="#7138C6">h</font><font color="#773BC3">e</font><font color="#7C3EC0"> </font><font color="#8241BD">c</font><font color="#8844BB">o</font><font color="#8D46B8">m</font><font color="#9349B5">m</font><font color="#994CB2">a</font><font color="#9E4FAF">n</font><font color="#A452AC">d</font><font color="#AA55AA"> </font><font color="#AF57A7">l</font><font color="#B55AA4">i</font><font color="#BB5DA1">n</font><font color="#C0609E">e</font><font color="#C6639B"> </font><font color="#CC6699">w</font><font color="#D16896">i</font><font color="#D76B93">t</font><font color="#DD6E90">h</font><font color="#E2718D">o</font><font color="#E8748A">u</font><font color="#EE7788">t</font><font color="#F37985"> </font><font color="#F97C82">a</font><font color="#FF7F7F">n</font><font color="#FF827C">y</font><font color="#FF8579"> </font><font color="#FF8877">a</font><font color="#FF8A74">r</font><font color="#FF8D71">g</font><font color="#FF906E">u</font><font color="#FF936B">m</font><font color="#FF9668">e</font><font color="#FF9966">n</font><font color="#FF9B63">t</font><font color="#FF9E60">s</font><font color="#FFA15D">,</font><font color="#FFA45A"> </font><font color="#FFA757">a</font><font color="#FFAA55">n</font><font color="#FFAC52">d</font><font color="#FFAF4F"> </font><font color="#FFB24C">I</font><font color="#FFB549"> </font><font color="#FFB846">w</font><font color="#FFBB44">i</font><font color="#FFBD41">l</font><font color="#FFC03E">l</font><font color="#FFC33B"> </font><font color="#FFC638">s</font><font color="#FFC935">h</font><font color="#FFCC33">o</font><font color="#FFCE30">w</font><font color="#FFD12D"> </font><font color="#FFD42A">y</font><font color="#FFD727">o</font><font color="#FFDA24">u</font><font color="#FFDD22"> </font><font color="#FFDF1F">a</font><font color="#FFE21C"> </font><font color="#FFE519">f</font><font color="#FFE816">o</font><font color="#FFEB13">r</font><font color="#FFEE11">t</font><font color="#FFF00E">u</font><font color="#FFF30B">n</font><font color="#FFF608">e</font><font color="#FFF905">.</font>

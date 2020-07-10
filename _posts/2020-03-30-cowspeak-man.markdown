@@ -3,7 +3,32 @@ title: "Cowspeak Man Page"
 layout: "cowspeak"
 author: "Sourav Goswami"
 categories: "help"
+show_header: false
 ---
+
+<center>
+	<div style="user-select: none">
+		<li class="lighting" style="animation-delay: 0s;">C</li>
+		<li class="lighting" style="animation-delay: 0.1s;">o</li>
+		<li class="lighting" style="animation-delay: 0.2s;">w</li>
+		<li class="lighting" style="animation-delay: 0.3s;">s</li>
+		<li class="lighting" style="animation-delay: 0.4s;">p</li>
+		<li class="lighting" style="animation-delay: 0.5s;">e</li>
+		<li class="lighting" style="animation-delay: 0.6s;">a</li>
+		<li class="lighting" style="animation-delay: 0.7s;">k</li>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		<li class="lighting" style="animation-delay: 0.8s;">M</li>
+		<li class="lighting" style="animation-delay: 0.9s;">a</li>
+		<li class="lighting" style="animation-delay: 1s;">n</li>
+		<li class="lighting" style="animation-delay: 1.1s;">u</li>
+		<li class="lighting" style="animation-delay: 1.2s;">a</li>
+		<li class="lighting" style="animation-delay: 1.3s;">l</li>
+	</div>
+</center>
+
+<center><span class="rgb">By {{ page.author }}</span></center>
+<center><span class="rgb">{{ page.date | date: "%B %d, %Y" }}</span></center>
+
 
 NAME
 
