@@ -115,7 +115,7 @@
 				float: left ;
 			}
 
-			#others {
+			#arch {
 				float: right ;
 			}
 
@@ -172,12 +172,7 @@
 				text-shadow: 0px 0px 10px currentColor ;
 			}
 
-			@media(max-width: 650px) {
-				#root-installation {
-					display: grid ;
-					place-items: center ;
-				}
-
+			@media(max-width: 715px) {
 				#clone-break {
 					display: block ;
 					margin-top: 10px ;
@@ -190,6 +185,13 @@
 					margin-bottom: 10px ;
 				}
 			}
+
+			@media(max-width: 968px) {
+				#root-installation {
+					display: grid ;
+					place-items: center ;
+				}
+			}
 		</style>
 	</head>
 
@@ -199,8 +201,9 @@
 		<a href="{% if site.baseurl != '' %} {{ site.baseurl }} {% else %} / {% endif %}" id="home"><img src="{{ site.baseurl }}/assets/home.svg" width="20px"></a>
 		<center><h1 class="rgb-anim">{{ page.title }}</h1></center>
 		{% if page.author %}
-		<center><span class="rgb">By {{ page.author }}</span></center>
+			<center><span class="rgb">By {{ page.author }}</span></center>
 		{% endif %}
+
 		<center><span class="rgb">{{ page.date | date: "%B %d, %Y" }}</span></center>
 
 		<div class="content">{{ content }}</div>
@@ -219,7 +222,7 @@
 				}
 			}
 
-			const N = 175, stars = []
+			const N = 100, stars = []
 			var starfield = document.getElementById('starfield-canvas')
 			starfield.height = window.innerHeight
 			starfield.width = window.innerWidth

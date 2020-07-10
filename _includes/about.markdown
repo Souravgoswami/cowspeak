@@ -48,19 +48,19 @@ Note that this is only for GNU/Linux systems. It depends on `ruby`. Cowspeak rec
    If you don't want to download and install the deb file for some reason, please follow the next section: *"Running Cowspeak on Other Distributions ⚙️"*
 
 
-## Running Cowspeak on Other Distributions ⚙️
+## Running Cowspeak on Arch Linux/Manjaro/Archlabs and other Arch based distributions
 
-If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHat etc. other GNU/Linux distributions, then please follow the steps:
+   + git clone https://aur.archlinux.org/cowspeak.git
+   + cd cowspeak
+   + makepkg -Aris
 
-   + Make sure you have **Ruby 💎**:
+## Running Cowspeak on Other Linux Distributions ⚙️
 
-       + Arch Linux 🏹 : `sudo pacman -S ruby`
+If you want to run `cowspeak` in any GNU/Linux distributions, then please follow the steps:
 
-       + Fedora / CentOS: `sudo yum install ruby`
+   + Make sure you have **Ruby** 💎
 
-       + For any other distribution, install the Ruby package. When done, follow the next step!
-
-   + Run the ![Root_Installer.rb](https://github.com/Souravgoswami/cowspeak/blob/master/Root_Installer.rb) as root.
+   + Run the ![Root_Installer.rb](https://github.com/Souravgoswami/cowspeak-deb/blob/master/Root_Installer.rb) as root.
 
         Example: `sudo ruby Root_Installer.rb`
 
@@ -68,6 +68,7 @@ If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHa
 
    + When the above step succeeds, run:
         `sudo cowspeak -dl`
+
 
 ## 🐮 Cowspeak Accepts Arguments. All the Available Arguments are 👇
 ```

@@ -8,23 +8,24 @@ categories: "help"
 <div id="installation">
 	<div id="non-root-installation">
 		<h2><u>Non Root Installation</u></h2>
-			<br>
 
-			<span>
-				<a href="https://github.com/Souravgoswami/cowspeak/archive/master.zip" onclick="swapText(this, 'Downloading...', 2000)">Download Zip</a>
-			</span>
+		<br>
 
-			<span id="clone-break">
-				<a href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git', this, 'URL Copied!')">Copy Clone URL</a>
-			</span>
+		<span>
+			<a href="https://github.com/Souravgoswami/cowspeak/archive/master.zip" onclick="swapText(this, 'Downloading...', 2000)">Download Zip</a>
+		</span>
 
-			<div class="thumbnail-before">
-				{% for i in site.static_files %}
-					{% if i.img_deb or i.img_others %}
-						<img src="{{ site.baseurl }}{{ i.path }}" width="25px" class="thumbnail">
-					{% endif %}
-				{% endfor %}
-			</div>
+		<span id="clone-break">
+			<a href="#" id="clone" onclick="copy('https://github.com/Souravgoswami/cowspeak.git', this, 'URL Copied!')">Copy Clone URL</a>
+		</span>
+
+		<div class="thumbnail-before">
+			{% for i in site.static_files %}
+				{% if i.img_deb or i.img_others or i.img_arch %}
+					<img src="{{ site.baseurl }}{{ i.path }}" width="25px" class="thumbnail">
+				{% endif %}
+			{% endfor %}
+		</div>
 	</div>
 
 	<hr width="50px" style="margin-top: 25px">
@@ -41,7 +42,7 @@ categories: "help"
 
 			<br>
 
-			<a href="https://github.com/Souravgoswami/cowspeak-deb/raw/master/Deb/cowspeak-latest.deb" onclick="swapText(this, 'Downloading...', 2000)">Download .deb</a>
+			<a href="https://github.com/Souravgoswami/cowspeak-root/raw/master/Debian/cowspeak-latest.deb" onclick="swapText(this, 'Downloading...', 2000)">Download .deb</a>
 
 			<br>
 
@@ -54,7 +55,30 @@ categories: "help"
 			</div>
 		</div>
 
+		<div id="arch">
+			Arch Based Distributions
+
+			<br>
+			<span class="info">
+				(Download and run `sudo pacman -U cowspeak-latest.pkg.tar.xz`)
+			</span>
+
+			<br>
+
+			<a href="https://github.com/Souravgoswami/cowspeak-root/raw/master/Arch%20Linux/cowspeak-latest.tar.xz" onclick="swapText(this, 'Downloading...', 2000)">Download .tar.gz</a>
+			<br>
+
+			<div class="thumbnail-before">
+				{% for i in site.static_files %}
+					{% if i.img_arch %}
+						<img src="{{ site.baseurl }}{{ i.path }}" width="25px" class="thumbnail">
+					{% endif %}
+				{% endfor %}
+			</div>
+		</div>
+
 		<div id="others">
+			<div>
 			Other Distributions
 			<br>
 			<span class="info">
@@ -73,6 +97,7 @@ categories: "help"
 						<img src="{{ site.baseurl }}{{ i.path }}" width="25px" class="thumbnail">
 					{% endif %}
 				{% endfor %}
+			</div>
 			</div>
 		</div>
 	</div>

@@ -2,6 +2,9 @@ title: Cowspeak
 email: cowspeak@protonmail.com
 description: >-
   cowspeak - Display an animal with a random quote or your own text. on your linux terminal.
+# baseurl for testing on localhost
+# baseurl: ""
+# baseurl for github.io
 baseurl: "/cowspeak"
 url: ""
 github_username:  Souravgoswami
@@ -20,3 +23,8 @@ defaults:
       path: "assets/Distributions/others"
     values:
       img_others: true
+
+  - scope:
+      path: "assets/Distributions/arch"
+    values:
+      img_arch: true
