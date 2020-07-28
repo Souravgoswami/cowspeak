@@ -1,12 +1,15 @@
-#!/usr/bin/ruby -W0
+#!/usr/bin/ruby -w
 # Encoding: UTF-8
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
-# The GNU General Public License v3.0
+# MIT Licence
 
 # For ROOT installation, set Root to true
 ROOT = false
 
-VERSION = "Cowspeak version 2.82"
+# Disable download of assets and other stuff
+ROOT_DISABLE_DOWNLOAD = false
+
+VERSION = "Cowspeak version 2.83"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
@@ -129,8 +132,7 @@ help = ->(documentation = false) do
 			  --borderh=<ch>/-brh=<ch> 	Horizontal border character.
 			  --borderv=<ch>/-brv=<ch>	Vertical border character.
 			  --bubble=<text>/-bbl=<text> 	Specify the character of speech balloons.
-			  --documentation/-d        	Display the documentation.
-			  --download/-dl		Download missing files from Github.
+			  --documentation/-d        	Display the documentation.#{"\n  --download/-dl		Download missing files from Github." unless ROOT_DISABLE_DOWNLOAD}
 			  --file=<path>/-f=<path>	Specify the path of your own ASCII art.
 			  --fill=<char>/-fc=<char>	Fill the quote area with a character.
 			  --force-update/-fu		Forcefully update (also see --update)
@@ -367,7 +369,7 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 	end
 end
 
-if ARGV.include?('--download') || ARGV.include?('-dl')
+if !ROOT_DISABLE_DOWNLOAD && (ARGV.include?('--download') || ARGV.include?('-dl'))
 	ARGV.delete('--download')
 	ARGV.delete('-dl')
 
@@ -472,15 +474,21 @@ begin
 
 	unless File.file?(file) || !show_art
 		colourize.call "Looks like the art file doesn't exist.\n"
-		colourize.call "Type #{BASENAME} --download or #{BASENAME} -dl to download all the necessary files.\n"
+
+		unless ROOT_DISABLE_DOWNLOAD
+			colourize.call "Type #{BASENAME} --download or #{BASENAME} -dl to download all the necessary files.\n"
+		else
+			colourize.call "Please make sure you have installed cowspeak correctly...\n"
+		end
+
 		colourize.call "Type #{BASENAME} --show-arts or #{BASENAME} -sa to see available arts in the default directory...\n"
 		colourize.call "Type #{BASENAME} --help or #{BASENAME} -h for help.\n"
 		colourize.call "Type #{BASENAME} --art or #{BASENAME} -a for help regarding art.\n"
 		print "\e[1m"
 		colourize.call "If you still want to run #{BASENAME} without the animals, use the -na or --no-art argument\n"
 		print "\e[0m"
-		file = File.join(PATH, "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art")
 
+		file = File.join(PATH, "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art")
 		unless File.readable?(file)
 			colourize.("The default files at location #{PATH + 'arts/'} doesn't exist\n")
 			colourize.("Please run #{BASENAME} -dl to download all the necessary files at #{PATH}\n")
