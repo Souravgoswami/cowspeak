@@ -1,4 +1,4 @@
-#!/usr/bin/ruby -W0
+#!/usr/bin/env ruby
 # Encoding: UTF-8
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # MIT Licence
@@ -9,7 +9,7 @@ ROOT = false
 # Disable download of assets and other stuff
 ROOT_DISABLE_DOWNLOAD = false
 
-VERSION = "Cowspeak version 2.83"
+VERSION = "Cowspeak version 2.84"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
