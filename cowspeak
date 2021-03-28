@@ -9,7 +9,7 @@ ROOT = false
 # Disable download of assets and other stuff
 ROOT_DISABLE_DOWNLOAD = false
 
-VERSION = "Cowspeak version 2.84"
+VERSION = "Cowspeak version 3.0"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
@@ -601,7 +601,7 @@ if !ROOT_DISABLE_DOWNLOAD && (ARGV.include?('--download') || ARGV.include?('-dl'
 			"Downloading art files...".multi_gradient(*COLOURS.sample)
 
 			# Install the art files...
-			write_to = %w(cow dolphin killer_squirrels penguin spider squirrels cat deer dog eagle hippo scorpion camel turtle mouse)
+			write_to = %w(cow dolphin killer_squirrels penguin spider squirrels cat deer dog eagle hippo scorpion camel turtle mouse alligator bat diano)
 			uris = write_to.map { |x| 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/arts/'.freeze + x + '.art' }
 
 			raise RuntimeError, "Dear Developer, the uris has to match write_to size, line: #{__LINE__}" unless write_to.size == uris.size
