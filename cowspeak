@@ -14,8 +14,33 @@ VERSION = "Cowspeak version 2.84"
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
 
+# Gradient colours that cowspeak uses
+# Each colour is also reversed. For example,
+# "f55 3eb" can show either f55 -> 3eb or 3eb -> f55
+COLOURS = %q(
+	55f 3eb
+	f55 55f
+	f55 55f 3eb
+	fa0 55f 3eb
+	1FA2FF 12D8FA A6FFCB
+	FC466B 3F5EFB
+	7F7FD5 86A8E7 91EAE4
+	004FF9 FFF94C
+	004FF9 FFF94C f55
+	f55 004FF9 FFF94C
+	f55 55f 0a0 ff0
+).each_line.map { |x| x.split(' '.freeze) }.reject(&:empty?)
+
+# Art to show by default
+SELECTED_ANIMALS = %w(
+	cow squirrels killer_squirrels
+	cat deer dog mouse turtle
+)
+
+COLOURS.concat(COLOURS.map(&:reverse))
+
 BASENAME = Process.argv0
-NEW_FEATURES = "\t1. Minor warnings fixed."
+NEW_FEATURES = "\t1. Revamped colours\n\t2. Lots of styles as options"
 # puts("\e[1;4mDebugging Purpose:\e[0m", 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
 
 PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = unless ROOT
@@ -45,8 +70,26 @@ $-s, $-n, $_esc, $-v = ?\s.freeze, ?\n.freeze, ?\e.freeze, false
 
 # Check if the output should be colourized, blinked, rotated each line, inverted, reversed, whether to display text and the art
 check_args = proc { |*opts| opts.any?(&ARGV.method(:include?)).tap { opts.each { |x| ARGV.delete(x) } } }
-coloured, blink, rotate_colour = !check_args.('--no-colour', '-nc'), check_args.('--blink', '-b'), check_args.('--rotate-colour', '-rc')
+coloured, rotate_colour = !check_args.('--no-colour', '-nc'), check_args.('--rotate-colour', '-rc')
 invert, reverse, display_text, show_art = check_args.('--invert', '-inv'), check_args.('--reverse', '-rev'), !check_args.('--no-text', '-nt'), !check_args.('--no-art', '-na')
+
+BLINK = check_args.('--blink', '-b')
+BOLD = check_args.('--bold')
+ITALIC = check_args.('--italic')
+OVERLINE = check_args.('--overline')
+UNDERLINE = check_args.('--underline')
+STRIKETHROUGH = check_args.('--strikethrough')
+DOUBLE_UNDERLINE = check_args.('--double-underline')
+
+_col = ARGV.find { |x| x[/^--colour=(\h{3}|,|\h{6})*$/] }
+if _col
+	_cols = _col.split(?=)[1]
+
+	if _cols
+		_c = _cols.split(?,)
+		COLOURS.replace([_c]) unless _c.empty?
+	end
+end
 
 require 'io/console'
 Terminal_Width = begin
@@ -58,52 +101,206 @@ rescue Errno::ENOTTY
 	STDOUT.winsize[1].fdiv(1.5).ceil
 end
 
-colourize = proc do |string|
-	string = string.reverse!.concat($-n) if invert
-	enum = reverse ? string.each_line.reverse_each : string.each_line
+class String
+	def gradient(*arg_colours,
+		exclude_spaces: false,
+		newline: true
+		)
 
-	colours, line_length = [], -1
-	sample_colour, rev, repeat = rand(7), rand < 0.5, rand < 0.5
-
-	if coloured
+		arg_colours.replace(['f55', '55f']) if arg_colours.empty?
 		temp = ''
-		STDOUT.print "\e[5m".freeze if blink
+		flatten_colours = arg_colours.flatten
 
-		enum.each do |c|
-			n, i = c.length, -1
+		# Create the styling here rather than creating it in the each_line loop
+		# We also make it a bit different, rather than using \e[1m\e[5m, we will do
+		# \e[1;5m to save the number of characters spit out by this method
+		style = nil
 
-			if line_length != n || rotate_colour
-				step, line_length = 255.0./(n), n
-				colours.clear
+		if BOLD || ITALIC || UNDERLINE || BLINK || STRIKETHROUGH || DOUBLE_UNDERLINE || OVERLINE
+			style = "\e["
 
-				while (i += 1) < n
-					colours.<<(
-						case sample_colour
-							when 0 then i.*(step).then { |l| [ l.*(2).to_i.clamp(0, 255), l.to_i.clamp(0, 255), 255.-(l).to_i.clamp(0, 255) ] }
-							when 1 then i.*(step).then { |l| [ 255, 255.-(l).to_i.clamp(0, 255), l.to_i.clamp(0, 255) ] }
-							when 2 then i.*(step).then { |l| [ l.to_i.clamp(0, 255), 255.-(l).to_i.clamp(0, 255), l.to_i.clamp(0, 255) ] }
-							when 3 then i.*(step).then { |l| [ l.*(2).to_i.clamp(0, 255), 255.-(l).to_i.clamp(0, 255), 100.+(l / 2).to_i.clamp(0, 255) ] }
-							when 4 then i.*(step).then { |l| [ 30, 255.-(l / 2).to_i.clamp(0, 255), 110.+(l / 2).to_i.clamp(0, 255) ] }
-							when 5 then i.*(step).then { |l| [ 255.-(l * 2).to_i.clamp(0, 255), l.to_i.clamp(0, 255), 200 ] }
-							when 6 then i.*(step).then { |l| [ 50.+(255 - l).to_i.clamp(0, 255), 255.-(l / 2).to_i.clamp(0, 255), (l * 2).to_i.clamp(0, 255) ] }
-							else  i.*(step).then { |l| [ l.*(2).to_i.clamp(0, 255), 255.-(l).to_i.clamp(0, 255), 100.+(l / 2).to_i.clamp(0, 255) ] }
-						end
-					).tap { | x | x.reverse! if repeat }
-				end
+			style << '1;'.freeze if BOLD
+			style << '3;'.freeze if ITALIC
+			style << '4;'.freeze if UNDERLINE
+			style << '5;'.freeze if BLINK
+			style << '9;'.freeze if STRIKETHROUGH
+			style << '21;'.freeze if DOUBLE_UNDERLINE
+			style << '53;'.freeze if OVERLINE
 
-				colours.reverse! if rev && !repeat
-			end
-
-			i = -1
-			temp.concat "\e[38;2;#{colours[i][0]};#{colours[i][1]};#{colours[i][2]}m#{c[i]}" while (i += 1) < n
-			sample_colour, rev, repeat = Array(0..6).tap { |x| x.delete_at(sample_colour) }.sample, rand < 0.5, rand < 0.5 if rotate_colour
+			style.chop!
+			style << ?m.freeze
 		end
 
-		STDOUT.print(temp, "\e[0m".freeze)
-	else
-		STDOUT.print "\e[5m".freeze if blink
-		STDOUT.print enum.to_a.join
+		raise ArgumentError, "Wrong numeber of colours (given #{flatten_colours.length}, expected minimum 2)" if flatten_colours.length < 2
+		raise ArgumentError, "Given argument for colour is neither a String nor an Integer" if flatten_colours.any? { |x| !(x.is_a?(String) || x.is_a?(Integer)) }
+
+		all_rgbs = flatten_colours.map!(&method(:hex_to_rgb))
+		block_given = block_given?
+
+		# r, g, b => starting r, g, b
+		# r2, g2, b2 => stopping r, g, b
+		r, g, b = *all_rgbs[0]
+		r2, g2, b2 = *all_rgbs[1]
+		rotate = all_rgbs.length > 2
+
+		init = 38
+
+		each_line do |c|
+			temp << style if style
+
+			_r, _g, _b = r, g, b
+			chomped = !!c.chomp!(''.freeze)
+
+			len = c.length
+			n_variable = exclude_spaces ? c.delete("\t\s".freeze).length : len
+			n_variable -= 1
+			n_variable = 1 if n_variable < 1
+
+			# colour operator, colour value
+			r_op = r_val  = nil
+			g_op = g_val = nil
+			b_op = b_val = nil
+
+			if r2 > r
+				r_op, r_val = :+, r2.-(r).fdiv(n_variable)
+			elsif r2 < r
+				r_op, r_val = :-, r.-(r2).fdiv(n_variable)
+			end
+
+			if g2 > g
+				g_op, g_val = :+, g2.-(g).fdiv(n_variable)
+			elsif g2 < g
+				g_op, g_val = :-, g.-(g2).fdiv(n_variable)
+			end
+
+			if b2 > b
+				b_op, b_val = :+, b2.-(b).fdiv(n_variable)
+			elsif b2 < b
+				b_op, b_val = :-, b.-(b2).fdiv(n_variable)
+			end
+
+			# To avoid the value getting adding | subtracted from the initial character
+			_r = _r.send(r_op, r_val * -1) if r_op
+			_g = _g.send(g_op, g_val * -1) if g_op
+			_b = _b.send(b_op, b_val * -1) if b_op
+
+			i = -1
+			while (i += 1) < len
+				_c = c[i]
+
+				if !exclude_spaces || (exclude_spaces && !(_c == ?\s.freeze || _c == ?\t.freeze))
+					_r = _r.send(r_op, r_val) if r_op
+					_g = _g.send(g_op, g_val) if g_op
+					_b = _b.send(b_op, b_val) if b_op
+				end
+
+				r_to_i = _r.to_i
+				g_to_i = _g.to_i
+				b_to_i = _b.to_i
+
+				f_r = r_to_i < 0 ? 0 : r_to_i > 255 ? 255 : r_to_i
+				f_g = g_to_i < 0 ? 0 : g_to_i > 255 ? 255 : g_to_i
+				f_b = b_to_i < 0 ? 0 : b_to_i > 255 ? 255 : b_to_i
+
+				ret = "\e[#{init};2;#{f_r};#{f_g};#{f_b}m#{_c}"
+
+				temp << ret
+			end
+
+			ret = if !c.empty?
+				chomped ? "\e[0m\n".freeze : "\e[0m".freeze
+			elsif chomped
+				?\n.freeze
+			end
+
+			temp << ret
+
+			if rotate
+				all_rgbs.rotate!
+				r, g, b = all_rgbs[0]
+				r2, g2, b2 = all_rgbs[1]
+			end
+		end
+
+		if(newline)
+			STDOUT.puts(temp)
+		else
+			STDOUT.print(temp)
+		end
 	end
+
+	def hex_to_rgb(hex)
+		colour = hex && hex.dup.to_s || ''
+		colour.strip!
+		colour.downcase!
+		colour[0] = ''.freeze if colour[0] == ?#.freeze
+
+		# out of range
+		oor = colour.scan(/[^a-f0-9]/)
+
+		unless oor.empty?
+			invalids = colour.chars.map { |x|
+				oor.include?(x) ? "\e[1;31m#{x}\e[0m" : x
+			}.join
+
+			puts "Hex Colour ##{invalids} is Out of Range"
+			raise ArgumentError
+		end
+
+		clen = colour.length
+		if clen == 3
+			colour.chars.map { |x| x.<<(x).to_i(16) }
+		elsif clen == 6
+			colour.chars.each_slice(2).map { |x| x.join.to_i(16) }
+		else
+			sli = clen > 6 ? 'too long'.freeze : clen < 3 ? 'too short'.freeze : 'invalid'.freeze
+			raise ArgumentError, "Invalid Hex Colour ##{colour} (length #{sli})"
+		end
+	end
+
+	def multi_gradient(*colours,
+		exclude_spaces: false,
+		newline: true
+		)
+
+		div = colours.length - 1
+		ary = []
+		div_1 = div - 1
+
+		each_line { |l|
+			_len = l.length.fdiv(div)
+			len, c = _len.round, colours.dup
+			counter, j = -1, 0
+			ary.clear[0] = ''
+
+			l.each_char { |x|
+				counter += 1
+
+				if counter == len && j < div_1
+					counter, j = 0, j + 1
+					ary[j] = ''
+				end
+
+				ary[j] << x
+			}
+
+			# p ary
+
+			ary.each { |x|
+				# next unless x
+
+				x.gradient(
+					c[0], c[1], newline: false
+				)
+
+				c.rotate!
+			}
+
+		}
+		puts if newline
+	end
+
+	private(:hex_to_rgb)
 end
 
 def Animate(str = 'Please Wait', &block)
@@ -121,38 +318,52 @@ end
 help = ->(documentation = false) do
 	rotate_colour, arg_count = true, 0
 
-	colourize.(
-		<<~EOF.each_line.map { |el| (el.lstrip.start_with?(?-) || el.lstrip.start_with?('--')) ? "#{arg_count += 1}\t#{el}" : el }.join.rstrip.concat($-n)
-			Hi, my name is #{BASENAME}. I speak a quote on your terminal.
-			Usage: Run me from the command line without any arguments, and I will show you a fortune.
+	r = <<~EOF.split($-n)
+		Hi, my name is #{BASENAME}. I speak a quote on your terminal.
+		Usage: Run me from the command line without any arguments, and I will show you a fortune.
 
-			All the Available arguments:
-			  --art or -a                   Display a tutorial on adding your own art.
-			  --blink or -b			Blink the texts.
-			  --borderh=<ch>/-brh=<ch> 	Horizontal border character.
-			  --borderv=<ch>/-brv=<ch>	Vertical border character.
-			  --bubble=<text>/-bbl=<text> 	Specify the character of speech balloons.
-			  --documentation/-d        	Display the documentation.#{"\n  --download/-dl		Download missing files from Github." unless ROOT_DISABLE_DOWNLOAD}
-			  --file=<path>/-f=<path>	Specify the path of your own ASCII art.
-			  --fill=<char>/-fc=<char>	Fill the quote area with a character.
-			  --force-update/-fu		Forcefully update (also see --update)
-			  --help/-h                 	Display help.
-			  --invert/-inv			Invert the output (right <- left in English)!
-			  --manual/-m                	Display a manual. Same as documentation.
-			  --net=<url>/-n=<url>		Read data from a website (in curl format).
-			  --no-art/-na			Don't display the animal.
-			  --no-colour/-nc		Don't colourize the output.
-			  --no-text/-nt			Don't show any text, show the animal.
-			  --read=<file>/-r=<file>	Read a file.
-			  --reverse/-rev		Cowspeak reads upside down!
-			  --rotate-colour/-rc		Rotate the output colours in each line.
-			  --show-arts/-sa		Show arts in the default directory.
-			  --text=<text>/-t=<text>	Display a custom text.
-			  --version/-v			Display the current #{__FILE__} version.
-			  --update/-u			Update cowspeak if possible.
-			  --welcome/-w			Show some system details to the user.\n\n
-		EOF
-	)
+		\u2B22 All the Available arguments:
+		\s\s\s\s--art or -a\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay a tutorial on adding your own art.
+		\s\s\s\s--borderh=<ch>/-brh=<ch>\s\s\s\s\s\s\s\sHorizontal border character.
+		\s\s\s\s--borderv=<ch>/-brv=<ch>\s\s\s\s\s\s\s\sVertical border character.
+		\s\s\s\s--bubble=<text>/-bbl=<text>\s\s\s\s\sSpecify the character of speech balloons.
+		\s\s\s\s--documentation/-d\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay the documentation.#{"\n\s\s\s\s--download/-dl\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDownload missing files from Github." unless ROOT_DISABLE_DOWNLOAD}
+		\s\s\s\s--file=<path>/-f=<path>\s\s\s\s\s\s\s\s\sSpecify the path of your own ASCII art.
+		\s\s\s\s--fill=<char>/-fc=<char>\s\s\s\s\s\s\s\sFill the quote area with a character.
+		\s\s\s\s--force-update/-fu\s\s\s\s\s\s\s\s\s\s\s\s\s\sForcefully update (also see --update)
+		\s\s\s\s--help/-h\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay help.
+		\s\s\s\s--invert/-inv\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sInvert the output (right <- left in English)!
+		\s\s\s\s--manual/-m\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay a manual. Same as documentation.
+		\s\s\s\s--net=<url>/-n=<url>\s\s\s\s\s\s\s\s\s\s\s\sRead data from a website (in curl format).
+		\s\s\s\s--no-art/-na\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't display the animal.
+		\s\s\s\s--no-colour/-nc\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't colourize the output.
+		\s\s\s\s--no-text/-nt\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't show any text, show the animal.
+		\s\s\s\s--read=<file>/-r=<file>\s\s\s\s\s\s\s\s\sRead a file.
+		\s\s\s\s--reverse/-rev\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sCowspeak reads upside down!
+		\s\s\s\s--rotate-colour/-rc\s\s\s\s\s\s\s\s\s\s\s\s\sRotate the output colours in each line.
+		\s\s\s\s--show-arts/-sa\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sShow arts in the default directory.
+		\s\s\s\s--text=<text>/-t=<text>\s\s\s\s\s\s\s\s\sDisplay a custom text.
+		\s\s\s\s--version/-v\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay the current #{__FILE__} version.
+		\s\s\s\s--update/-u\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sUpdate cowspeak if possible.
+		\s\s\s\s--welcome/-w\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sShow some system details to the user.
+
+		\u2B22 Other Notable Styles:
+		\s\s\s\s--blink or -b\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sBlink the texts.
+		\s\s\s\s--bold\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sBold the texts.
+		\s\s\s\s--double-underline\s\s\s\s\s\s\s\s\s\s\s\s\s\sDouble underline texts.
+		\s\s\s\s--italic\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sItalicize texts.
+		\s\s\s\s--overline\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sOverline texts.
+		\s\s\s\s--strikethrough\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sstrikethrough texts.
+		\s\s\s\s--underline\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sunderline texts.
+		\s\s\s\s--color=hex1,hex2,hexN\s\s\s\s\s\s\s\s\s\sAdd N hex colours to texts.
+	EOF
+
+	max_l = r.map(&:length).max
+
+	r.each { |x|
+		x.ljust(max_l).multi_gradient('f5a', '55f', '3eb', exclude_spaces: false)
+	}
+
 	exit! 0 unless documentation
 end
 
@@ -163,7 +374,7 @@ if ARGV.include?('--documentation') || ARGV.include?('-d') || ARGV.include?('--m
 	ARGV.delete('-m')
 
 help.(true)
-	colourize.(<<~EOF
+	doc_lines = <<~EOF.lines
 
 		Examples:
 			For custom text:
@@ -201,18 +412,23 @@ help.(true)
 			It will download all the necessary files. This will download less than 400 KiB files from the internet.
 			NOTE: This argument will write files to #{PATH}/ directory.
 	EOF
-	)
+
+	max_doc_len = doc_lines.map(&:length).max
+	doc_lines.join.rstrip.ljust(max_doc_len).multi_gradient('3eb', '55f', 'f55', exclude_spaces: false)
 
 	exit! 0
 end
 
 if ARGV.include?('--show-arts') || ARGV.include?('-sa')
 	unless Dir.exist?(File.join(PATH, 'arts'))
-		colourize.call "Can't find #{File.join(PATH, 'arts')}. You may need to run -dl to download the files...\n"
+		"Can't find #{File.join(PATH, 'arts')}. You may need to run -dl to download the files...\n".multi_gradient(*COLOURS.sample)
 		exit!
 	end
 
-	Dir.entries(File.join(PATH, 'arts')).drop(2).each_with_index { |file, i| colourize.("\xE2\x80\xA3 #{i + 1}\n#{IO.read(File.join(PATH, 'arts', file))}\nPath: #{File.join(PATH, 'arts', file)}\n\n") }
+	Dir.entries(File.join(PATH, 'arts')).drop(2).each_with_index { |file, i|
+		"\xE2\x80\xA3 #{i + 1}\n#{IO.read(File.join(PATH, 'arts', file))}\nPath: #{File.join(PATH, 'arts', file)}\n\n".multi_gradient(*COLOURS.sample)
+	}
+
 	exit 0
 end
 
@@ -253,30 +469,10 @@ end
 
 # Take exceptions very very seriously. Handle them very gently.
 exception_handle = ->(error) do
-	colourize.call "Uh oh! Sorry, #{BASENAME} has Encountered an Error.\n"
-	colourize.call <<~EOF
-		Select one of the following:
-		1. Exit.
-		2. Show the usage (#{BASENAME} -h)
-		3. Show Error Details.
-		4. Save Error Details to a Log File.
-		5. Contact Developer.
-		-> Choose (Default 1):
-	EOF
+	"Uh oh! Sorry, #{BASENAME} has Encountered an Error: \n".multi_gradient(*COLOURS.sample)
+	puts error.full_message
 
-	case STDIN.gets.to_i
-		when 2 then help.call
-		when 3 then puts(error.backtrace.join($-n) + $-n)
-		when 4
-			open('/tmp/cowspeak-log.txt', 'a+') do |log_file|
-				log_file.puts("\n#{Time.new.strftime('Error on %D at %T')} => \n\t#{error}\n#{error.backtrace.join($-n)}\n\n")
-				puts(colourize.('The error has been written to /tmp/cowspeak-log.txt'))
-			end
-		when 5
-			colourize.("Please contact <souravgoswami@protonmail.com>\n")
-			colourize.("Notify us about:\n#{error}\n#{error.backtrace.join($-n)} in #{BASENAME}\n")
-	end
-	exit! ERR_DIAGNOSED
+	exit!
 end
 
 if ARGV.include?('--help') || ARGV.include?('-h')
@@ -300,19 +496,18 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		require 'net/https'
 		downloaded_data, raw_man_page = Animate('Looking for updates!') { [Net::HTTP.get(URI(SOURCE_CODE)), Net::HTTP.get(URI(MAN_PAGE))] }
 		current_version = VERSION[/\d+.\d+/]
-		colourize.("Current version: #{current_version}\n")
+		"Current version: #{current_version}\n".multi_gradient(*COLOURS.sample)
 
 	rescue SocketError, OpenSSL::SSL::SSLError
-		colourize.call "Can't get version info of cowspeak. Do you have an active internet connection?\n"
+		"Can't get version info of cowspeak. Do you have an active internet connection?\n".multi_gradient(*COLOURS.sample)
 		exit! ERR_NO_INTERNET
 
 	rescue Interrupt, SignalException, SystemExit
-		puts
-		colourize.("The download was interrupted!\n")
+		"The download was interrupted!\n".multi_gradient(*COLOURS.sample)
 		exit!
 
 	rescue Exception => e
-		puts colourize.call 'Something weird happened while trying to contact the server.'
+		'Something weird happened while trying to contact the server.'.multi_gradient(*COLOURS.sample)
 		exception_handle.(e)
 	end
 
@@ -320,13 +515,11 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 	new_version = download_version.to_f > current_version.to_f
 
 	unless new_version || force_update
-		puts colourize.call "#{BASENAME} is up to date! Nothing to do."
+		"#{BASENAME} is up to date! Nothing to do.".multi_gradient(*COLOURS.sample)
 	else
-		colourize.call "A new update is available.\n" if new_version
-		colourize.("New Version: #{download_version}\n\n")
-
-		colourize.(Kernel.eval(downloaded_data.to_s.split($-n).find { |line| line.start_with?('NEW_FEATURES'.freeze) }.to_s.split(?=).drop(1).join(?=).to_s) + "\n\n")
-		colourize.call "#{new_version ? ?U : 'Reu'}pdate to version #{download_version}? (Y/n): "
+		"A new update is available.\nNew Version: #{download_version}".multi_gradient(*COLOURS.sample) if new_version
+		Kernel.eval(downloaded_data.to_s.split($-n).find { |line| line.start_with?('NEW_FEATURES'.freeze) }.to_s.split(?=).drop(1).join(?=).to_s).multi_gradient(*COLOURS.sample)
+		"#{new_version ? ?U : 'Reu'}pdate to version #{download_version}? (Y/n): ".multi_gradient(*COLOURS.sample, newline: false)
 		begin
 			exit! 0 if STDIN.gets.to_s.strip.downcase == ?n
 		rescue Interrupt
@@ -335,34 +528,34 @@ if ARGV.include?('--update') || ARGV.include?('-u') || force_update
 		end
 
 		begin
-			puts colourize.call "Trying to update #{__FILE__}"
+			"Trying to update #{__FILE__}".multi_gradient(*COLOURS.sample)
 			File.write(__FILE__, downloaded_data)
-			puts colourize.call "Updated #{__FILE__}"
+			"Updated #{__FILE__}".multi_gradient(*COLOURS.sample)
 			ARGV << '--download'
 
 		rescue Errno::EACCES
-			puts colourize.("Permission Denied while trying to overwrite the contents of #{__FILE__}")
+			"Permission Denied while trying to overwrite the contents of #{__FILE__}".multi_gradient(*COLOURS.sample)
 			exit! ERR_NO_PERMISSION
 
 		rescue Exception => e
-			puts colourize.call "Something wrong happened while trying to overwrite #{__FILE__}"
+			"Something wrong happened while trying to overwrite #{__FILE__}".multi_gradient(*COLOURS.sample)
 			exception_handle.(e)
 		end
 
-		colourize.call "Update the man page at #{MAN_PAGE_DIR}? (Y/n): "
+		"Update the man page at #{MAN_PAGE_DIR}? (Y/n): ".multi_gradient(*COLOURS.sample, newline: false)
 
 		unless STDIN.gets.to_s.strip.downcase == ?n
 			begin
-				puts colourize.call "Trying to update #{MAN_PAGE_DIR}"
+				"Trying to update #{MAN_PAGE_DIR}".multi_gradient(*COLOURS.sample)
 				File.write(MAN_PAGE_DIR, raw_man_page)
-				puts colourize.call "Man page updated."
+				"Man page updated.".multi_gradient(*COLOURS.sample)
 
 			rescue Errno::EACCES
-				puts colourize.("Permission Denied while trying to overwrite the contents of #{__FILE__}")
+				"Permission Denied while trying to overwrite the contents of #{__FILE__}".multi_gradient(*COLOURS.sample)
 				exit! ERR_NO_PERMISSION
 
 			rescue Exception => e
-				puts colourize.call "Something wrong happened while trying to overwrite #{__FILE__}"
+				"Something wrong happened while trying to overwrite #{__FILE__}".multi_gradient(*COLOURS.sample)
 				exception_handle.(e)
 			end
 		end
@@ -374,21 +567,21 @@ if !ROOT_DISABLE_DOWNLOAD && (ARGV.include?('--download') || ARGV.include?('-dl'
 	ARGV.delete('-dl')
 
 	unless STDIN.tty?
-		puts colourize.("#{BASENAME} not running in a tty!")
-		puts colourize.("This can lead to problems...")
-		puts colourize.("Make sure you are running cowspeak in a terminal without any redirection.")
-		puts colourize.("Usage Example with -dl / --download: \n\t#{BASENAME} -dl / --download")
+		"#{BASENAME} not running in a tty!".multi_gradient(*COLOURS.sample)
+		"This can lead to problems...".multi_gradient(*COLOURS.sample)
+		"Make sure you are running cowspeak in a terminal without any redirection.".multi_gradient(*COLOURS.sample)
+		"Usage Example with -dl / --download: \n\t#{BASENAME} -dl / --download".multi_gradient(*COLOURS.sample)
 		exit(0)
 	end
 
 	begin
 		require 'net/https'
-		colourize.("Download Data from the internet and save them into #{PATH}/?(Y/n): ")
+		"Download Data from the internet and save them into #{PATH}/?(Y/n): ".multi_gradient(*COLOURS.sample, newline: false)
 		exit!(0) if STDIN.gets.to_s.strip.downcase == ?n
 
 		unless File.exist?(PATH)
 			Dir.mkdir(PATH)
-			colourize.call "Created directory #{PATH}\n"
+			"Created directory #{PATH}".multi_gradient(*COLOURS.sample)
 		end
 
 		# The fortune database originally came from https://raw.githubusercontent.com/bmc/fortunes/master/fortunes
@@ -399,13 +592,13 @@ if !ROOT_DISABLE_DOWNLOAD && (ARGV.include?('--download') || ARGV.include?('-dl'
 
 		unless data.include?('404: Not Found')
 			File.write(File.join(PATH, 'fortunes.data'), data)
-			colourize.call "The fortunes database has been downloaded and installed to #{PATH}fortunes.\n"
+			"The fortunes database has been downloaded and installed to #{PATH}fortunes.".multi_gradient(*COLOURS.sample)
 
 			unless File.exist?(File.join(PATH, 'arts'))
 				Dir.mkdir(File.join(PATH, 'arts'))
-				colourize.call "Created directory #{File.join(PATH, 'arts')}/\n"
+				"Created directory #{File.join(PATH, 'arts')}/".multi_gradient(*COLOURS.sample)
 			end
-			puts colourize.call "Downloading art files...\n"
+			"Downloading art files...".multi_gradient(*COLOURS.sample)
 
 			# Install the art files...
 			write_to = %w(cow dolphin killer_squirrels penguin spider squirrels cat deer dog eagle hippo scorpion camel turtle mouse)
@@ -414,37 +607,37 @@ if !ROOT_DISABLE_DOWNLOAD && (ARGV.include?('--download') || ARGV.include?('-dl'
 			raise RuntimeError, "Dear Developer, the uris has to match write_to size, line: #{__LINE__}" unless write_to.size == uris.size
 
 			uris.size.times do |index|
-				puts colourize.("Downloading art file from #{uris[index]}")
+				"Downloading art file from #{uris[index]}".multi_gradient(*COLOURS.sample)
 				File.write("#{File.join(PATH, 'arts', write_to[index])}.art", Animate { Net::HTTP.get(URI(uris[index])) })
-				puts colourize.call "Successfully installed an art file in #{File.join(PATH, 'arts')}/"
-				puts colourize.call "#{IO.read(File.join(PATH, 'arts', write_to[index]) + '.art')}\n"
+				"Successfully installed an art file in #{File.join(PATH, 'arts')}/".multi_gradient(*COLOURS.sample)
+				"#{IO.read(File.join(PATH, 'arts', write_to[index]) + '.art')}".multi_gradient(*COLOURS.sample)
 			end
 
-			puts colourize.call "Downloading the manual from #{MAN_PAGE}"
+			"Downloading the manual from #{MAN_PAGE}".multi_gradient(*COLOURS.sample)
 			File.write(MAN_PAGE_DIR, Net::HTTP.get(URI(MAN_PAGE)))
-			puts colourize.call "Successfully downloaded the manual at #{MAN_PAGE_DIR}"
+			"Successfully downloaded the manual at #{MAN_PAGE_DIR}".multi_gradient(*COLOURS.sample)
 
-			puts colourize.call 'All Done!'
-			puts colourize.call "To see the available arts, type: #{BASENAME} --show-arts or -sa"
-			puts colourize.call "Here's a fortune for you!"
+			'All Done!'.multi_gradient(*COLOURS.sample)
+			"To see the available arts, type: #{BASENAME} --show-arts or -sa".multi_gradient(*COLOURS.sample)
+			"Here's a fortune for you!".multi_gradient(*COLOURS.sample)
 		else
-			colourize.call "Sorry for the inconvenience. Something went terribly wrong (can't access one of the file).\n"
-			colourize.call "If the problem persists, contact: souravgoswami@protonmail.com.\n"
+			"Sorry for the inconvenience. Something went terribly wrong (can't access one of the file).".multi_gradient(*COLOURS.sample)
+			"If the problem persists, contact: souravgoswami@protonmail.com.".multi_gradient(*COLOURS.sample)
 			exit! ERR_DOWNLOAD_UNAVAILABLE
 		end
 
 	rescue SocketError, OpenSSL::SSL::SSLError
-		colourize.call "Do you have an internet connection?\n"
-		colourize.call "1. Exit.\n2. Retry.\nDefault: 1 (Exit).\n"
+		"Do you have an internet connection?".multi_gradient(*COLOURS.sample)
+		"1. Exit.\n2. Retry.\nDefault: 1 (Exit).".multi_gradient(*COLOURS.sample)
 		retry if STDIN.gets.to_i == 2
 		exit! ERR_NO_INTERNET
 
 	rescue Errno::EACCES
-		colourize.call "Requires root privilege to write to #{PATH}/ directory. Please run #{BASENAME} with proper permission.\n"
+		"Requires root privilege to write to #{PATH}/ directory. Please run #{BASENAME} with proper permission.".multi_gradient(*COLOURS.sample)
 		exit! ERR_NO_PERMISSION
 
 	rescue SignalException, Interrupt, SystemExit
-		colourize.call "\nUh Oh! The download is interrupted!\n\n\n"
+		"\nUh Oh! The download is interrupted!\n\n".multi_gradient(*COLOURS.sample)
 		exit! ERR_BAD_EXIT
 
 	rescue Exception => e
@@ -466,32 +659,32 @@ begin
 		file = if file[-1].split(?=)[1]
  			file[-1].split(?=)[1]
 		else
-			File.join(PATH, 'arts', "#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art")
+			File.join(PATH, 'arts', "#{SELECTED_ANIMALS.sample}.art")
 		end
 	else
-			file = File.join(PATH, 'arts', "#{%w(cow squirrels killer_squirrels cat deer dog mouse camel turtle).sample}.art")
+			file = File.join(PATH, 'arts', "#{SELECTED_ANIMALS.sample}.art")
 	end
 
 	unless File.file?(file) || !show_art
-		colourize.call "Looks like the art file doesn't exist.\n"
+		"Looks like the art file doesn't exist.".multi_gradient(*COLOURS.sample)
 
 		unless ROOT_DISABLE_DOWNLOAD
-			colourize.call "Type #{BASENAME} --download or #{BASENAME} -dl to download all the necessary files.\n"
+			"Type #{BASENAME} --download or #{BASENAME} -dl to download all the necessary files.".multi_gradient(*COLOURS.sample)
 		else
-			colourize.call "Please make sure you have installed cowspeak correctly...\n"
+			"Please make sure you have installed cowspeak correctly...".multi_gradient(*COLOURS.sample)
 		end
 
-		colourize.call "Type #{BASENAME} --show-arts or #{BASENAME} -sa to see available arts in the default directory...\n"
-		colourize.call "Type #{BASENAME} --help or #{BASENAME} -h for help.\n"
-		colourize.call "Type #{BASENAME} --art or #{BASENAME} -a for help regarding art.\n"
+		"Type #{BASENAME} --show-arts or #{BASENAME} -sa to see available arts in the default directory...".multi_gradient(*COLOURS.sample)
+		"Type #{BASENAME} --help or #{BASENAME} -h for help.".multi_gradient(*COLOURS.sample)
+		"Type #{BASENAME} --art or #{BASENAME} -a for help regarding art.".multi_gradient(*COLOURS.sample)
 		print "\e[1m"
-		colourize.call "If you still want to run #{BASENAME} without the animals, use the -na or --no-art argument\n"
+		"If you still want to run #{BASENAME} without the animals, use the -na or --no-art argument".multi_gradient(*COLOURS.sample)
 		print "\e[0m"
 
 		file = File.join(PATH, "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art")
 		unless File.readable?(file)
-			colourize.("The default files at location #{PATH + 'arts/'} doesn't exist\n")
-			colourize.("Please run #{BASENAME} -dl to download all the necessary files at #{PATH}\n")
+			"The default files at location #{PATH + 'arts/'} doesn't exist".multi_gradient(*COLOURS.sample)
+			"Please run #{BASENAME} -dl to download all the necessary files at #{PATH}".multi_gradient(*COLOURS.sample)
 			exit! ERR_FILE_NOT_FOUND
 		end
 	end
@@ -693,7 +886,7 @@ begin
 				text = Animate("Downloading data from #{uri}") { open(uri).read.strip }
 
 			rescue SocketError, OpenSSL::SSL::SSLError
-				colourize.call "Failed to read the URL. Do you have an active internet connection?\n"
+				"Failed to read the URL. Do you have an active internet connection?".multi_gradient(*COLOURS.sample)
 				exit! ERR_NO_INTERNET
 
 			rescue SystemExit, Interrupt
@@ -701,15 +894,15 @@ begin
 				print "\n\n"
 
 			rescue Errno::ENOENT
-				puts colourize.call "No such file #{uri}... If you are trying to open a link, don't forget to mention the protocol..."
-				puts colourize.call "For example, https://www.example.net"
-				puts colourize.call "To open a file, you can use --read=<path> or --net=<path>"
+				"No such file #{uri}... If you are trying to open a link, don't forget to mention the protocol...".multi_gradient(*COLOURS.sample)
+				"For example, https://www.example.net".multi_gradient(*COLOURS.sample)
+				"To open a file, you can use --read=<path> or --net=<path>".multi_gradient(*COLOURS.sample)
 				exit! ERR_FILE_NOT_FOUND
 
 			rescue Exception
-				colourize.call "Sorry an error occurred while trying to open #{uri}\n"
-				colourize.call "Failed to open the URL. Have you mentioned the protocol?\n"
-				colourize.call "Example:\n\thttp://www.example.net\n"
+				"Sorry an error occurred while trying to open #{uri}".multi_gradient(*COLOURS.sample)
+				"Failed to open the URL. Have you mentioned the protocol?".multi_gradient(*COLOURS.sample)
+				"Example:\n\thttp://www.example.net".multi_gradient(*COLOURS.sample)
 				exit! ERR_SITE_INACCESSIBLE
 			end
 		end
@@ -740,19 +933,19 @@ begin
 		animal = IO.readlines(file).drop(2)
 
 		unless animal
-			puts colourize.call "The art file #{File.zero?(file) ? 'looks empty' : 'is not properly formatted' }. Run cowspeak --art to get help regarding art."
+			"The art file #{File.zero?(file) ? 'looks empty' : 'is not properly formatted' }. Run cowspeak --art to get help regarding art.".multi_gradient(*COLOURS.sample)
 			exit! ERR_BAD_FILE
 		end
 
 		max_length = animal.map(&:length).max / 2
 
-		colourize.(all_chars + $-n + corners[2] + init + corners[3] + $-n +
-			$-s * max_length + bubble * 3 + "\n\s" + $-s * max_length + bubble * 2 + $-n + $-s * max_length + bubble + $-n + animal.join)
+		(all_chars + $-n + corners[2] + init + corners[3] + $-n +
+			$-s * max_length + bubble * 3 + "\n\s" + $-s * max_length + bubble * 2 + $-n + $-s * max_length + bubble + $-n + animal.join).multi_gradient(*COLOURS.sample)
 
 	elsif show_art
-		colourize.(IO.readlines(file).drop(2).join)
+		IO.readlines(file).drop(2).join.multi_gradient(*COLOURS.sample)
 	elsif display_text
-		puts colourize === text
+		text.multi_gradient(*COLOURS.sample)
 	end
 
 rescue SystemExit, Interrupt, SignalException
