@@ -70,8 +70,9 @@ $-s, $-n, $_esc, $-v = ?\s.freeze, ?\n.freeze, ?\e.freeze, false
 
 # Check if the output should be colourized, blinked, rotated each line, inverted, reversed, whether to display text and the art
 check_args = proc { |*opts| opts.any?(&ARGV.method(:include?)).tap { opts.each { |x| ARGV.delete(x) } } }
-coloured, rotate_colour = !check_args.('--no-colour', '-nc'), check_args.('--rotate-colour', '-rc')
-invert, reverse, display_text, show_art = check_args.('--invert', '-inv'), check_args.('--reverse', '-rev'), !check_args.('--no-text', '-nt'), !check_args.('--no-art', '-na')
+coloured = !check_args.('--no-colour', '-nc')
+display_text = !check_args.('--no-text', '-nt')
+show_art = !check_args.('--no-art', '-na')
 
 BLINK = check_args.('--blink', '-b')
 BOLD = check_args.('--bold')
@@ -101,15 +102,13 @@ rescue Errno::ENOTTY
 	STDOUT.winsize[1].fdiv(1.5).ceil
 end
 
+COLOUR_ENABLED = coloured
+
 class String
 	def gradient(*arg_colours,
 		exclude_spaces: false,
 		newline: true
 		)
-
-		arg_colours.replace(['f55', '55f']) if arg_colours.empty?
-		temp = ''
-		flatten_colours = arg_colours.flatten
 
 		# Create the styling here rather than creating it in the each_line loop
 		# We also make it a bit different, rather than using \e[1m\e[5m, we will do
@@ -131,11 +130,19 @@ class String
 			style << ?m.freeze
 		end
 
+		unless COLOUR_ENABLED
+			STDOUT.print style if style
+			return STDOUT.print self + "\e[0m"
+		end
+
+		arg_colours.replace(['f55', '55f']) if arg_colours.empty?
+		temp = ''
+		flatten_colours = arg_colours.flatten
+
 		raise ArgumentError, "Wrong numeber of colours (given #{flatten_colours.length}, expected minimum 2)" if flatten_colours.length < 2
 		raise ArgumentError, "Given argument for colour is neither a String nor an Integer" if flatten_colours.any? { |x| !(x.is_a?(String) || x.is_a?(Integer)) }
 
 		all_rgbs = flatten_colours.map!(&method(:hex_to_rgb))
-		block_given = block_given?
 
 		# r, g, b => starting r, g, b
 		# r2, g2, b2 => stopping r, g, b
@@ -316,8 +323,6 @@ def Animate(str = 'Please Wait', &block)
 end
 
 help = ->(documentation = false) do
-	rotate_colour, arg_count = true, 0
-
 	r = <<~EOF.split($-n)
 		Hi, my name is #{BASENAME}. I speak a quote on your terminal.
 		Usage: Run me from the command line without any arguments, and I will show you a fortune.
@@ -332,15 +337,11 @@ help = ->(documentation = false) do
 		\s\s\s\s--fill=<char>/-fc=<char>\s\s\s\s\s\s\s\sFill the quote area with a character.
 		\s\s\s\s--force-update/-fu\s\s\s\s\s\s\s\s\s\s\s\s\s\sForcefully update (also see --update)
 		\s\s\s\s--help/-h\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay help.
-		\s\s\s\s--invert/-inv\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sInvert the output (right <- left in English)!
-		\s\s\s\s--manual/-m\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay a manual. Same as documentation.
 		\s\s\s\s--net=<url>/-n=<url>\s\s\s\s\s\s\s\s\s\s\s\sRead data from a website (in curl format).
 		\s\s\s\s--no-art/-na\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't display the animal.
 		\s\s\s\s--no-colour/-nc\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't colourize the output.
 		\s\s\s\s--no-text/-nt\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't show any text, show the animal.
 		\s\s\s\s--read=<file>/-r=<file>\s\s\s\s\s\s\s\s\sRead a file.
-		\s\s\s\s--reverse/-rev\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sCowspeak reads upside down!
-		\s\s\s\s--rotate-colour/-rc\s\s\s\s\s\s\s\s\s\s\s\s\sRotate the output colours in each line.
 		\s\s\s\s--show-arts/-sa\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sShow arts in the default directory.
 		\s\s\s\s--text=<text>/-t=<text>\s\s\s\s\s\s\s\s\sDisplay a custom text.
 		\s\s\s\s--version/-v\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay the current #{__FILE__} version.
@@ -478,7 +479,6 @@ end
 if ARGV.include?('--help') || ARGV.include?('-h')
 	ARGV.delete('--help')
 	ARGV.delete('-h')
-	rotate_colour = true
 	help.call
 end
 
