@@ -33,8 +33,9 @@ COLOURS = %q(
 
 # Art to show by default
 SELECTED_ANIMALS = %w(
-	cow squirrels killer_squirrels
-	cat deer dog mouse turtle
+	cow
+	squirrels killer_squirrels
+	cat dog mouse diano bat
 )
 
 COLOURS.concat(COLOURS.map(&:reverse))
@@ -950,7 +951,8 @@ begin
 		max_length = animal.map(&:length).max / 2
 
 		(all_chars + $-n + corners[2] + init + corners[3] + $-n +
-			$-s * max_length + bubble * 3 + "\n\s" + $-s * max_length + bubble * 2 + $-n + $-s * max_length + bubble + $-n + animal.join).multi_gradient(*COLOURS.sample)
+			$-s * max_length + bubble * 3 + "\n\s" + $-s * max_length + bubble * 2 + $-n + $-s * max_length + bubble + $-n + animal.join)
+				.multi_gradient(*COLOURS.sample, newline: false)
 
 	elsif show_art
 		IO.readlines(file).drop(2).join.multi_gradient(*COLOURS.sample)
