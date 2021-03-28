@@ -59,7 +59,6 @@ ERR_SITE_INACCESSIBLE = 63
 ERR_DOWNLOAD_UNAVAILABLE = 62
 ERR_NO_PERMISSION = 61
 ERR_BAD_EXIT = 99
-ERR_DIAGNOSED = 100
 
 Kernel.class_exec { define_method(:then) { |&block| block === self } } unless defined?(Kernel.then)
 Array.class_exec { define_method(:sum) { reduce(:+) } } unless [].respond_to?(:sum)
@@ -753,18 +752,29 @@ begin
 			Etc.nprocessors != 0 ? "\n:: CPU Cores: #{Etc.nprocessors}" : ''
 		end
 
-		cpu_usage = if File.readable?('/proc/stat')
-			data = IO.readlines('/proc/stat').select! { |x| x[/^cpu\d*/] }.map! { |x| x.split.map!(&:to_f) }
+		cpu_usage = if File.readable?('/proc/stat'.freeze)
+			data = IO.readlines('/proc/stat'.freeze).select { |x| x[/^cpu\d*/] }.map! { |x| x.split.map!(&:to_f) }
 			Kernel.sleep(0.075)
-			prev_data = IO.readlines('/proc/stat').select! { |x| x[/^cpu\d*/] }.map! { |x| x.split.map!(&:to_f) }
+			data2 = IO.readlines('/proc/stat'.freeze).select { |x| x[/^cpu\d*/] }.map! { |x| x.split.map!(&:to_f) }
 
-			usages = data.size.times.map do |x|
-				%w(user nice sys idle iowait irq softirq steal).each_with_index { |el, ind| binding.eval("@#{el}, @prev_#{el} = #{data[x][ind + 1]}, #{prev_data[x][ind + 1]}") }
+			# On devices like android, the core count can change anytime (hotplugging).
+			# I had crashes on Termux.
+			# So better just count the min number of CPU and iterate over that
+			# If data.length is smaller than data2.length, we don't have enough data to compare.
+			dl, d2l = data.length, data2.length
+			min = dl > d2l ? d2l : dl
 
-				previdle, idle = @prev_idle + @prev_iowait, @idle + @iowait
-				totald = idle + (@user + @nice + @sys + @irq + @softirq + @steal) -
-					(previdle + (@prev_user + @prev_nice + @prev_sys + @prev_irq + @prev_softirq + @prev_steal))
-				"#{((totald - (idle - previdle)) / totald * 100).round( x == 0 ? 2 : 0 ).abs.then { |y| y.to_s == 'NaN' ? 0 : y }.abs}%"
+			usages = min.times.reduce([]) do |ary, x|
+				user, nice, sys, idle, iowait, irq, softirq, steal = *data[x].drop(1)
+				user2, nice2, sys2, idle2, iowait2, irq2, softirq2, steal2 = *data2[x].drop(1)
+
+				idle_then, idle_now  = idle + iowait, idle2 + iowait2
+				totald = idle_now.+(user2 + nice2 + sys2 + irq2 + softirq2 + steal2) - idle_then.+(user + nice + sys + irq + softirq + steal)
+
+				res = totald.-(idle_now - idle_then).fdiv(totald).abs.*(100)
+				res = res.nan? ? 0.0 : res > 100 ? 100.0 : res.round(2)
+
+				ary.push("#{res}%")
 			end
 
 			"\n:: Total CPU Usage: #{usages[0]}\n   [#{usages.drop(1).each_with_index { |x, i| x.prepend(%Q|C#{i + 1}: |) }.join(' | ')}]"
