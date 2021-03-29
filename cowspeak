@@ -40,9 +40,11 @@ SELECTED_ANIMALS = %w(
 
 COLOURS.concat(COLOURS.map(&:reverse))
 
-BASENAME = Process.argv0
-NEW_FEATURES = "\t1. Revamped colours\n\t2. Lots of styles as options"
+
+NEW_FEATURES = "\t1. Revamped colours\n\t2. Lots of styles as options\n\tBug fixes."
 # puts("\e[1;4mDebugging Purpose:\e[0m", 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
+
+BASENAME = Process.argv0
 
 if !ROOT
 	PATH = "#{__dir__}/cowspeak_files"
@@ -52,7 +54,7 @@ if !ROOT
 else
 	PATH = '/usr/share/cowspeak'
 	SOURCE_CODE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-root/master/Other%20Distributions/cowspeak'
-	MAN_PAGE = 'https://github.com/Souravgoswami/cowspeak-root/raw/master/latest-src/usr/share/man/man1/cowspeak.1.gz'
+	MAN_PAGE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-root/master/latest-src/usr/share/man/man1/cowspeak.1.gz'
 	MAN_PAGE_DIR = '/usr/share/man/man1/cowspeak.1.gz'
 end
 
@@ -424,8 +426,13 @@ if ARGV.include?('--show-arts') || ARGV.include?('-sa')
 		exit!
 	end
 
-	Dir.entries(File.join(PATH, 'arts')).drop(2).each_with_index { |file, i|
-		"\xE2\x80\xA3 #{i + 1}\n#{IO.read(File.join(PATH, 'arts', file))}\nPath: #{File.join(PATH, 'arts', file)}\n\n".multi_gradient(*COLOURS.sample)
+	Dir.entries(File.join(PATH, 'arts')).each_with_index { |file, i|
+		next if file == ?..freeze || file == '..'.freeze
+
+		_file = File.join(PATH, 'arts', file)
+		_content = IO.read(_file)
+
+		"\u2023 #{i + 1}\n#{_content}\nPath: #{_file}\n\n".multi_gradient(*COLOURS.sample)
 	}
 
 	exit 0
