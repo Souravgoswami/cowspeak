@@ -9,7 +9,7 @@ ROOT = false
 # Disable download of assets and other stuff
 ROOT_DISABLE_DOWNLOAD = false
 
-VERSION = "Cowspeak version 3.1"
+VERSION = "Cowspeak version 3.11"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
@@ -44,12 +44,16 @@ BASENAME = Process.argv0
 NEW_FEATURES = "\t1. Revamped colours\n\t2. Lots of styles as options"
 # puts("\e[1;4mDebugging Purpose:\e[0m", 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
 
-PATH, SOURCE_CODE, MAN_PAGE, MAN_PAGE_DIR = unless ROOT
-	[ "#{__dir__}/cowspeak_files", 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak',
-	'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz', File.join(__dir__, 'cowspeak.1.gz') ]
+if !ROOT
+	PATH = "#{__dir__}/cowspeak_files"
+	SOURCE_CODE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak'
+	MAN_PAGE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak/master/cowspeak_files/cowspeak.1.gz'
+	MAN_PAGE_DIR = File.join(__dir__, 'cowspeak.1.gz')
 else
-	[ '/usr/share/cowspeak', 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-root/master/latest-src/usr/bin/cowspeak',
-	'https://github.com/Souravgoswami/cowspeak-root/raw/master/latest-src/usr/share/man/man1/cowspeak.1.gz', '/usr/share/man/man1/cowspeak.1.gz' ]
+	PATH = '/usr/share/cowspeak'
+	SOURCE_CODE = 'https://raw.githubusercontent.com/Souravgoswami/cowspeak-root/master/Other%20Distributions/cowspeak'
+	MAN_PAGE = 'https://github.com/Souravgoswami/cowspeak-root/raw/master/latest-src/usr/share/man/man1/cowspeak.1.gz'
+	MAN_PAGE_DIR = '/usr/share/man/man1/cowspeak.1.gz'
 end
 
 # Errors
