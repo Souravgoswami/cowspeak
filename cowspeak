@@ -105,14 +105,7 @@ end
 COLOUR_ENABLED = coloured
 
 class String
-	def gradient(*arg_colours,
-		exclude_spaces: false,
-		newline: true
-		)
-
-		# Create the styling here rather than creating it in the each_line loop
-		# We also make it a bit different, rather than using \e[1m\e[5m, we will do
-		# \e[1;5m to save the number of characters spit out by this method
+	def gradient(*arg_colours, exclude_spaces: false, newline: true )
 		style = nil
 
 		if BOLD || ITALIC || UNDERLINE || BLINK || STRIKETHROUGH || DOUBLE_UNDERLINE || OVERLINE
@@ -265,11 +258,7 @@ class String
 		end
 	end
 
-	def multi_gradient(*colours,
-		exclude_spaces: false,
-		newline: true
-		)
-
+	def multi_gradient(*colours, exclude_spaces: false, newline: true)
 		div = colours.length - 1
 		ary = []
 		div_1 = div - 1
@@ -291,19 +280,13 @@ class String
 				ary[j] << x
 			}
 
-			# p ary
-
 			ary.each { |x|
-				# next unless x
-
-				x.gradient(
-					c[0], c[1], newline: false
-				)
-
+				x.gradient(c[0], c[1], newline: false)
 				c.rotate!
 			}
 
 		}
+
 		puts if newline
 	end
 
@@ -323,42 +306,53 @@ def Animate(str = 'Please Wait', &block)
 end
 
 help = ->(documentation = false) do
-	r = <<~EOF.split($-n)
+	_r = <<~EOF
 		Hi, my name is #{BASENAME}. I speak a quote on your terminal.
-		Usage: Run me from the command line without any arguments, and I will show you a fortune.
+		Usage: Run me from the command line without any arguments, and I will
+		show you a fortune.
 
 		\u2B22 All the Available arguments:
-		\s\s\s\s--art or -a\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay a tutorial on adding your own art.
-		\s\s\s\s--borderh=<ch>/-brh=<ch>\s\s\s\s\s\s\s\sHorizontal border character.
-		\s\s\s\s--borderv=<ch>/-brv=<ch>\s\s\s\s\s\s\s\sVertical border character.
-		\s\s\s\s--bubble=<text>/-bbl=<text>\s\s\s\s\sSpecify the character of speech balloons.
-		\s\s\s\s--documentation/-d\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay the documentation.#{"\n\s\s\s\s--download/-dl\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDownload missing files from Github." unless ROOT_DISABLE_DOWNLOAD}
-		\s\s\s\s--file=<path>/-f=<path>\s\s\s\s\s\s\s\s\sSpecify the path of your own ASCII art.
-		\s\s\s\s--fill=<char>/-fc=<char>\s\s\s\s\s\s\s\sFill the quote area with a character.
-		\s\s\s\s--force-update/-fu\s\s\s\s\s\s\s\s\s\s\s\s\s\sForcefully update (also see --update)
-		\s\s\s\s--help/-h\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay help.
-		\s\s\s\s--net=<url>/-n=<url>\s\s\s\s\s\s\s\s\s\s\s\sRead data from a website (in curl format).
-		\s\s\s\s--no-art/-na\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't display the animal.
-		\s\s\s\s--no-colour/-nc\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't colourize the output.
-		\s\s\s\s--no-text/-nt\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't show any text, show the animal.
-		\s\s\s\s--read=<file>/-r=<file>\s\s\s\s\s\s\s\s\sRead a file.
-		\s\s\s\s--show-arts/-sa\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sShow arts in the default directory.
-		\s\s\s\s--text=<text>/-t=<text>\s\s\s\s\s\s\s\s\sDisplay a custom text.
-		\s\s\s\s--version/-v\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay the current #{__FILE__} version.
-		\s\s\s\s--update/-u\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sUpdate cowspeak if possible.
-		\s\s\s\s--welcome/-w\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sShow some system details to the user.
+		\s\s\s\s--art or -a\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay a tutorial on adding your own art.
+		\s\s\s\s--borderh=<ch>/-brh=<ch>\s\s\s\s\s\s\sHorizontal border character.
+		\s\s\s\s--borderv=<ch>/-brv=<ch>\s\s\s\s\s\s\sVertical border character.
+		\s\s\s\s--bubble=<text>/-bbl=<text>\s\s\s\sSpecify the character of speech balloons.
+		\s\s\s\s--documentation/-d\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay the documentation.
+		\s\s\s\s--file=<path>/-f=<path>\s\s\s\s\s\s\s\sSpecify the path of your own ASCII art.
+		\s\s\s\s--fill=<char>/-fc=<char>\s\s\s\s\s\s\sFill the quote area with a character.
+		\s\s\s\s--help/-h\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay help.
+		\s\s\s\s--net=<url>/-n=<url>\s\s\s\s\s\s\s\s\s\s\sRead data from a website (in curl format).
+		\s\s\s\s--no-art/-na\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't display the animal.
+		\s\s\s\s--no-colour/-nc\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't colourize the output.
+		\s\s\s\s--no-text/-nt\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDon't show any text, show the animal.
+		\s\s\s\s--read=<file>/-r=<file>\s\s\s\s\s\s\s\sRead a file.
+		\s\s\s\s--show-arts/-sa\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sShow arts in the default directory.
+		\s\s\s\s--text=<text>/-t=<text>\s\s\s\s\s\s\s\sDisplay a custom text.
+		\s\s\s\s--version/-v\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDisplay the current #{__FILE__} version.
+		\s\s\s\s--welcome/-w\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sShow some system details to the user.
 
 		\u2B22 Other Notable Styles:
-		\s\s\s\s--blink or -b\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sBlink the texts.
-		\s\s\s\s--bold\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sBold the texts.
-		\s\s\s\s--double-underline\s\s\s\s\s\s\s\s\s\s\s\s\s\sDouble underline texts.
-		\s\s\s\s--italic\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sItalicize texts.
-		\s\s\s\s--overline\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sOverline texts.
-		\s\s\s\s--strikethrough\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sstrikethrough texts.
-		\s\s\s\s--underline\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sunderline texts.
-		\s\s\s\s--color=hex1,hex2,hexN\s\s\s\s\s\s\s\s\s\sAdd N hex colours to texts.
+		\s\s\s\s--blink or -b\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sBlink the texts.
+		\s\s\s\s--bold\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sBold the texts.
+		\s\s\s\s--double-underline\s\s\s\s\s\s\s\s\s\s\s\s\sDouble underline texts.
+		\s\s\s\s--italic\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sItalicize texts.
+		\s\s\s\s--overline\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sOverline texts.
+		\s\s\s\s--strikethrough\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sstrikethrough texts.
+		\s\s\s\s--underline\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sunderline texts.
+		\s\s\s\s--color=hex1,hex2,hexN\s\s\s\s\s\s\s\s\sAdd N hex colours to texts.
 	EOF
 
+	unless ROOT_DISABLE_DOWNLOAD
+		_r << <<~EOF
+			\n\u2B22 Update Cowspeak:
+			\s\s\s\s--download/-dl\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sDownload missing files from Github.
+			\s\s\s\s--force-update/-fu\s\s\s\s\s\s\s\s\s\s\s\s\sForcefully update even if current
+			\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sversion is latest.
+			\s\s\s\s--update/-u\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sUpdate cowspeak if any update is
+			\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\savailable.
+		EOF
+	end
+
+	r = _r.split($-n)
 	max_l = r.map(&:length).max
 
 	r.each { |x|
@@ -488,7 +482,7 @@ ARGV.delete('--force-update')
 ARGV.delete('-fu')
 
 # Check for updates.
-if ARGV.include?('--update') || ARGV.include?('-u') || force_update
+if (ARGV.include?('--update') || ARGV.include?('-u') || force_update) && !ROOT_DISABLE_DOWNLOAD
 	ARGV.delete('--update')
 	ARGV.delete('-u')
 
@@ -894,7 +888,7 @@ begin
 
 			begin
 				%w(net/https open-uri).each(&method(:require))
-				text = Animate("Downloading data from #{uri}") { open(uri).read.strip }
+				text = Animate("Downloading data from #{uri}") { URI.send(:open, uri).read.strip }
 
 			rescue SocketError, OpenSSL::SSL::SSLError
 				"Failed to read the URL. Do you have an active internet connection?".multi_gradient(*COLOURS.sample)
