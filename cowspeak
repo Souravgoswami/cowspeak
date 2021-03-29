@@ -40,7 +40,6 @@ SELECTED_ANIMALS = %w(
 
 COLOURS.concat(COLOURS.map(&:reverse))
 
-
 NEW_FEATURES = "\t1. Revamped colours\n\t2. Lots of styles as options\n\tBug fixes."
 # puts("\e[1;4mDebugging Purpose:\e[0m", 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
 
@@ -94,7 +93,7 @@ if _col
 
 	if _cols
 		_c = _cols.split(?,)
-		COLOURS.replace([_c]) unless _c.empty?
+		COLOURS.replace([_c]) unless _c.empty? || _c.length < 2
 	end
 end
 
@@ -344,7 +343,8 @@ help = ->(documentation = false) do
 		\s\s\s\s--overline\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sOverline texts.
 		\s\s\s\s--strikethrough\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sstrikethrough texts.
 		\s\s\s\s--underline\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\sunderline texts.
-		\s\s\s\s--color=hex1,hex2,hexN\s\s\s\s\s\s\s\s\sAdd N hex colours to texts.
+		\s\s\s\s--colour=hex1,hex2,hexN\s\s\s\s\s\s\s\sAdd N hex colours to texts.
+		\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s(minimum 2 colours)
 	EOF
 
 	unless ROOT_DISABLE_DOWNLOAD
