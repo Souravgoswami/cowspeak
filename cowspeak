@@ -9,7 +9,7 @@ ROOT = false
 # Disable download of assets and other stuff
 ROOT_DISABLE_DOWNLOAD = false
 
-VERSION = "Cowspeak version 3.0"
+VERSION = "Cowspeak version 3.1"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
@@ -20,6 +20,7 @@ UNIT = 1000.0
 COLOURS = %q(
 	55f 3eb
 	f55 55f
+	ff0 55f
 	f55 55f 3eb
 	fa0 55f 3eb
 	1FA2FF 12D8FA A6FFCB
@@ -27,15 +28,14 @@ COLOURS = %q(
 	7F7FD5 86A8E7 91EAE4
 	004FF9 FFF94C
 	004FF9 FFF94C f55
-	f55 004FF9 FFF94C
+	f55 004FF9 ff0
 	f55 55f 0a0 ff0
 ).each_line.map { |x| x.split(' '.freeze) }.reject(&:empty?)
 
 # Art to show by default
 SELECTED_ANIMALS = %w(
-	cow
-	squirrels killer_squirrels
-	cat dog mouse diano bat
+	cow squirrels cat
+	dog mouse diano bat
 )
 
 COLOURS.concat(COLOURS.map(&:reverse))
@@ -124,8 +124,8 @@ class String
 		end
 
 		unless COLOUR_ENABLED
-			STDOUT.print style if style
-			return STDOUT.print self + "\e[0m"
+				return STDOUT.print style + self + "\e[0m" if style
+				return STDOUT.print self
 		end
 
 		arg_colours.replace(['f55', '55f']) if arg_colours.empty?
