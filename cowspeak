@@ -9,7 +9,7 @@ ROOT = false
 # Disable download of assets and other stuff
 ROOT_DISABLE_DOWNLOAD = false
 
-VERSION = "Cowspeak version 3.13"
+VERSION = "Cowspeak version 3.14"
 
 # 1000.0 => MB, 1024 => MiB when using the --welcome or -w option.
 UNIT = 1000.0
@@ -40,7 +40,7 @@ SELECTED_ANIMALS = %w(
 
 COLOURS.concat(COLOURS.map(&:reverse))
 
-NEW_FEATURES = "\t1. Revamped colours\n\t2. Lots of styles as options\n\tBug fixes."
+NEW_FEATURES = "\t1. Revamped colours\n\t2. Lots of styles as options\n\t3.Bug fixes."
 # puts("\e[1;4mDebugging Purpose:\e[0m", 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
 
 BASENAME = Process.argv0
