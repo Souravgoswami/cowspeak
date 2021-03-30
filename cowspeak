@@ -716,7 +716,8 @@ begin
 		ssh_connection = ssh_connection ? "\n:: SSH: #{ssh_connection}" : ''
 
 		local_ip = Socket.ip_address_list.detect { |intf| intf.ipv4_private? }.then { |x| x ? x.ip? ? "\n:: Local IP: #{x.ip_unpack[0]}" : '' : '' }
-		files = " (#{Dir.entries(Dir.pwd).drop(2).count} items)" rescue ''
+		_files = Dir.entries(Dir.pwd).reject { |x| x == ?..freeze || x == '..'.freeze }
+		files = " (#{_files.count} items)" rescue ''
 
 		os = if File.readable?('/etc/os-release')
 			"\n:: OS: #{IO.foreach('/etc/os-release').find { |x| x.start_with?('NAME=') }.to_s.split(?=).drop(1).join(?=).tap(&:strip!).tap { |x| x.delete!(%<'">) }.then { |x| x ? "#{x} " : '' } }(#{RUBY_PLATFORM})"
@@ -771,19 +772,19 @@ begin
 			min = dl > d2l ? d2l : dl
 
 			usages = min.times.reduce([]) do |ary, x|
-				user, nice, sys, idle, iowait, irq, softirq, steal = *data[x].drop(1)
+				_user, nice, sys, idle, iowait, irq, softirq, steal = *data[x].drop(1)
 				user2, nice2, sys2, idle2, iowait2, irq2, softirq2, steal2 = *data2[x].drop(1)
 
 				idle_then, idle_now  = idle + iowait, idle2 + iowait2
-				totald = idle_now.+(user2 + nice2 + sys2 + irq2 + softirq2 + steal2) - idle_then.+(user + nice + sys + irq + softirq + steal)
+				totald = idle_now.+(user2 + nice2 + sys2 + irq2 + softirq2 + steal2) - idle_then.+(_user + nice + sys + irq + softirq + steal)
 
 				res = totald.-(idle_now - idle_then).fdiv(totald).abs.*(100)
 				res = res.nan? ? 0.0 : res > 100 ? 100.0 : res.round(2)
 
-				ary.push("#{res}%")
+				ary.push("#{'%05.2f' % res}%")
 			end
 
-			"\n:: Total CPU Usage: #{usages[0]}\n   [#{usages.drop(1).each_with_index { |x, i| x.prepend(%Q|C#{i + 1}: |) }.join(' | ')}]"
+			"\n:: Total CPU Usage: #{usages[0]}\n   [#{usages.drop(1).join(' | ')}]"
 		else
 			''
 		end
