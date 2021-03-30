@@ -67,12 +67,11 @@ ERR_DOWNLOAD_UNAVAILABLE = 62
 ERR_NO_PERMISSION = 61
 ERR_BAD_EXIT = 99
 
+$-s, $-n, $_esc, $-v = ?\s.freeze, ?\n.freeze, ?\e.freeze, false
+
 Kernel.class_exec { define_method(:then) { |&block| block === self } } unless defined?(Kernel.then)
 Array.class_exec { define_method(:sum) { reduce(:+) } } unless [].respond_to?(:sum)
 Integer.class_exec { define_method(:clamp) { |l, u| self < l ? l : self > u ? u : self } } unless 0.respond_to?(:clamp)
-String.class_exec { define_method(:delete_suffix!) { |a| slice(-a.length..-1) == a ? replace(slice(0..-a.length.next)) : self } } unless ''.respond_to?(:delete_suffix!)
-
-$-s, $-n, $_esc, $-v = ?\s.freeze, ?\n.freeze, ?\e.freeze, false
 
 # Check if the output should be colourized, blinked, rotated each line, inverted, reversed, whether to display text and the art
 check_args = proc { |*opts| opts.any?(&ARGV.method(:include?)).tap { opts.each { |x| ARGV.delete(x) } } }
@@ -844,7 +843,8 @@ begin
 				tasks_info.concat("Idle #{idle_count} | ") if idle_count > 0
 				tasks_info.concat("Stopped #{stopped_count} | ") if stopped_count > 0
 				tasks_info.concat("Zombies #{zombies_count} | ") if zombies_count > 0
-				tasks_info.delete_suffix!(" | ").concat(?])
+				tasks_info.chomp!(" | ")
+				tasks_info.concat(?])
 			end
 		end
 
