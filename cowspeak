@@ -43,7 +43,8 @@ COLOURS.concat(COLOURS.map(&:reverse))
 NEW_FEATURES = "\t1. Revamped colours\n\t2. Lots of styles as options\n\t3.Bug fixes."
 # puts("\e[1;4mDebugging Purpose:\e[0m", 'New Features:', Kernel.eval(IO.readlines(__FILE__).find { |x| x.start_with?('NEW_FEATURES'.freeze) }.split(?=).drop(1).join(?=))) || exit!(0)
 
-BASENAME = Process.argv0
+BASENAME = File.basename($0)
+EXECNAME = Process.argv0
 
 if !ROOT
 	PATH = "#{__dir__}/cowspeak_files"
@@ -674,14 +675,14 @@ begin
 		"Looks like the art file doesn't exist.".multi_gradient(*COLOURS.sample)
 
 		unless ROOT_DISABLE_DOWNLOAD
-			"Type #{BASENAME} --download or #{BASENAME} -dl to download all the necessary files.".multi_gradient(*COLOURS.sample)
+			"Type #{EXECNAME} --download or #{EXECNAME} -dl to download all the necessary files.".multi_gradient(*COLOURS.sample)
 		else
 			"Please make sure you have installed cowspeak correctly...".multi_gradient(*COLOURS.sample)
 		end
 
-		"Type #{BASENAME} --show-arts or #{BASENAME} -sa to see available arts in the default directory...".multi_gradient(*COLOURS.sample)
-		"Type #{BASENAME} --help or #{BASENAME} -h for help.".multi_gradient(*COLOURS.sample)
-		"Type #{BASENAME} --art or #{BASENAME} -a for help regarding art.".multi_gradient(*COLOURS.sample)
+		"Type #{EXECNAME} --show-arts or #{EXECNAME} -sa to see available arts in the default directory...".multi_gradient(*COLOURS.sample)
+		"Type #{EXECNAME} --help or #{EXECNAME} -h for help.".multi_gradient(*COLOURS.sample)
+		"Type #{EXECNAME} --art or #{EXECNAME} -a for help regarding art.".multi_gradient(*COLOURS.sample)
 		print "\e[1m"
 		"If you still want to run #{BASENAME} without the animals, use the -na or --no-art argument".multi_gradient(*COLOURS.sample)
 		print "\e[0m"
@@ -689,7 +690,7 @@ begin
 		file = File.join(PATH, "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art")
 		unless File.readable?(file)
 			"The default files at location #{PATH + 'arts/'} doesn't exist".multi_gradient(*COLOURS.sample)
-			"Please run #{BASENAME} -dl to download all the necessary files at #{PATH}".multi_gradient(*COLOURS.sample)
+			"Please run #{EXECNAME} -dl to download all the necessary files at #{PATH}".multi_gradient(*COLOURS.sample)
 			exit! ERR_FILE_NOT_FOUND
 		end
 	end
@@ -847,16 +848,41 @@ begin
 		end
 
 		battery_path = '/sys/class/power_supply/BAT0'.freeze
+
 		battery_details = if Dir.exist?(battery_path)
 			bat_model = IO.read(File.join(battery_path, 'model_name')).strip! rescue 'Unknown Model'
+
+			charge_now = if File.readable?(File.join(battery_path, 'charge_now'))
+				IO.read(File.join(battery_path, 'charge_now')).to_i
+			elsif File.readable?(File.join(battery_path, 'energy_now'))
+				IO.read(File.join(battery_path, 'energy_now')).to_i
+			else
+				nil
+			end
+
+			charge_full = if File.readable?(File.join(battery_path, 'charge_full'))
+				IO.read(File.join(battery_path, 'charge_full')).to_i
+			elsif File.readable?(File.join(battery_path, 'energy_full'))
+				IO.read(File.join(battery_path, 'energy_full')).to_i
+			else
+				nil
+			end
+
+			bat_percentage = if charge_now && charge_full
+				"%05.2f" % charge_now.*(100).fdiv(charge_full).round(2)
+			else
+				nil
+			end
+
 			bat_manufacturer = IO.read(File.join(battery_path, 'manufacturer')).strip! rescue ''
 			bat_tech = IO.read(File.join(battery_path, 'technology')).strip! rescue ''
 			bat_status = IO.read(File.join(battery_path, 'status')).strip! rescue ''
-			bat_percentage = IO.read(File.join(battery_path, 'charge_now')).to_i.*(100.0)./(IO.read(File.join(battery_path, 'charge_full')).to_i).to_i rescue -1
 
 			val = "\n:: Battery: #{bat_model}#{bat_manufacturer.empty? ? '' : " (#{bat_manufacturer})"}#{bat_tech.empty? ? '' : " (#{bat_tech})"}"
-			val.concat("\n   [Charge: #{bat_percentage}%#{bat_status.empty? ? '' : bat_status != 'Unknown' ? " | #{bat_status}" : ' | ...'}]") if bat_percentage > -1
+			val.concat("\n   [Charge: #{bat_percentage}%#{bat_status.empty? ? '' : bat_status != 'Unknown' ? " | #{bat_status}" : ' | ...'}]") if bat_percentage
 			val
+		else
+			nil
 		end
 
 		session = ENV['DESKTOP_SESSION'] ? "\n:: Desktop Session: #{ENV['DESKTOP_SESSION']}" : ''
