@@ -718,9 +718,17 @@ begin
 
 		ids = _login_details ? "\n:: UID: #{_login_details.uid} | GID: #{_login_details.gid}" : ''
 		gecos = "\n:: Username: "
-		gecos.concat(_login_details ? _login_details.gecos.split(?,)[0] : user)
 
-		hostname = Socket.gethostname ? "\n:: Hostname: #{Socket.gethostname}" : ''
+		gecos.concat(
+			if _login_details
+				_sp = _login_details.gecos.split(?,)[0]
+				_sp ? _sp : user
+			else
+				user
+			end
+		)
+
+		hostname = Socket.gethostname ? "\n:: Nodename: #{Etc.uname[:nodename]}" : ''
 		_ssh_connection = ENV['SSH_CONNECTION']
 		ssh_connection = _ssh_connection ? "\n:: SSH: #{_ssh_connection}" : ''
 
@@ -806,21 +814,38 @@ begin
 			"#{uptime.%(3600).div(60).then { |x| x != 1 ? "#{x} minutes" : "#{x} minute" } }, "\
 			"#{uptime.%(60).then { |x| x != 1 ? "#{x} seconds" : "#{x} second" } }"
 
-		running_processes = Dir['/proc/**'].select! { |x| File.split(x)[1].then { |y| y.to_i.to_s == y } }
+		running_processes = Dir['/proc/[0-9]*/stat']
+
 		total_tasks, tasks_info = running_processes.size, ''
 		sleeping_count = idle_count = running_count = stopped_count = zombies_count = 0
 
 		running_processes.each do |x|
-			status_file = File.join(x, 'stat'.freeze)
+			if File.readable?(x)
+				status = IO.read(x).split(/\(.*\)/)[1].lstrip[0]
 
-			if File.readable?(status_file)
-				status = IO.read(status_file).split(/\(.*\)/)[1].lstrip[0]
+				case status
+					when ?R.freeze then running_count += 1
+					when ?I.freeze then idle_count += 1
+					when ?S.freeze then sleeping_count += 1
+					when ?T.freeze then stopped_count += 1
+					when ?Z.freeze then zombies_count += 1
+					when ?t.freeze then stopped_count += 1
+				end
+			end
+		end
 
-				running_count += 1 if status == ?R.freeze
-				sleeping_count += 1 if status == ?S.freeze
-				idle_count += 1 if status == ?I.freeze
-				stopped_count += 1 if status == ?T.freeze || status == ?t.freeze
-				zombies_count += 1 if status == ?Z.freeze
+		if running_processes.size > 0
+			tasks_info << "\n:: Tasks: #{total_tasks}"
+
+			if running_count + sleeping_count + idle_count + stopped_count + zombies_count > 0
+				tasks_info.concat("\n   [")
+				tasks_info.concat("Running #{running_count} | ") if running_count > 0
+				tasks_info.concat("Sleeping #{sleeping_count} | ") if sleeping_count > 0
+				tasks_info.concat("Idle #{idle_count} | ") if idle_count > 0
+				tasks_info.concat("Stopped #{stopped_count} | ") if stopped_count > 0
+				tasks_info.concat("Zombies #{zombies_count} | ") if zombies_count > 0
+				tasks_info.chomp!(" | ")
+				tasks_info.concat(?])
 			end
 		end
 
@@ -840,21 +865,6 @@ begin
 			"\n:: BIOS: #{val1}"
 		else
 			''
-		end
-
-		if running_processes.size > 0
-			tasks_info << "\n:: Tasks: #{total_tasks}"
-
-			if running_count + sleeping_count + idle_count + stopped_count + zombies_count > 0
-				tasks_info.concat("\n   [")
-				tasks_info.concat("Running #{running_count} | ") if running_count > 0
-				tasks_info.concat("Sleeping #{sleeping_count} | ") if sleeping_count > 0
-				tasks_info.concat("Idle #{idle_count} | ") if idle_count > 0
-				tasks_info.concat("Stopped #{stopped_count} | ") if stopped_count > 0
-				tasks_info.concat("Zombies #{zombies_count} | ") if zombies_count > 0
-				tasks_info.chomp!(" | ")
-				tasks_info.concat(?])
-			end
 		end
 
 		battery_path = '/sys/class/power_supply/BAT0'.freeze
