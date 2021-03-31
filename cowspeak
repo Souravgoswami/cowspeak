@@ -896,10 +896,12 @@ begin
 		end
 
 		session = ENV['DESKTOP_SESSION'] ? "\n:: Desktop Session: #{ENV['DESKTOP_SESSION']}" : ''
+
+		shell = ENV['SHELL'].to_s.empty? ? '' : "\n:: Shell: #{ENV['SHELL']}"
+
 		text = <<~EOF.tap(&:rstrip!)
 				>> Welcome #{user}!#{model}#{bios_info}#{gecos}#{ids}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
-				:: Uptime: #{up}#{tasks_info}
-				:: Shell: #{ENV['SHELL']}
+				:: Uptime: #{up}#{tasks_info}#{shell}
 				:: PWD: #{Dir.pwd}/#{files}#{terminal_size}#{battery_details}
 				:: Date & Time: #{Time.new.strftime('%B %d, %A, %H:%M:%S %p')}
 		EOF
