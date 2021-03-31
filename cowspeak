@@ -640,7 +640,7 @@ if !ROOT_DISABLE_DOWNLOAD && (ARGV.include?('--download') || ARGV.include?('-dl'
 		exit! ERR_NO_INTERNET
 
 	rescue Errno::EACCES
-		"Requires root privilege to write to #{PATH}/ directory. Please run #{BASENAME} with proper permission.".multi_gradient(*COLOURS.sample)
+		"Requires root privilege to write to #{PATH}/ directory. Please run #{EXECNAME} with proper permission.".multi_gradient(*COLOURS.sample)
 		exit! ERR_NO_PERMISSION
 
 	rescue SignalException, Interrupt, SystemExit
@@ -710,23 +710,30 @@ begin
 		text.replace(VERSION)
 	elsif ARGV.include?('--welcome') || ARGV.include?('-w')
 		require 'socket'
+		require 'etc'
 
-		user = ENV['USER'] ? $-s + ENV['USER'].to_s.split.map!(&:capitalize).join : ''
-		logname = ENV['LOGNAME'] ? "\n:: Logname: #{ENV['LOGNAME']}" : ''
+		user = Etc.getlogin
+		_login_details = Etc.getpwnam(user)
+		user.capitalize!
+
+		ids = _login_details ? "\n:: UID: #{_login_details.uid} | GID: #{_login_details.gid}" : ''
+		gecos = "\n:: Username: "
+		gecos.concat(_login_details ? _login_details.gecos.split(?,)[0] : user)
+
 		hostname = Socket.gethostname ? "\n:: Hostname: #{Socket.gethostname}" : ''
-		ssh_connection = ENV['SSH_CONNECTION']
-		ssh_connection = ssh_connection ? "\n:: SSH: #{ssh_connection}" : ''
+		_ssh_connection = ENV['SSH_CONNECTION']
+		ssh_connection = _ssh_connection ? "\n:: SSH: #{_ssh_connection}" : ''
 
 		local_ip = Socket.ip_address_list.detect { |intf| intf.ipv4_private? }.then { |x| x ? x.ip? ? "\n:: Local IP: #{x.ip_unpack[0]}" : '' : '' }
 		_files = Dir.entries(Dir.pwd).reject { |x| x == ?..freeze || x == '..'.freeze }
 		files = " (#{_files.count} items)" rescue ''
 
 		os = if File.readable?('/etc/os-release')
-			"\n:: OS: #{IO.foreach('/etc/os-release').find { |x| x.start_with?('NAME=') }.to_s.split(?=).drop(1).join(?=).tap(&:strip!).tap { |x| x.delete!(%<'">) }.then { |x| x ? "#{x} " : '' } }(#{RUBY_PLATFORM})"
+			"\n:: OS: #{IO.foreach('/etc/os-release').find { |x| x.start_with?('NAME=') }.to_s.split(?=).drop(1).join(?=).tap(&:strip!).tap { |x| x.delete!(%<'">) }.then { |x| x ? "#{x} " : '' } }(#{Etc.uname[:machine]})"
 		elsif File.readable?('/etc/lsb-release')
-			"\n:: OS: #{IO.foreach('/etc/lsb-release').find { |x| x.start_with?('DISTRIB_DESCRIPTION=') }.to_s.split(?=).drop(1).join(?=).tap(&:strip!).tap { |x| x.delete!(%<'">) }.then { |x| x ? "#{x} " : '' } }(#{RUBY_PLATFORM})"
+			"\n:: OS: #{IO.foreach('/etc/lsb-release').find { |x| x.start_with?('DISTRIB_DESCRIPTION=') }.to_s.split(?=).drop(1).join(?=).tap(&:strip!).tap { |x| x.delete!(%<'">) }.then { |x| x ? "#{x} " : '' } }(#{Etc.uname[:machine]})"
 		else
-			"\n:: OS: #{RUBY_PLATFORM}"
+			"\n:: OS: #{Etc.uname[:machine]}"
 		end
 
 		memory_stat = if File.readable?('/proc/meminfo')
@@ -749,12 +756,12 @@ begin
 			''
 		end
 
-		require 'etc'
 		cpu_stat = if File.readable?('/proc/cpuinfo')
 			cpu = IO.readlines('/proc/cpuinfo')
 
 			val = "\n:: CPU: #{cpu.find { |x| x.start_with?('model name') }.to_s.split(?:).drop(1).join.tap(&:strip!)}"
-			cpu_count = cpu.count { |x| x.start_with?('processor'.freeze) }.then { |x| x == Etc.nprocessors ? x : 0 }
+			cpu_count = Etc.sysconf(Etc::SC_NPROCESSORS_CONF)
+
 			val.concat("\n   [Cores: #{cpu_count}]") unless cpu_count == 0
 			val
 		else
@@ -792,7 +799,7 @@ begin
 		end
 
 		terminal_size = STDOUT.tty? ? STDOUT.winsize.then { |x| x.sum != 0 ? "\n:: Terminal Size: #{x.join(" \xC3\x97 ")}" : '' } : ''
-		kernel_version = File.readable?('/proc/version') ? "\n:: Kernel: " + IO.read('/proc/version').split[2] : ''
+		kernel_version = "\n:: Kernel: #{Etc.uname[:release]}"
 
 		uptime = File.readable?('/proc/uptime') ? IO.read('/proc/uptime').to_i : 0
 		up = "#{uptime.div(3600).then { |x| x != 1 ? "#{x} hours" : "#{x} hour" }}, "\
@@ -890,7 +897,7 @@ begin
 
 		session = ENV['DESKTOP_SESSION'] ? "\n:: Desktop Session: #{ENV['DESKTOP_SESSION']}" : ''
 		text = <<~EOF.tap(&:rstrip!)
-				>> Welcome#{user}!#{model}#{bios_info}#{logname}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
+				>> Welcome #{user}!#{model}#{bios_info}#{gecos}#{ids}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
 				:: Uptime: #{up}#{tasks_info}
 				:: Shell: #{ENV['SHELL']}
 				:: PWD: #{Dir.pwd}/#{files}#{terminal_size}#{battery_details}
