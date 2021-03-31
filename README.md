@@ -53,31 +53,46 @@ If you want to run `cowspeak` in Arch Linux / OpenSUSE / Fedora / CentOS / RedHa
    
 ## 🐮 Cowspeak Accepts Arguments. All the Available Arguments are 👇
 ```
-1         --art or -a                   Display a tutorial on adding your own art.
-2         --blink or -b                 Blink the texts.
-3         --borderh=<ch>/-brh=<ch>      Horizontal border character.
-4         --borderv=<ch>/-brv=<ch>      Vertical border character.
-5         --bubble=<text>/-bbl=<text>   Specify the character of speech balloons.
-6         --documentation/-d            Display the documentation.
-7         --download/-dl                Download missing files from Github.
-8         --file=<path>/-f=<path>       Specify the path of your own ASCII art.
-9         --fill=<char>/-fc=<char>      Fill the quote area with a character.
-10        --force-update/-fu            Forcefully update (also see --update)
-11        --help/-h                     Display help.
-12        --invert/-inv                 Invert the output (right <- left in English)!
-13        --manual/-m                   Display a manual. Same as documentation.
-14        --net=<url>/-n=<url>          Read data from a website (in curl format).
-15        --no-art/-na                  Don't display the animal.
-16        --no-colour/-nc               Don't colourize the output.
-17        --no-text/-nt                 Don't show any text, show the animal.
-18        --read=<file>/-r=<file>       Read a file.
-19        --reverse/-rev                Cowspeak reads upside down!
-20        --rotate-colour/-rc           Rotate the output colours in each line.
-21        --show-arts/-sa               Show arts in the default directory.
-22        --text=<text>/-t=<text>       Display a custom text.
-23        --version/-v                  Display the current /usr/bin/cowspeak version.
-24        --update/-u                   Update cowspeak if possible.
-25        --welcome/-w                  Show some system details to the user.
+Hi, my name is cowspeak. I speak a quote on your terminal.                   
+Usage: Run me from the command line without any arguments, and I will        
+show you a fortune.                                                          
+                                                                             
+⬢ All the Available arguments:                                               
+    --art or -a                    Display a tutorial on adding your own art.
+    --borderh=<ch>/-brh=<ch>       Horizontal border character.              
+    --borderv=<ch>/-brv=<ch>       Vertical border character.                
+    --bubble=<text>/-bbl=<text>    Specify the character of speech balloons. 
+    --documentation/-d             Display the documentation.                
+    --file=<path>/-f=<path>        Specify the path of your own ASCII art.   
+    --fill=<char>/-fc=<char>       Fill the quote area with a character.     
+    --help/-h                      Display help.                             
+    --net=<url>/-n=<url>           Read data from a website (in curl format).
+    --no-art/-na                   Don't display the animal.                 
+    --no-colour/-nc                Don't colourize the output.               
+    --no-text/-nt                  Don't show any text, show the animal.     
+    --read=<file>/-r=<file>        Read a file.                              
+    --show-arts/-sa                Show arts in the default directory.       
+    --text=<text>/-t=<text>        Display a custom text.                    
+    --version/-v                   Display the current cowspeak version.     
+    --welcome/-w                   Show some system details to the user.     
+                                                                             
+⬢ Other Notable Styles:                                                      
+    --blink or -b                  Blink the texts.                          
+    --bold                         Bold the texts.                           
+    --double-underline             Double underline texts.                   
+    --italic                       Italicize texts.                          
+    --overline                     Overline texts.                           
+    --strikethrough                strikethrough texts.                      
+    --underline                    underline texts.                          
+    --colour=hex1,hex2,hexN        Add N hex colours to texts.               
+                                   (minimum 2 colours)                       
+                                                                             
+⬢ Update Cowspeak:                                                           
+    --download/-dl                 Download missing files from Github.       
+    --force-update/-fu             Forcefully update even if current         
+                                   version is latest.                        
+    --update/-u                    Update cowspeak if any update is          
+                                   available.                               
 ```
 
 ## Note on Arguments 📝
