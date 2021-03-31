@@ -714,7 +714,6 @@ begin
 
 		user = Etc.getlogin
 		_login_details = Etc.getpwnam(user)
-		user.capitalize!
 
 		ids = _login_details ? "\n:: UID: #{_login_details.uid} | GID: #{_login_details.gid}" : ''
 		gecos = "\n:: Username: "
@@ -910,7 +909,7 @@ begin
 		shell = ENV['SHELL'].to_s.empty? ? '' : "\n:: Shell: #{ENV['SHELL']}"
 
 		text = <<~EOF.tap(&:rstrip!)
-				>> Welcome #{user}!#{model}#{bios_info}#{gecos}#{ids}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
+				>> Welcome #{user.capitalize}!#{model}#{bios_info}#{gecos}#{ids}#{hostname}#{ssh_connection}#{local_ip}#{session}#{os}#{kernel_version}#{cpu_stat}#{cpu_usage}#{memory_stat}#{swap_stat}
 				:: Uptime: #{up}#{tasks_info}#{shell}
 				:: PWD: #{Dir.pwd}/#{files}#{terminal_size}#{battery_details}
 				:: Date & Time: #{Time.new.strftime('%B %d, %A, %H:%M:%S %p')}
