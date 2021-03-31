@@ -3,7 +3,7 @@ https://souravgoswami.github.io/cowspeak/
 
 Display a gradient colourful animal with a random quote or your own text in your terminal.
 
-![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/a.png)
+![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/a.jpg)
 
 ---
 
@@ -103,11 +103,11 @@ If you pass an invalid argument, cowspeak will not inform you. It will simply ig
 
 ## Screenshots 📸
 
-![alt cowspeak --welcome](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/b.png)
+![alt cowspeak --welcome](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/b.jpg)
  
-![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/c.png)
+![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/c.jpg)
  
-![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/d.png)
+![cowspeak](https://github.com/Souravgoswami/cowspeak/blob/master/Screenshots/d.jpg)
  
 
 ## Bug Report 🐞
