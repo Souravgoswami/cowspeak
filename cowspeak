@@ -426,13 +426,15 @@ if ARGV.include?('--show-arts') || ARGV.include?('-sa')
 		exit!
 	end
 
-	Dir.entries(File.join(PATH, 'arts')).each_with_index { |file, i|
+	_index = 0
+	Dir.entries(File.join(PATH, 'arts')).each { |file, i|
 		next if file == ?..freeze || file == '..'.freeze
 
+		_index += 1
 		_file = File.join(PATH, 'arts', file)
 		_content = IO.read(_file)
 
-		"\u2023 #{i + 1}\n#{_content}\nPath: #{_file}\n\n".multi_gradient(*COLOURS.sample)
+		"\u2023 #{_index}\n#{_content}\nPath: #{_file}\n\n".multi_gradient(*COLOURS.sample)
 	}
 
 	exit 0
