@@ -38,8 +38,8 @@ COLOURS = %q(
 
 # Art to show by default
 SELECTED_ANIMALS = %w(
-	cow squirrels cat
-	dog mouse diano bat
+	duck owl elephant
+	dog mouse cow cat
 )
 
 COLOURS.concat(COLOURS.map(&:reverse))
@@ -692,7 +692,7 @@ begin
 		"If you still want to run #{BASENAME} without the animals, use the -na or --no-art argument".multi_gradient(*COLOURS.sample)
 		print "\e[0m"
 
-		file = File.join(PATH, "arts/#{%w(cow squirrels killer_squirrels cat deer dog mouse camel).sample}.art")
+		file = File.join(PATH, 'arts', "#{SELECTED_ANIMALS.sample}.art")
 		unless File.readable?(file)
 			"The default files at location #{PATH + 'arts/'} doesn't exist".multi_gradient(*COLOURS.sample)
 			"Please run #{EXECNAME} -dl to download all the necessary files at #{PATH}".multi_gradient(*COLOURS.sample)
