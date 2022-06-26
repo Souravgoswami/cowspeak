@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env -S ruby --disable-gems
 # Encoding: UTF-8
 # Written by Sourav Goswami <souravgoswami@protonmail.com>
 # MIT Licence
