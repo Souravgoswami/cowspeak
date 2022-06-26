@@ -17,19 +17,23 @@ UNIT = 1000.0
 # Gradient colours that cowspeak uses
 # Each colour is also reversed. For example,
 # "f55 3eb" can show either f55 -> 3eb or 3eb -> f55
+
 COLOURS = %q(
+	1fa2ff 12d8fa a6ffcb
+	55f 0a0
 	55f 3eb
-	f55 55f
-	ff0 55f
 	f55 55f 3eb
-	fa0 55f 3eb
-	1FA2FF 12D8FA A6FFCB
-	FC466B 3F5EFB
-	7F7FD5 86A8E7 91EAE4
-	004FF9 FFF94C
-	004FF9 FFF94C f55
-	f55 004FF9 ff0
-	f55 55f 0a0 ff0
+	ff5cca aa56ff
+	ff158a 6c6cff 00d2d2
+	6c6cff 00d2d2 ff9900
+	eecda3 ef629f
+	36d1dc 5b86e5
+	fc5c7d 6a82fb
+	00f260 0575e6
+	a770ef cf8bf3 fdb99b
+	f4c4f3 fc67fa
+	ef32d9 89fffd
+	00c9ff 92fe9d
 ).each_line.map { |x| x.split(' '.freeze) }.reject(&:empty?)
 
 # Art to show by default
